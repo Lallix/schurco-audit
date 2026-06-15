@@ -1,0 +1,1721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+<meta name="theme-color" content="#218240"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<title>Schurco Site Audit</title>
+<link rel="manifest" href="manifest.json"/>
+<script src="xlsx.bundle.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --green: #218240;
+  --green-dark: #185e2e;
+  --green-light: #2aa050;
+  --green-dim: #1a3320;
+  --green-glow: rgba(33,130,64,0.25);
+  --bg: #0d1710;
+  --bg2: #121f14;
+  --bg3: #182b1b;
+  --surface: #1c2e1f;
+  --surface2: #243527;
+  --border: #2d4a31;
+  --text: #e8f0e9;
+  --text-dim: #7a9e7e;
+  --text-muted: #4a6b4e;
+  --accent: #5dde82;
+  --warn: #f5a623;
+  --danger: #e8453c;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --font-head: 'Barlow Condensed', sans-serif;
+  --font-body: 'Barlow', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  height: 100%; overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 15px;
+}
+
+/* ── LAYOUT ── */
+#app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
+
+.topbar {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 0 16px;
+  height: 56px;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+  position: relative;
+}
+.topbar-logo {
+  font-family: var(--font-head); font-size: 20px; font-weight: 800;
+  letter-spacing: 0.5px; color: var(--text);
+}
+.topbar-logo span { color: var(--green-light); }
+.topbar-badge {
+  font-family: var(--font-body); font-size: 11px; font-weight: 600;
+  background: var(--green-dim); color: var(--accent);
+  border: 1px solid var(--green); border-radius: 20px;
+  padding: 3px 10px; letter-spacing: 0.3px;
+}
+.topbar-badge.offline { background: #2a1a0a; color: var(--warn); border-color: var(--warn); }
+
+.screen { flex: 1; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
+.screen-inner { padding: 16px; max-width: 600px; margin: 0 auto; padding-bottom: 80px; }
+
+.bottomnav {
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  display: flex; flex-shrink: 0;
+  height: 60px;
+}
+.bnav-btn {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px; background: none; border: none; cursor: pointer;
+  color: var(--text-muted); font-family: var(--font-body); font-size: 10px; font-weight: 600;
+  letter-spacing: 0.3px; text-transform: uppercase; transition: color .15s;
+  position: relative;
+}
+.bnav-btn.active { color: var(--accent); }
+.bnav-btn.active::after {
+  content: ''; position: absolute; top: 0; left: 20%; right: 20%;
+  height: 2px; background: var(--accent); border-radius: 0 0 2px 2px;
+}
+.bnav-icon { font-size: 22px; line-height: 1; }
+
+/* ── SECTION HEADINGS ── */
+.section-head {
+  font-family: var(--font-head); font-size: 22px; font-weight: 700;
+  letter-spacing: 0.5px; color: var(--text); margin-bottom: 4px;
+}
+.section-sub { font-size: 13px; color: var(--text-dim); margin-bottom: 20px; }
+
+/* ── CARDS ── */
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px; margin-bottom: 12px;
+}
+.card-head {
+  font-family: var(--font-head); font-size: 15px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-dim);
+  margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+}
+.card-head-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--green); flex-shrink: 0;
+}
+
+/* ── FORM ELEMENTS ── */
+.field { margin-bottom: 14px; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.field-row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+label {
+  display: block; font-size: 11px; font-weight: 600;
+  color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px;
+  margin-bottom: 5px;
+}
+label .req { color: var(--accent); margin-left: 2px; }
+
+input[type=text], input[type=number], input[type=date], select, textarea {
+  width: 100%; background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text);
+  font-family: var(--font-body); font-size: 15px;
+  padding: 10px 12px; outline: none; transition: border-color .15s, box-shadow .15s;
+  appearance: none; -webkit-appearance: none;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--green); box-shadow: 0 0 0 3px var(--green-glow);
+}
+select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M0 0l6 8 6-8z' fill='%237a9e7e'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+textarea { resize: vertical; min-height: 72px; }
+input::placeholder, textarea::placeholder { color: var(--text-muted); }
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  border: none; border-radius: var(--radius-sm); cursor: pointer;
+  font-family: var(--font-head); font-size: 15px; font-weight: 700;
+  letter-spacing: 0.5px; text-transform: uppercase; padding: 12px 20px;
+  transition: all .15s; user-select: none;
+}
+.btn-primary { background: var(--green); color: #fff; width: 100%; }
+.btn-primary:active { background: var(--green-dark); transform: scale(0.98); }
+.btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+.btn-secondary:active { background: var(--bg3); }
+.btn-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+.btn-icon { padding: 10px 14px; font-size: 18px; }
+.btn-sm { padding: 8px 14px; font-size: 13px; }
+.btn-full { width: 100%; }
+.btn-row { display: flex; gap: 10px; }
+.btn-row .btn { flex: 1; }
+
+/* ── PUMP LIST ITEMS ── */
+.pump-item {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px 16px;
+  margin-bottom: 10px; cursor: pointer;
+  display: flex; align-items: center; gap: 12px;
+  transition: border-color .15s, background .15s;
+  active-state: none;
+}
+.pump-item:active { background: var(--surface2); border-color: var(--green); }
+.pump-badge {
+  width: 42px; height: 42px; border-radius: 10px;
+  background: var(--green-dim); border: 1px solid var(--green);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-head); font-size: 11px; font-weight: 800;
+  color: var(--accent); text-transform: uppercase; letter-spacing: 0.3px;
+  flex-shrink: 0; text-align: center; line-height: 1.2;
+}
+.pump-info { flex: 1; min-width: 0; }
+.pump-tag { font-family: var(--font-head); font-size: 17px; font-weight: 700; color: var(--text); }
+.pump-meta { font-size: 12px; color: var(--text-dim); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pump-status { flex-shrink: 0; }
+.status-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--accent);
+}
+.status-dot.warn { background: var(--warn); }
+.status-dot.bad { background: var(--danger); }
+.dup-btn {
+  flex-shrink: 0; background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 8px; width: 36px; height: 36px; font-size: 17px;
+  color: var(--text-dim); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .12s;
+}
+.dup-btn:active { background: var(--green-dim); border-color: var(--green); color: var(--accent); transform: scale(0.94); }
+
+/* ── PHOTO CAPTURE ── */
+.photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+.photo-thumb {
+  aspect-ratio: 1; border-radius: var(--radius-sm); overflow: hidden;
+  background: var(--bg3); border: 1px solid var(--border);
+  position: relative; cursor: pointer;
+}
+.photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.photo-thumb .photo-del {
+  position: absolute; top: 4px; right: 4px;
+  background: rgba(0,0,0,0.7); border: none; border-radius: 50%;
+  width: 22px; height: 22px; font-size: 13px; color: #fff;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.photo-add {
+  aspect-ratio: 1; border-radius: var(--radius-sm);
+  background: var(--bg3); border: 2px dashed var(--border);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px; cursor: pointer; color: var(--text-muted);
+  font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px;
+  transition: border-color .15s;
+}
+.photo-add:active { border-color: var(--green); color: var(--accent); }
+.photo-add-icon { font-size: 26px; }
+input[type=file] { display: none; }
+
+/* ── GUIDED PHOTO SLOTS ── */
+.photo-slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.pslot {
+  aspect-ratio: 1; border-radius: var(--radius-sm); overflow: hidden;
+  background: var(--bg3); border: 2px dashed var(--border);
+  position: relative; cursor: pointer; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 2px; padding: 6px;
+  transition: border-color .15s;
+}
+.pslot:active { border-color: var(--green); }
+.pslot.filled { border-style: solid; border-color: var(--green); padding: 0; }
+.pslot img { width: 100%; height: 100%; object-fit: cover; }
+.pslot .pslot-sil { width: 56%; height: 56%; opacity: 0.5; }
+.pslot .pslot-sil svg { width: 100%; height: 100%; }
+.pslot .pslot-label {
+  font-size: 9.5px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.3px; color: var(--text-dim); text-align: center; line-height: 1.15;
+}
+.pslot .pslot-check {
+  position: absolute; top: 4px; right: 4px;
+  background: var(--green); border-radius: 50%;
+  width: 20px; height: 20px; font-size: 12px; color: #fff;
+  display: flex; align-items: center; justify-content: center; z-index: 2;
+}
+.pslot .pslot-tag {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: rgba(0,0,0,0.65); color: #fff; font-size: 9px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.3px; text-align: center; padding: 3px 2px; z-index: 2;
+}
+.pslot .pslot-del {
+  position: absolute; top: 4px; left: 4px;
+  background: rgba(0,0,0,0.7); border: none; border-radius: 50%;
+  width: 20px; height: 20px; font-size: 11px; color: #fff; z-index: 3;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+
+/* ── TAG-STYLE CHIPS (for sealing, condition) ── */
+.chip-group { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  padding: 7px 14px; border-radius: 20px;
+  border: 1px solid var(--border); background: var(--bg3);
+  color: var(--text-dim); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all .12s; font-family: var(--font-body);
+  white-space: nowrap;
+}
+.chip.active { background: var(--green-dim); border-color: var(--green); color: var(--accent); }
+.chip:active { transform: scale(0.96); }
+
+/* ── SYNC PANEL ── */
+.sync-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px; margin-bottom: 14px;
+}
+.sync-title { font-family: var(--font-head); font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+.sync-desc { font-size: 13px; color: var(--text-dim); margin-bottom: 16px; line-height: 1.5; }
+.sync-progress { background: var(--bg3); border-radius: 4px; height: 6px; margin: 10px 0; overflow: hidden; }
+.sync-bar { height: 100%; background: var(--accent); border-radius: 4px; transition: width .4s ease; }
+.sync-stat { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-dim); margin-top: 6px; }
+.stat-row { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.stat-box {
+  flex: 1; min-width: 80px; background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px; text-align: center;
+}
+.stat-num { font-family: var(--font-head); font-size: 28px; font-weight: 800; color: var(--accent); }
+.stat-lbl { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.4px; margin-top: 2px; }
+
+/* ── MODAL / DRAWER ── */
+.drawer-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+  z-index: 100; display: none; align-items: flex-end;
+  backdrop-filter: blur(2px);
+}
+.drawer-overlay.open { display: flex; }
+.drawer {
+  background: var(--bg2); border-radius: 20px 20px 0 0;
+  width: 100%; max-height: 95vh; overflow-y: auto;
+  padding: 0 0 env(safe-area-inset-bottom, 16px);
+  animation: slideUp .25s ease;
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.drawer-handle {
+  width: 40px; height: 4px; background: var(--border);
+  border-radius: 2px; margin: 12px auto 0;
+}
+.drawer-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px 12px; border-bottom: 1px solid var(--border);
+}
+.drawer-title { font-family: var(--font-head); font-size: 20px; font-weight: 800; }
+.drawer-close {
+  background: var(--surface); border: none; border-radius: 50%;
+  width: 32px; height: 32px; font-size: 18px; color: var(--text-dim);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.drawer-body { padding: 16px; padding-bottom: 24px; }
+
+/* ── EMPTY STATE ── */
+.empty-state {
+  text-align: center; padding: 48px 24px;
+  color: var(--text-muted);
+}
+.empty-icon { font-size: 56px; margin-bottom: 16px; opacity: 0.6; }
+.empty-title { font-family: var(--font-head); font-size: 20px; font-weight: 700; color: var(--text-dim); margin-bottom: 8px; }
+.empty-desc { font-size: 14px; line-height: 1.6; }
+
+/* ── TOAST ── */
+.toast-wrap { position: fixed; bottom: 72px; left: 16px; right: 16px; z-index: 200; pointer-events: none; }
+.toast {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px 16px;
+  font-size: 14px; font-weight: 500; margin-top: 8px;
+  animation: toastIn .2s ease; box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  pointer-events: all;
+}
+.toast.success { border-color: var(--green); color: var(--accent); }
+.toast.error { border-color: var(--danger); color: var(--danger); }
+@keyframes toastIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ── DIVIDER ── */
+.divider { height: 1px; background: var(--border); margin: 18px 0; }
+.moc-group-label {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.8px; color: var(--green-light); margin-bottom: 8px;
+  padding-bottom: 4px; border-bottom: 1px solid var(--green-dim);
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-logo">SCHURCO <span>AUDIT</span></div>
+    <div class="topbar-badge" id="netBadge">● ONLINE</div>
+  </div>
+
+  <!-- SCREENS -->
+  <div class="screen" id="screenHome">
+    <div class="screen-inner">
+      <div class="section-head">Site Audits</div>
+      <div class="section-sub" id="auditCount">Loading saved audits…</div>
+
+      <button class="btn btn-primary" onclick="openNewAuditDrawer()" style="margin-bottom:20px">
+        <span>＋</span> New Site Audit
+      </button>
+
+      <div id="auditList"></div>
+    </div>
+  </div>
+
+  <div class="screen" id="screenPumps" style="display:none">
+    <div class="screen-inner">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px">
+        <button class="btn btn-secondary btn-icon" onclick="goHome()" style="padding:8px 10px;font-size:16px">←</button>
+        <div>
+          <div class="section-head" id="pumpScreenTitle" style="margin-bottom:0">Pumps</div>
+          <div style="font-size:12px;color:var(--text-dim)" id="pumpScreenSite"></div>
+        </div>
+      </div>
+      <div class="section-sub" id="pumpCount" style="margin-top:4px;margin-bottom:16px"></div>
+
+      <button class="btn btn-primary" onclick="openPumpDrawer()" style="margin-bottom:10px">
+        <span>＋</span> Add Pump
+      </button>
+      <div class="btn-row" style="margin-bottom:8px">
+        <button class="btn btn-secondary btn-sm" onclick="generateReport()">📄 PDF</button>
+        <button class="btn btn-secondary btn-sm" onclick="downloadExcel()">📊 Excel</button>
+      </div>
+      <div class="btn-row" style="margin-bottom:16px">
+        <button class="btn btn-secondary btn-sm" onclick="shareExcel()">📤 Share</button>
+        <button class="btn btn-secondary btn-sm" onclick="uploadSharePoint()">☁ SharePoint</button>
+      </div>
+      <div id="pumpList"></div>
+    </div>
+  </div>
+
+  <div class="screen" id="screenSync" style="display:none">
+    <div class="screen-inner">
+      <div class="section-head">Sync & Export</div>
+      <div class="section-sub">Upload completed audits to monday.com and SharePoint, or export as Excel.</div>
+
+      <div class="stat-row">
+        <div class="stat-box"><div class="stat-num" id="statAudits">0</div><div class="stat-lbl">Audits</div></div>
+        <div class="stat-box"><div class="stat-num" id="statPumps">0</div><div class="stat-lbl">Pumps</div></div>
+        <div class="stat-box"><div class="stat-num" id="statPhotos">0</div><div class="stat-lbl">Photos</div></div>
+      </div>
+
+      <div class="sync-card">
+        <div class="sync-title">☁ SharePoint / OneDrive</div>
+        <div class="sync-desc">Saved audits upload as a fully-formatted Excel workbook named <b>Client_Site_Date</b>. Configure your library once below — then upload straight from each audit screen.</div>
+        <div class="field">
+          <label>SharePoint Site URL</label>
+          <input type="text" id="spUrl" placeholder="https://schurco.sharepoint.com/sites/Sales" oninput="saveCreds()"/>
+        </div>
+        <div class="field">
+          <label>Library Path</label>
+          <input type="text" id="spLib" placeholder="/Shared Documents/Site Audits" oninput="saveCreds()"/>
+        </div>
+        <div class="field">
+          <label>Access Token (Bearer)</label>
+          <input type="text" id="spToken" placeholder="eyJ0eXAi…" oninput="saveCreds()"/>
+        </div>
+        <div style="font-size:12px;color:var(--text-dim);line-height:1.5">
+          Open an audit → tap <b>☁ SharePoint</b> to upload that site's workbook. The Microsoft 365 token comes from your org's SSO sign-in.
+        </div>
+      </div>
+
+      <div class="sync-card">
+        <div class="sync-title">📤 Export & Share</div>
+        <div class="sync-desc">Excel download and WhatsApp / Email sharing are available inside each audit, on the pump list screen — so each file carries that site's name and date automatically.</div>
+        <button class="btn btn-secondary btn-full" onclick="goHome()">← Back to Audits</button>
+      </div>
+
+      <div style="margin-top:4px">
+        <button class="btn btn-danger btn-full btn-sm" onclick="clearAllData()">🗑 Clear All Local Data</button>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottomnav">
+    <button class="bnav-btn active" id="navHome" onclick="showTab('Home')">
+      <span class="bnav-icon">🏠</span>Audits
+    </button>
+    <button class="bnav-btn" id="navSync" onclick="showTab('Sync')">
+      <span class="bnav-icon">☁</span>Sync
+    </button>
+  </nav>
+</div>
+
+<!-- TOAST -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- NEW AUDIT DRAWER -->
+<div class="drawer-overlay" id="newAuditDrawer">
+  <div class="drawer">
+    <div class="drawer-handle"></div>
+    <div class="drawer-head">
+      <div class="drawer-title" id="auditDrawerTitle">New Site Audit</div>
+      <button class="drawer-close" onclick="closeDrawer('newAuditDrawer')">✕</button>
+    </div>
+    <div class="drawer-body">
+      <div class="card-head"><div class="card-head-dot"></div>Site Details</div>
+      <div class="field">
+        <label>Customer / Company <span class="req">*</span></label>
+        <input type="text" id="af_customer" placeholder="e.g. Anglo American Platinum"/>
+      </div>
+      <div class="field">
+        <label>Site Name <span class="req">*</span></label>
+        <input type="text" id="af_site" placeholder="e.g. Mogalakwena North Concentrator"/>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Region / Area</label>
+          <input type="text" id="af_region" placeholder="e.g. Limpopo"/>
+        </div>
+        <div class="field">
+          <label>Country</label>
+          <input type="text" id="af_country" placeholder="South Africa"/>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Date of Visit <span class="req">*</span></label>
+          <input type="date" id="af_date"/>
+        </div>
+        <div class="field">
+          <label>Schurco Rep</label>
+          <input type="text" id="af_rep" placeholder="e.g. Gideon"/>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Contact Name</label>
+          <input type="text" id="af_contactName" placeholder="e.g. John Smith"/>
+        </div>
+        <div class="field">
+          <label>Contact Position</label>
+          <input type="text" id="af_contactPosition" placeholder="e.g. Plant Engineer"/>
+        </div>
+      </div>
+      <div class="field">
+        <label>Visit Purpose</label>
+        <select id="af_purpose">
+          <option value="">Select…</option>
+          <option>Routine Inspection</option>
+          <option>Quotation / Survey</option>
+          <option>Warranty / Complaint</option>
+          <option>Commissioning</option>
+          <option>Emergency Callout</option>
+          <option>Follow-Up</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Notes / Observations</label>
+        <textarea id="af_notes" placeholder="General site observations…"></textarea>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="closeDrawer('newAuditDrawer')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveAudit()">Save & Open</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PUMP FORM DRAWER -->
+<div class="drawer-overlay" id="pumpDrawer">
+  <div class="drawer">
+    <div class="drawer-handle"></div>
+    <div class="drawer-head">
+      <div class="drawer-title" id="pumpDrawerTitle">Add Pump</div>
+      <button class="drawer-close" onclick="closeDrawer('pumpDrawer')">✕</button>
+    </div>
+    <div class="drawer-body">
+
+      <!-- PUMP ID -->
+      <div class="card-head"><div class="card-head-dot"></div>Identification</div>
+      <div class="field-row">
+        <div class="field">
+          <label>Tag No. <span class="req">*</span></label>
+          <input type="text" id="pf_tag" placeholder="e.g. P-101A"/>
+        </div>
+        <div class="field">
+          <label>Area / Location</label>
+          <select id="pf_area" onchange="onAreaChange()">
+            <option value="">Select…</option>
+            <option>Mill Discharge</option>
+            <option>Cyclone Feed</option>
+            <option>Cyclone Underflow</option>
+            <option>Tailings</option>
+            <option>Thickener Underflow</option>
+            <option>Separator / Classifier</option>
+            <option>Process Feed</option>
+            <option>Flotation</option>
+            <option>Concentrate</option>
+            <option>Heavy Media (DMS)</option>
+            <option>Filter Press Feed</option>
+            <option>Mine Dewatering</option>
+            <option>Sump / Floor</option>
+            <option>Gland Service</option>
+            <option>Reagent / Dosing</option>
+            <option>Slag Granulation</option>
+            <option>Dredging</option>
+            <option value="__other">Other (type below)…</option>
+          </select>
+        </div>
+      </div>
+      <div class="field" id="otherAreaField" style="display:none">
+        <label>Area / Location — specify</label>
+        <input type="text" id="pf_areaOther" placeholder="e.g. Reclaim sump"/>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Pump Series <span class="req">*</span></label>
+          <select id="pf_type" onchange="onTypeChange()">
+            <option value="">Select…</option>
+            <option value="S">S Series — Severe Duty Lined</option>
+            <option value="L">L Series — Heavy-Duty Lined</option>
+            <option value="H">H Series — Metal-Lined High Head</option>
+            <option value="U">U Series — Unlined Metal</option>
+            <option value="P">P Series — Process / Dirty Water</option>
+            <option value="Z">Z Series — Large Solids / Dredge</option>
+            <option value="V">V Series — Vertical Sump</option>
+            <option value="DW">DW Series — De-Watering</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Model / Size (Disch × Suct)</label>
+          <select id="pf_model" onchange="onModelChange()">
+            <option value="">Select series first…</option>
+          </select>
+        </div>
+      </div>
+      <div class="field" id="otherSizeField" style="display:none">
+        <label>Size — Discharge × Suction (mm)</label>
+        <input type="text" id="pf_size" placeholder="e.g. 100 × 150"/>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Operating Speed (RPM)</label>
+          <input type="number" id="pf_rpm" placeholder="e.g. 650"/>
+        </div>
+        <div class="field">
+          <label>Bearing / Frame Size</label>
+          <input type="text" id="pf_bearing" placeholder="e.g. C-frame, 65mm shaft"/>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Drive Type</label>
+          <select id="pf_drive">
+            <option value="">Select…</option>
+            <option>Direct Drive</option><option>V-Belt</option>
+            <option>Gearbox</option><option>VSD</option><option>Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Motor Power (kW)</label>
+          <input type="number" id="pf_kw" placeholder="e.g. 75"/>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- MOC -->
+      <div class="card-head"><div class="card-head-dot"></div>MOC — Materials of Construction</div>
+      <div class="moc-group-label">Wet-End Components (select each independently)</div>
+      <div class="field-row3">
+        <div class="field">
+          <label>Liners</label>
+          <select id="pf_liner">
+            <option value="">–</option>
+            <option>Natural Rubber</option><option>Poly (Urethane)</option>
+            <option>White Iron (HC)</option><option>Ni-Hard</option>
+            <option>Stainless</option><option>Ceramic</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Impeller</label>
+          <select id="pf_impeller">
+            <option value="">–</option>
+            <option>Natural Rubber</option><option>Poly (Urethane)</option>
+            <option>White Iron (HC)</option><option>Ni-Hard</option>
+            <option>Stainless</option><option>Ceramic</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Throat Bush</label>
+          <select id="pf_throat">
+            <option value="">–</option>
+            <option>Natural Rubber</option><option>Poly (Urethane)</option>
+            <option>White Iron (HC)</option><option>Ni-Hard</option>
+            <option>Stainless</option><option>Ceramic</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- SHAFT SEALING -->
+      <div class="card-head"><div class="card-head-dot"></div>Shaft Sealing</div>
+      <div class="chip-group" id="sealChips">
+        <div class="chip" onclick="toggleChip(this,'seal')">Expeller</div>
+        <div class="chip" onclick="toggleChip(this,'seal')">LF Stuffing Box</div>
+        <div class="chip" onclick="toggleChip(this,'seal')">FF Stuffing Box</div>
+        <div class="chip" onclick="toggleChip(this,'seal')">Mech. Seal</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- PROCESS / SLURRY -->
+      <div class="card-head"><div class="card-head-dot"></div>Slurry / Process Data</div>
+      <div class="field">
+        <label>Slurry Description</label>
+        <input type="text" id="pf_slurry" placeholder="e.g. Copper tailings, abrasive"/>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>SG / Density</label>
+          <input type="number" id="pf_sg" placeholder="e.g. 1.45" step="0.01"/>
+        </div>
+        <div class="field">
+          <label>pH</label>
+          <input type="number" id="pf_ph" placeholder="e.g. 7.2" step="0.1"/>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Solids Content (%w/w)</label>
+          <input type="number" id="pf_solids" placeholder="e.g. 45"/>
+        </div>
+        <div class="field">
+          <label>Flow Rate (m³/h)</label>
+          <input type="number" id="pf_flow" placeholder="e.g. 200"/>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Particle Size d50 (mm)</label>
+          <input type="number" id="pf_d50" placeholder="e.g. 0.15" step="0.01"/>
+        </div>
+        <div class="field">
+          <label>Particle Size Max (mm)</label>
+          <input type="number" id="pf_dmax" placeholder="e.g. 5.0" step="0.1"/>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- CONDITION -->
+      <div class="card-head"><div class="card-head-dot"></div>Condition & Opportunity</div>
+      <div class="field">
+        <label>Current Condition</label>
+        <div class="chip-group" id="condChips">
+          <div class="chip" onclick="toggleChip(this,'cond')">Good</div>
+          <div class="chip" onclick="toggleChip(this,'cond')">Serviceable</div>
+          <div class="chip" onclick="toggleChip(this,'cond')">Worn</div>
+          <div class="chip" onclick="toggleChip(this,'cond')">Critical</div>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Wear Parts Due?</label>
+          <select id="pf_wear">
+            <option value="">–</option>
+            <option>Imminent</option><option>Within 3 months</option>
+            <option>Within 6 months</option><option>Not due</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Spares On-Site?</label>
+          <select id="pf_spares">
+            <option value="">–</option>
+            <option>Yes – adequate</option><option>Yes – low stock</option>
+            <option>No</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Competitor Brand (if applicable)</label>
+        <input type="text" id="pf_competitor" placeholder="e.g. Warman, Metso"/>
+      </div>
+      <div class="field">
+        <label>Potential Opportunity</label>
+        <select id="pf_opp">
+          <option value="">–</option>
+          <option>Wear Part Supply</option><option>Pump Replacement</option>
+          <option>Competitive Conversion</option><option>New Installation</option>
+          <option>Service Contract</option><option>None Identified</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Notes / Action Items</label>
+        <textarea id="pf_notes" placeholder="Anything the team should follow up…"></textarea>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- PHOTOS -->
+      <div class="card-head"><div class="card-head-dot"></div>Guided Photos</div>
+      <div style="font-size:12px;color:var(--text-dim);margin-bottom:12px;margin-top:-6px">
+        Tap each tile to capture that view. Outlines show roughly what to frame.
+      </div>
+      <div class="photo-slots" id="photoSlots"></div>
+
+      <div class="card-head" style="margin-top:18px"><div class="card-head-dot"></div>Extra Photos</div>
+      <div class="photo-grid" id="extraGrid"></div>
+      <input type="file" id="slotInput" accept="image/*" capture="environment" onchange="handleSlotPhoto(event)"/>
+      <input type="file" id="extraInput" accept="image/*" capture="environment" multiple onchange="handleExtraPhotos(event)"/>
+
+      <div style="height:16px"></div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="closeDrawer('pumpDrawer')">Cancel</button>
+        <button class="btn btn-primary" onclick="savePump()">Save Pump</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let db = { audits: [], pumps: [] };
+let currentAuditId = null;
+let editingPumpId = null;
+let slotPhotos = {};       // { tag, bearing, sealing, wetend, assembly } base64
+let extraPhotos = [];      // additional base64 photos
+let activeSlot = null;     // which guided slot is currently capturing
+
+// ── GUIDED PHOTO SLOTS (key, label, silhouette SVG) ───────────────────────────
+const PHOTO_SLOTS = [
+  { key: 'tag', label: 'Pump Tag',
+    sil: `<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4">
+      <rect x="18" y="30" width="64" height="40" rx="4"/>
+      <circle cx="26" cy="38" r="2.5" fill="currentColor"/><circle cx="74" cy="38" r="2.5" fill="currentColor"/>
+      <line x1="28" y1="50" x2="72" y2="50"/><line x1="28" y1="58" x2="60" y2="58"/></svg>` },
+  { key: 'bearing', label: 'Bearing / Frame',
+    sil: `<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4">
+      <rect x="20" y="40" width="50" height="20" rx="3"/>
+      <line x1="70" y1="50" x2="88" y2="50"/>
+      <circle cx="32" cy="50" r="4"/><circle cx="50" cy="50" r="4"/>
+      <line x1="26" y1="60" x2="26" y2="70"/><line x1="62" y1="60" x2="62" y2="70"/></svg>` },
+  { key: 'sealing', label: 'Sealing Arr.',
+    sil: `<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4">
+      <circle cx="50" cy="50" r="28"/><circle cx="50" cy="50" r="16"/><circle cx="50" cy="50" r="6"/>
+      <line x1="50" y1="22" x2="50" y2="14"/><line x1="78" y1="50" x2="86" y2="50"/></svg>` },
+  { key: 'wetend', label: 'Wet End',
+    sil: `<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4">
+      <path d="M30 70 A30 30 0 1 1 70 38"/>
+      <path d="M70 38 L86 38 L86 24 L66 24"/>
+      <circle cx="46" cy="52" r="9"/></svg>` },
+  { key: 'assembly', label: 'Full Assembly',
+    sil: `<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4">
+      <circle cx="34" cy="52" r="20"/><circle cx="34" cy="52" r="6"/>
+      <rect x="58" y="40" width="28" height="24" rx="3"/>
+      <line x1="20" y1="76" x2="88" y2="76"/></svg>` }
+];
+
+// ── TEXT NORMALISATION ────────────────────────────────────────────────────────
+// Preserve codes (digits/size separators) and a small set of real acronyms.
+// Everything else (incl. caps-lock words) is normalised.
+const ACRONYMS = new Set(['SG','FGD','DRC','MOC','DMS','NPSH','VSD','LF','FF','HC','RPM',
+  'AH','OEM','PPE','HDPE','PU','SS','CI','WI','DW','SHR','SCR']);
+function preserveToken(w) {
+  if (/\d/.test(w)) return true;          // codes / numbers (e.g. P-101A, 8S150)
+  if (/[×/]/.test(w)) return true;        // size separators
+  const bare = w.replace(/[^A-Za-z]/g, '');
+  if (bare && bare === bare.toUpperCase() && ACRONYMS.has(bare.toUpperCase())) return true;
+  return false;
+}
+function sentenceCase(s) {
+  if (!s) return s;
+  s = String(s).trim().replace(/\s+/g, ' ');
+  if (!s) return s;
+  // lowercase non-preserved words
+  const lowered = s.split(' ').map(w => preserveToken(w) ? w : w.toLowerCase()).join(' ');
+  // capitalise the first letter of each sentence
+  return lowered.replace(/(^\s*|[.!?]\s+)([a-z])/g, (m, pre, c) => pre + c.toUpperCase());
+}
+function titleCase(s) {
+  if (!s) return s;
+  s = String(s).trim().replace(/\s+/g, ' ');
+  return s.split(' ').map(w => {
+    if (preserveToken(w)) return w;
+    return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+  }).join(' ');
+}
+function cleanCode(s) { return s ? String(s).trim().replace(/\s+/g, ' ') : s; }
+
+function loadDB() {
+  try {
+    const raw = localStorage.getItem('schurco_db');
+    if (raw) db = JSON.parse(raw);
+  } catch(e) {}
+}
+function saveDB() {
+  localStorage.setItem('schurco_db', JSON.stringify(db));
+}
+function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+// ── NETWORK STATUS ────────────────────────────────────────────────────────────
+function updateNet() {
+  const b = document.getElementById('netBadge');
+  if (navigator.onLine) { b.textContent = '● ONLINE'; b.className = 'topbar-badge'; }
+  else { b.textContent = '● OFFLINE'; b.className = 'topbar-badge offline'; }
+}
+window.addEventListener('online', updateNet);
+window.addEventListener('offline', updateNet);
+
+// ── TABS ──────────────────────────────────────────────────────────────────────
+function showTab(tab) {
+  document.getElementById('screenHome').style.display = 'none';
+  document.getElementById('screenPumps').style.display = 'none';
+  document.getElementById('screenSync').style.display = 'none';
+  document.getElementById('navHome').classList.remove('active');
+  document.getElementById('navSync').classList.remove('active');
+
+  if (tab === 'Home') {
+    document.getElementById('screenHome').style.display = '';
+    document.getElementById('navHome').classList.add('active');
+    renderAuditList();
+  } else if (tab === 'Pumps') {
+    document.getElementById('screenPumps').style.display = '';
+    document.getElementById('navHome').classList.add('active');
+  } else if (tab === 'Sync') {
+    document.getElementById('screenSync').style.display = '';
+    document.getElementById('navSync').classList.add('active');
+    updateSyncStats();
+  }
+}
+
+function goHome() { showTab('Home'); }
+
+// ── AUDIT LIST ────────────────────────────────────────────────────────────────
+function renderAuditList() {
+  const list = document.getElementById('auditList');
+  const count = document.getElementById('auditCount');
+  if (!db.audits.length) {
+    count.textContent = 'No audits yet — tap + to start one';
+    list.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">🔩</div>
+      <div class="empty-title">No Site Audits</div>
+      <div class="empty-desc">Start a new audit to capture pump data on-site. Works fully offline.</div>
+    </div>`;
+    return;
+  }
+  count.textContent = `${db.audits.length} audit${db.audits.length!==1?'s':''} saved locally`;
+  list.innerHTML = db.audits.map(a => {
+    const pumpCount = db.pumps.filter(p => p.auditId === a.id).length;
+    const date = a.date ? new Date(a.date).toLocaleDateString('en-ZA') : 'No date';
+    return `<div class="pump-item" onclick="openAudit('${a.id}')">
+      <div class="pump-badge">${a.customer.slice(0,4).toUpperCase()}</div>
+      <div class="pump-info">
+        <div class="pump-tag">${a.site || a.customer}</div>
+        <div class="pump-meta">${a.customer} · ${date} · ${pumpCount} pump${pumpCount!==1?'s':''}</div>
+      </div>
+      <div style="color:var(--text-muted);font-size:18px">›</div>
+    </div>`;
+  }).join('');
+}
+
+function openAudit(id) {
+  currentAuditId = id;
+  const a = db.audits.find(x => x.id === id);
+  document.getElementById('pumpScreenTitle').textContent = a.site || a.customer;
+  document.getElementById('pumpScreenSite').textContent = a.customer + (a.rep ? ' · ' + a.rep : '');
+  showTab('Pumps');
+  renderPumpList();
+}
+
+// ── AUDIT FORM ────────────────────────────────────────────────────────────────
+function openNewAuditDrawer() {
+  editingPumpId = null;
+  document.getElementById('auditDrawerTitle').textContent = 'New Site Audit';
+  ['customer','site','region','country','date','rep','contactName','contactPosition','notes'].forEach(f => {
+    const el = document.getElementById('af_'+f);
+    if (el) el.value = '';
+  });
+  document.getElementById('af_purpose').value = '';
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('af_date').value = today;
+  document.getElementById('af_rep').value = 'Gideon'; // default rep
+  openDrawer('newAuditDrawer');
+}
+
+function saveAudit() {
+  const customer = document.getElementById('af_customer').value.trim();
+  const site = document.getElementById('af_site').value.trim();
+  const date = document.getElementById('af_date').value;
+  if (!customer || !date) { toast('Customer and date are required', 'error'); return; }
+  const audit = {
+    id: genId(),
+    customer: titleCase(customer),
+    site: titleCase(site),
+    region: titleCase(document.getElementById('af_region').value),
+    country: titleCase(document.getElementById('af_country').value) || 'South Africa',
+    date,
+    rep: titleCase(document.getElementById('af_rep').value),
+    contactName: titleCase(document.getElementById('af_contactName').value),
+    contactPosition: titleCase(document.getElementById('af_contactPosition').value),
+    purpose: document.getElementById('af_purpose').value,
+    notes: sentenceCase(document.getElementById('af_notes').value),
+    createdAt: Date.now()
+  };
+  db.audits.unshift(audit);
+  saveDB();
+  closeDrawer('newAuditDrawer');
+  toast('Audit created — add pumps now', 'success');
+  openAudit(audit.id);
+}
+
+// ── PUMP LIST ─────────────────────────────────────────────────────────────────
+function renderPumpList() {
+  const pumps = db.pumps.filter(p => p.auditId === currentAuditId);
+  const list = document.getElementById('pumpList');
+  const count = document.getElementById('pumpCount');
+  count.textContent = `${pumps.length} pump${pumps.length!==1?'s':''} captured`;
+
+  if (!pumps.length) {
+    list.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">⚙</div>
+      <div class="empty-title">No Pumps Yet</div>
+      <div class="empty-desc">Tap + Add Pump to start capturing pump data. Photos and all details saved offline.</div>
+    </div>`;
+    return;
+  }
+
+  const condColor = { 'Good':'', 'Serviceable':'', 'Worn':'warn', 'Critical':'bad' };
+  list.innerHTML = pumps.map(p => {
+    const moc = [p.liner, p.impeller, p.throat].filter(Boolean).join(' / ') || '—';
+    const seal = p.seal || '—';
+    const photoCount = countPhotos(p);
+    const cond = p.condition || '';
+    return `<div class="pump-item" onclick="editPump('${p.id}')">
+      <div class="pump-badge">${(p.tag||'??').slice(0,6)}</div>
+      <div class="pump-info">
+        <div class="pump-tag">${p.tag || 'No Tag'} <span style="font-size:12px;color:var(--text-dim);font-weight:400">${p.model || (p.type ? p.type+' Series' : '')}</span></div>
+        <div class="pump-meta">${p.area||'—'} · MOC: ${moc} · Seal: ${seal}${photoCount?' · 📷'+photoCount:''}</div>
+      </div>
+      <button class="dup-btn" onclick="event.stopPropagation();duplicatePump('${p.id}')" title="Duplicate">⧉</button>
+      <div class="status-dot ${condColor[cond]||''}"></div>
+    </div>`;
+  }).join('');
+}
+
+// ── PUMP FORM ─────────────────────────────────────────────────────────────────
+const pumpFields = ['tag','type','model','size','rpm','bearing','drive','kw','liner','impeller','throat',
+  'slurry','sg','ph','solids','flow','d50','dmax','wear','spares','competitor','opp','notes'];
+// (area handled separately via dropdown + other)
+const PHOTO_KEYS = ['tag','bearing','sealing','wetend','assembly'];
+function countPhotos(p) {
+  const slots = p.photos && typeof p.photos === 'object' && !Array.isArray(p.photos)
+    ? PHOTO_KEYS.filter(k => p.photos[k]).length : (Array.isArray(p.photos) ? p.photos.length : 0);
+  return slots + ((p.extraPhotos || []).length);
+}
+
+function onAreaChange() {
+  const v = document.getElementById('pf_area').value;
+  document.getElementById('otherAreaField').style.display = (v === '__other') ? '' : 'none';
+}
+
+// Standard model sizes per series — from Schurco Standard Pump Catalog (pages 6–14)
+// Format: [model designation, "Discharge × Suction (mm)"]
+// Naming convention: [suction inches] Series [discharge mm] (confirmed by Z-Series 12Z250 = 12"×10")
+const SIZES = {
+  S: [['1.5S25','25 × 40'],['2S40','40 × 50'],['3S50','50 × 75'],['4S75','75 × 100'],
+      ['6S100','100 × 150'],['8S150','150 × 200'],['10S200','200 × 250'],['12S250','250 × 300'],
+      ['14S300','300 × 350'],['16S350','350 × 400'],['18S400','400 × 450'],['20S450','450 × 500']],
+  L: [['4L75','75 × 100'],['6L100','100 × 150'],['8L150','150 × 200'],['10L200','200 × 250'],
+      ['12L250','250 × 300'],['14L300','300 × 350'],['16L350','350 × 400'],['18L400','400 × 450'],
+      ['20L450','450 × 500'],['24L550','550 × 600']],
+  H: [['1.5H25','25 × 40'],['3H50','50 × 75'],['4H75','75 × 100'],['6H100','100 × 150'],['8H150','150 × 200']],
+  U: [['3U50','50 × 75'],['4U75','75 × 100'],['6U100','100 × 150'],['8U150','150 × 200'],
+      ['10U200','200 × 250'],['12U250','250 × 300']],
+  P: [['6P100','100 × 150'],['8P150','150 × 200']],
+  Z: [['6Z100','100 × 150'],['8Z150','150 × 200'],['10Z200','200 × 250'],['12Z250','250 × 300'],
+      ['14Z300','300 × 350'],['16Z350','350 × 400']],
+  V: [['1.5V40','40 × 40'],['2.5V65','65 × 65'],['4V100','100 × 100'],['6V150','150 × 150'],
+      ['8V200','200 × 200'],['10V250','250 × 250']],
+  DW: [['DW75','75 × 100'],['DW125','125 × 150'],['DW150','150 × 200'],['DW200','200 × 250']]
+};
+
+function populateModelDropdown(series, selectedModel) {
+  const sel = document.getElementById('pf_model');
+  const otherField = document.getElementById('otherSizeField');
+  if (series === 'Other' || !series) {
+    sel.innerHTML = '<option value="">— n/a —</option>';
+    otherField.style.display = series === 'Other' ? '' : 'none';
+    return;
+  }
+  otherField.style.display = 'none';
+  const list = SIZES[series] || [];
+  sel.innerHTML = '<option value="">Select size…</option>' +
+    list.map(([m, s]) => `<option value="${m}" data-size="${s}">${m}  (${s} mm)</option>`).join('');
+  if (selectedModel) sel.value = selectedModel;
+}
+
+function onTypeChange() {
+  const series = document.getElementById('pf_type').value;
+  populateModelDropdown(series);
+}
+
+function onModelChange() {
+  const sel = document.getElementById('pf_model');
+  const opt = sel.options[sel.selectedIndex];
+  const size = opt ? opt.getAttribute('data-size') : '';
+  if (size) document.getElementById('pf_size').value = size;
+}
+
+function openPumpDrawer(id) {
+  editingPumpId = id || null;
+  slotPhotos = {}; extraPhotos = [];
+  // Reset form
+  pumpFields.forEach(f => {
+    const el = document.getElementById('pf_'+f);
+    if (el) el.value = '';
+  });
+  document.getElementById('pf_area').value = '';
+  document.getElementById('pf_areaOther').value = '';
+  document.getElementById('otherAreaField').style.display = 'none';
+  document.querySelectorAll('#sealChips .chip, #condChips .chip').forEach(c => c.classList.remove('active'));
+  document.getElementById('otherSizeField').style.display = 'none';
+  document.getElementById('pf_model').innerHTML = '<option value="">Select series first…</option>';
+  document.getElementById('pumpDrawerTitle').textContent = id ? 'Edit Pump' : 'Add Pump';
+
+  if (id) {
+    const p = db.pumps.find(x => x.id === id);
+    if (p) {
+      pumpFields.forEach(f => {
+        const el = document.getElementById('pf_'+f);
+        if (el && p[f] !== undefined && f !== 'model') el.value = p[f];
+      });
+      // Area dropdown: match known option else Other
+      const areaSel = document.getElementById('pf_area');
+      const known = Array.from(areaSel.options).some(o => o.value === p.area);
+      if (p.area && known) { areaSel.value = p.area; }
+      else if (p.area) { areaSel.value = '__other'; document.getElementById('otherAreaField').style.display = ''; document.getElementById('pf_areaOther').value = p.area; }
+      // Model dropdown
+      populateModelDropdown(p.type, p.model);
+      if (p.type === 'Other' && p.size) {
+        document.getElementById('otherSizeField').style.display = '';
+        document.getElementById('pf_size').value = p.size;
+      }
+      // Chips
+      if (p.seal) document.querySelectorAll('#sealChips .chip').forEach(c => { if (c.textContent === p.seal) c.classList.add('active'); });
+      if (p.condition) document.querySelectorAll('#condChips .chip').forEach(c => { if (c.textContent === p.condition) c.classList.add('active'); });
+      // Photos — support new {slot} object and legacy array
+      if (p.photos && typeof p.photos === 'object' && !Array.isArray(p.photos)) {
+        slotPhotos = { ...p.photos };
+      } else if (Array.isArray(p.photos)) {
+        extraPhotos = [...p.photos]; // legacy flat array → extras
+      }
+      extraPhotos = extraPhotos.concat(p.extraPhotos || []);
+    }
+  }
+  renderPhotoSlots();
+  renderExtraGrid();
+  openDrawer('pumpDrawer');
+}
+
+function editPump(id) { openPumpDrawer(id); }
+
+// ── DUPLICATE PUMP ────────────────────────────────────────────────────────────
+function duplicatePump(id) {
+  const src = db.pumps.find(x => x.id === id);
+  if (!src) return;
+  const copy = JSON.parse(JSON.stringify(src));
+  copy.id = genId();
+  copy.tag = (src.tag || 'PUMP') + '-COPY';
+  copy.photos = {}; copy.extraPhotos = []; // photos rarely apply to a different pump — start fresh
+  copy.savedAt = Date.now();
+  // Insert directly after the original
+  const idx = db.pumps.findIndex(x => x.id === id);
+  db.pumps.splice(idx + 1, 0, copy);
+  saveDB();
+  renderPumpList();
+  toast('Pump duplicated — edit the tag no.', 'success');
+  // Open it immediately so the tag can be fixed
+  setTimeout(() => openPumpDrawer(copy.id), 250);
+}
+
+// ── PDF SUMMARY REPORT ────────────────────────────────────────────────────────
+function generateReport() {
+  const audit = db.audits.find(x => x.id === currentAuditId);
+  if (!audit) { toast('No audit open', 'error'); return; }
+  const pumps = db.pumps.filter(p => p.auditId === currentAuditId);
+  if (!pumps.length) { toast('No pumps captured yet', 'error'); return; }
+
+  const fmt = v => v !== undefined && v !== '' && v !== null ? v : '—';
+  const dateStr = audit.date ? new Date(audit.date).toLocaleDateString('en-ZA', { day: '2-digit', month: 'long', year: 'numeric' }) : '—';
+
+  const pumpBlocks = pumps.map((p, i) => {
+    const slotImgs = PHOTO_SLOTS.filter(s => p.photos && p.photos[s.key]).map(s =>
+      `<div class="photo-cell"><img src="${p.photos[s.key]}"/><span>${s.label}</span></div>`).join('');
+    const extraImgs = (p.extraPhotos || []).map((src, k) =>
+      `<div class="photo-cell"><img src="${src}"/><span>Extra ${k + 1}</span></div>`).join('');
+    const photos = slotImgs + extraImgs;
+    return `
+    <div class="pump-block">
+      <div class="pump-block-head">
+        <span class="pump-no">${i + 1}</span>
+        <span class="pump-block-tag">${fmt(p.tag)}</span>
+        <span class="pump-block-type">${p.type ? p.type + ' Series' : '—'} ${p.model ? '· ' + p.model : ''} ${p.size ? '· ' + p.size + ' mm' : ''}</span>
+        <span class="cond cond-${(p.condition||'').toLowerCase()}">${fmt(p.condition)}</span>
+      </div>
+      <table class="pdata">
+        <tr><td class="lbl">Area</td><td>${fmt(p.area)}</td><td class="lbl">Speed</td><td>${fmt(p.rpm)} RPM</td><td class="lbl">Bearing</td><td>${fmt(p.bearing)}</td><td class="lbl">Drive</td><td>${fmt(p.drive)}</td></tr>
+        <tr class="moc-row"><td class="lbl">MOC – Liners</td><td>${fmt(p.liner)}</td><td class="lbl">Impeller</td><td>${fmt(p.impeller)}</td><td class="lbl">Throat Bush</td><td>${fmt(p.throat)}</td><td class="lbl">Shaft Seal</td><td>${fmt(p.seal)}</td></tr>
+        <tr><td class="lbl">Slurry</td><td colspan="3">${fmt(p.slurry)}</td><td class="lbl">SG</td><td>${fmt(p.sg)}</td><td class="lbl">Motor</td><td>${fmt(p.kw)} kW</td></tr>
+        <tr><td class="lbl">Solids</td><td>${fmt(p.solids)}${p.solids?' %w/w':''}</td><td class="lbl">Flow</td><td>${fmt(p.flow)}${p.flow?' m³/h':''}</td><td class="lbl">d50</td><td>${fmt(p.d50)}${p.d50?' mm':''}</td><td class="lbl">Max Particle</td><td>${fmt(p.dmax)}${p.dmax?' mm':''}</td></tr>
+        <tr><td class="lbl">Wear Parts</td><td>${fmt(p.wear)}</td><td class="lbl">Spares</td><td>${fmt(p.spares)}</td><td class="lbl">Competitor</td><td>${fmt(p.competitor)}</td><td class="lbl">Opportunity</td><td>${fmt(p.opp)}</td></tr>
+        ${p.notes ? `<tr><td class="lbl">Notes</td><td colspan="7">${fmt(p.notes)}</td></tr>` : ''}
+      </table>
+      ${photos ? `<div class="photo-row">${photos}</div>` : ''}
+    </div>`;
+  }).join('');
+
+  // Opportunity summary
+  const opps = pumps.filter(p => p.opp && p.opp !== 'None Identified');
+  const critical = pumps.filter(p => p.condition === 'Critical' || p.condition === 'Worn');
+
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"/>
+  <title>Site Audit Report — ${audit.site || audit.customer}</title>
+  <style>
+    @page { size: A4; margin: 14mm; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 10pt; color: #1a1a1a; padding: 20px; max-width: 800px; margin: 0 auto; }
+    .banner { background: #218240; color: #fff; padding: 18px 22px; border-radius: 6px; margin-bottom: 6px; }
+    .banner h1 { font-size: 17pt; letter-spacing: 0.5px; }
+    .banner .sub { font-size: 9pt; opacity: 0.85; margin-top: 3px; }
+    .meta { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1px; background: #ddd; border: 1px solid #ddd; border-radius: 6px; overflow: hidden; margin: 12px 0 18px; }
+    .meta div { background: #f7f7f7; padding: 8px 12px; }
+    .meta .k { font-size: 7.5pt; text-transform: uppercase; letter-spacing: 0.5px; color: #218240; font-weight: 700; }
+    .meta .v { font-size: 10pt; margin-top: 2px; }
+    .summary { background: #eef7f0; border-left: 4px solid #218240; padding: 10px 14px; border-radius: 4px; margin-bottom: 18px; font-size: 9.5pt; }
+    h2 { font-size: 12pt; color: #218240; border-bottom: 2px solid #218240; padding-bottom: 4px; margin: 18px 0 10px; }
+    .pump-block { border: 1px solid #ddd; border-radius: 6px; margin-bottom: 12px; overflow: hidden; page-break-inside: avoid; }
+    .pump-block-head { background: #218240; color: #fff; padding: 7px 12px; display: flex; align-items: center; gap: 10px; }
+    .pump-no { background: rgba(255,255,255,0.25); border-radius: 4px; padding: 1px 8px; font-weight: 700; font-size: 9pt; }
+    .pump-block-tag { font-weight: 800; font-size: 11pt; }
+    .pump-block-type { font-size: 9pt; opacity: 0.9; flex: 1; }
+    .cond { font-size: 8pt; font-weight: 700; padding: 2px 10px; border-radius: 12px; background: #fff; color: #218240; text-transform: uppercase; }
+    .cond-worn { background: #ffe9c7; color: #9a6200; }
+    .cond-critical { background: #ffd7d4; color: #b02018; }
+    .pdata { width: 100%; border-collapse: collapse; font-size: 8.5pt; }
+    .pdata td { border-bottom: 1px solid #eee; padding: 5px 10px; }
+    .pdata .lbl { font-weight: 700; color: #555; font-size: 7.5pt; text-transform: uppercase; letter-spacing: 0.3px; width: 11%; background: #fafafa; }
+    .moc-row td { background: #f2f9f4 !important; }
+    .moc-row .lbl { color: #218240; }
+    .photo-row { display: flex; gap: 2%; padding: 8px 10px; flex-wrap: wrap; }
+    .photo-cell { width: 31%; margin-bottom: 6px; }
+    .photo-cell img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 4px; border: 1px solid #ddd; display: block; }
+    .photo-cell span { display: block; font-size: 7pt; font-weight: 700; color: #218240; text-transform: uppercase; letter-spacing: 0.3px; margin-top: 2px; text-align: center; }
+    .footer { margin-top: 24px; padding-top: 12px; border-top: 1px solid #ddd; font-size: 8pt; color: #888; text-align: center; }
+    .signoff { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 28px; page-break-inside: avoid; }
+    .sig-line { border-top: 1px solid #888; padding-top: 5px; font-size: 8.5pt; color: #555; margin-top: 40px; }
+    .print-hint { background: #fff8e0; border: 1px solid #e8c94a; border-radius: 6px; padding: 10px 14px; margin-bottom: 16px; font-size: 9.5pt; }
+    @media print { .print-hint { display: none; } body { padding: 0; } }
+  </style></head><body>
+  <div class="print-hint">📄 Tap your browser menu → <b>Print</b> → <b>Save as PDF</b> to generate the PDF, or share this page directly.</div>
+  <div class="banner">
+    <h1>SITE AUDIT REPORT</h1>
+    <div class="sub">SCHURCO SLURRY (PTY) LTD &nbsp;|&nbsp; www.schurcoslurry.com &nbsp;|&nbsp; sales@schurco.com &nbsp;|&nbsp; +27 0861 005 386</div>
+  </div>
+  <div class="meta">
+    <div><div class="k">Customer</div><div class="v">${fmt(audit.customer)}</div></div>
+    <div><div class="k">Site</div><div class="v">${fmt(audit.site)}</div></div>
+    <div><div class="k">Date of Visit</div><div class="v">${dateStr}</div></div>
+    <div><div class="k">Region</div><div class="v">${fmt(audit.region)}${audit.country ? ', ' + audit.country : ''}</div></div>
+    <div><div class="k">Schurco Rep</div><div class="v">${fmt(audit.rep)}</div></div>
+    <div><div class="k">Customer Contact</div><div class="v">${fmt(audit.contactName)}${audit.contactPosition ? ' — ' + audit.contactPosition : ''}</div></div>
+  </div>
+  <div class="summary">
+    <b>${pumps.length}</b> pump${pumps.length !== 1 ? 's' : ''} audited
+    ${critical.length ? ` · <b style="color:#b02018">${critical.length}</b> in worn/critical condition` : ''}
+    ${opps.length ? ` · <b style="color:#218240">${opps.length}</b> opportunit${opps.length !== 1 ? 'ies' : 'y'} identified` : ''}
+    ${audit.purpose ? ` · Visit purpose: <b>${audit.purpose}</b>` : ''}
+    ${audit.notes ? `<br/><br/><b>Site notes:</b> ${audit.notes}` : ''}
+  </div>
+  <h2>Pump Inventory</h2>
+  ${pumpBlocks}
+  <div class="signoff">
+    <div><div class="sig-line">Schurco Representative — ${fmt(audit.rep)}</div></div>
+    <div><div class="sig-line">Customer Representative — ${fmt(audit.contactName)}${audit.contactPosition ? ', ' + audit.contactPosition : ''}</div></div>
+  </div>
+  <div class="footer">
+    SCHURCO SLURRY (PTY) LTD · Reg No. 2013/091826/07 · 47 Malcolm Moodie Crescent, Jet Park, Boksburg, 1459, South Africa<br/>
+    Report generated ${new Date().toLocaleString('en-ZA')} — Schurco Site Audit App
+  </div>
+  <script>setTimeout(() => { try { window.print(); } catch(e) {} }, 600);<\/script>
+  </body></html>`;
+
+  const w = window.open('', '_blank');
+  if (!w) { toast('Allow pop-ups to generate the report', 'error'); return; }
+  w.document.write(html);
+  w.document.close();
+}
+
+function savePump() {
+  const tag = cleanCode(document.getElementById('pf_tag').value);
+  if (!tag) { toast('Tag number is required', 'error'); return; }
+
+  const sealEl = document.querySelector('#sealChips .chip.active');
+  const condEl = document.querySelector('#condChips .chip.active');
+
+  // Area: dropdown or "other" text
+  let area = document.getElementById('pf_area').value;
+  if (area === '__other') area = titleCase(document.getElementById('pf_areaOther').value);
+
+  const pump = {
+    id: editingPumpId || genId(),
+    auditId: currentAuditId,
+    tag,
+    area,
+    photos: { ...slotPhotos },
+    extraPhotos: [...extraPhotos],
+    seal: sealEl ? sealEl.textContent : '',
+    condition: condEl ? condEl.textContent : '',
+    savedAt: Date.now()
+  };
+  // Capture remaining fields with appropriate cleaning
+  const sentenceFields = ['slurry', 'notes'];
+  const titleFields = ['competitor'];
+  const codeFields = ['tag', 'model', 'size', 'bearing', 'rpm', 'kw', 'sg', 'ph', 'solids', 'flow', 'd50', 'dmax'];
+  pumpFields.forEach(f => {
+    const el = document.getElementById('pf_'+f);
+    if (!el) return;
+    let v = el.value;
+    if (sentenceFields.includes(f)) v = sentenceCase(v);
+    else if (titleFields.includes(f)) v = titleCase(v);
+    else if (codeFields.includes(f)) v = cleanCode(v);
+    pump[f] = v;
+  });
+
+  // ── Validation (non-blocking warnings) ──
+  const warnings = validatePump(pump);
+  if (warnings.length) {
+    const proceed = confirm('Possible data issues:\n\n• ' + warnings.join('\n• ') + '\n\nSave anyway?');
+    if (!proceed) return;
+  }
+
+  if (editingPumpId) {
+    const idx = db.pumps.findIndex(x => x.id === editingPumpId);
+    if (idx >= 0) db.pumps[idx] = pump;
+  } else {
+    db.pumps.push(pump);
+  }
+  saveDB();
+  closeDrawer('pumpDrawer');
+  toast(editingPumpId ? 'Pump updated' : 'Pump saved ✓', 'success');
+  renderPumpList();
+}
+
+// ── DATA VALIDATION ───────────────────────────────────────────────────────────
+function discFromSize(size) {
+  if (!size) return null;
+  const m = String(size).match(/^\s*(\d+(?:\.\d+)?)/);
+  return m ? parseFloat(m[1]) : null;
+}
+function validatePump(p) {
+  const w = [];
+  const num = v => (v === '' || v === undefined || v === null) ? null : parseFloat(v);
+  const ph = num(p.ph), sg = num(p.sg), sol = num(p.solids), rpm = num(p.rpm),
+        d50 = num(p.d50), dmax = num(p.dmax), kw = num(p.kw);
+  if (ph !== null && (ph < 0 || ph > 14)) w.push(`pH ${p.ph} is outside the valid range 0–14`);
+  if (sg !== null && (sg < 0.9 || sg > 2.8)) w.push(`SG ${p.sg} looks unusual for a slurry (expected ~1.0–2.5)`);
+  if (sol !== null && (sol < 0 || sol > 100)) w.push(`Solids ${p.solids}% must be between 0 and 100`);
+  if (rpm !== null && (rpm < 100 || rpm > 3600)) w.push(`Speed ${p.rpm} RPM looks out of range (100–3600)`);
+  if (d50 !== null && dmax !== null && d50 > dmax) w.push(`d50 (${p.d50}) is larger than Max particle (${p.dmax}) — likely swapped`);
+
+  // Bearing / frame vs pump size sanity
+  const disc = discFromSize(p.size);
+  const bearing = (p.bearing || '').trim();
+  if (disc !== null && disc >= 200 && !bearing) {
+    w.push(`Large pump (${disc} mm) with no bearing/frame recorded — please confirm`);
+  }
+  // NOTE: frame-letter cross-validation is held back until Schurco's real
+  // bearing-frame matrix is supplied (see FRAME_BY_DISCHARGE below). Enabling
+  // it against placeholder bands would produce false warnings.
+  // Motor sanity vs size (very rough lower bound)
+  if (disc !== null && kw !== null && disc >= 150 && kw < 11) {
+    w.push(`Motor ${p.kw} kW seems low for a ${disc} mm pump — please confirm`);
+  }
+  return w;
+}
+// Indicative frame-by-discharge bands — ADJUST to Schurco's actual frame chart.
+// Marked provisional until the bearing-frame matrix is supplied.
+const FRAME_BY_DISCHARGE = [
+  { maxDisc: 75,  frame: 'A' },
+  { maxDisc: 150, frame: 'B' },
+  { maxDisc: 250, frame: 'C' },
+  { maxDisc: 400, frame: 'D' },
+  { maxDisc: 600, frame: 'E' }
+];
+
+// ── PHOTOS (guided slots + extras) ────────────────────────────────────────────
+function captureSlot(key) {
+  activeSlot = key;
+  document.getElementById('slotInput').click();
+}
+function handleSlotPhoto(e) {
+  const file = e.target.files[0];
+  if (file && activeSlot) {
+    const reader = new FileReader();
+    reader.onload = ev => { slotPhotos[activeSlot] = ev.target.result; renderPhotoSlots(); };
+    reader.readAsDataURL(file);
+  }
+  e.target.value = '';
+}
+function removeSlot(key, ev) {
+  if (ev) ev.stopPropagation();
+  delete slotPhotos[key];
+  renderPhotoSlots();
+}
+function renderPhotoSlots() {
+  const wrap = document.getElementById('photoSlots');
+  wrap.innerHTML = PHOTO_SLOTS.map(s => {
+    if (slotPhotos[s.key]) {
+      return `<div class="pslot filled" onclick="captureSlot('${s.key}')">
+        <span class="pslot-check">✓</span>
+        <button class="pslot-del" onclick="removeSlot('${s.key}', event)">✕</button>
+        <img src="${slotPhotos[s.key]}"/>
+        <span class="pslot-tag">${s.label}</span>
+      </div>`;
+    }
+    return `<div class="pslot" onclick="captureSlot('${s.key}')">
+      <div class="pslot-sil">${s.sil}</div>
+      <span class="pslot-label">${s.label}</span>
+    </div>`;
+  }).join('');
+}
+function handleExtraPhotos(e) {
+  Array.from(e.target.files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = ev => { extraPhotos.push(ev.target.result); renderExtraGrid(); };
+    reader.readAsDataURL(file);
+  });
+  e.target.value = '';
+}
+function removeExtra(i) { extraPhotos.splice(i, 1); renderExtraGrid(); }
+function renderExtraGrid() {
+  const grid = document.getElementById('extraGrid');
+  const thumbs = extraPhotos.map((src, i) => `
+    <div class="photo-thumb">
+      <img src="${src}" loading="lazy"/>
+      <button class="photo-del" onclick="removeExtra(${i})">✕</button>
+    </div>`).join('');
+  grid.innerHTML = thumbs + `<div class="photo-add" onclick="document.getElementById('extraInput').click()">
+    <span class="photo-add-icon">＋</span><span>Add</span>
+  </div>`;
+}
+
+// ── CHIPS ─────────────────────────────────────────────────────────────────────
+function toggleChip(el, group) {
+  const groupId = group === 'seal' ? 'sealChips' : 'condChips';
+  document.querySelectorAll(`#${groupId} .chip`).forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ── SYNC STATS ────────────────────────────────────────────────────────────────
+function updateSyncStats() {
+  document.getElementById('statAudits').textContent = db.audits.length;
+  document.getElementById('statPumps').textContent = db.pumps.length;
+  const photos = db.pumps.reduce((n, p) => n + countPhotos(p), 0);
+  document.getElementById('statPhotos').textContent = photos;
+}
+
+// ── EXCEL WORKBOOK BUILDER (formatted, matches the audit checklist) ───────────
+const SCHURCO_GREEN = '218240';
+const GREEN_DARK = '1A6B33';
+
+function styleHeader(fill) {
+  return {
+    font: { name: 'Arial', sz: 9, bold: true, color: { rgb: 'FFFFFF' } },
+    fill: { fgColor: { rgb: fill || SCHURCO_GREEN } },
+    alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+    border: thinBorder()
+  };
+}
+function styleCell(odd) {
+  return {
+    font: { name: 'Arial', sz: 9, color: { rgb: '1A1A1A' } },
+    fill: { fgColor: { rgb: odd ? 'FFFFFF' : 'F7FBF7' } },
+    alignment: { horizontal: 'left', vertical: 'center', wrapText: true },
+    border: thinBorder()
+  };
+}
+function thinBorder() {
+  const s = { style: 'thin', color: { rgb: 'CCCCCC' } };
+  return { top: s, bottom: s, left: s, right: s };
+}
+
+// Returns a SheetJS workbook for one audit
+function buildWorkbook(audit) {
+  const pumps = db.pumps.filter(p => p.auditId === audit.id);
+  const wb = XLSX.utils.book_new();
+
+  // ── Sheet 1: Site Info ──
+  const infoRows = [
+    ['SCHURCO SLURRY — SITE AUDIT'],
+    ['www.schurcoslurry.com | sales@schurco.com | +27 0861 005 386'],
+    [],
+    ['SITE DETAILS', ''],
+    ['Customer / Company', audit.customer || ''],
+    ['Site Name', audit.site || ''],
+    ['Region / Area', audit.region || ''],
+    ['Country', audit.country || ''],
+    ['Date of Visit', audit.date || ''],
+    ['Visit Purpose', audit.purpose || ''],
+    ['Schurco Representative', audit.rep || ''],
+    ['Contact Name', audit.contactName || ''],
+    ['Contact Position', audit.contactPosition || ''],
+    [],
+    ['Pumps Audited', pumps.length],
+    ['Notes / Observations', audit.notes || '']
+  ];
+  const wsInfo = XLSX.utils.aoa_to_sheet(infoRows);
+  wsInfo['!cols'] = [{ wch: 26 }, { wch: 50 }];
+  wsInfo['!merges'] = [
+    { s: { r: 0, c: 0 }, e: { r: 0, c: 1 } },
+    { s: { r: 1, c: 0 }, e: { r: 1, c: 1 } },
+    { s: { r: 3, c: 0 }, e: { r: 3, c: 1 } }
+  ];
+  // Title styling
+  if (wsInfo['A1']) wsInfo['A1'].s = { font: { name: 'Arial', sz: 14, bold: true, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: SCHURCO_GREEN } }, alignment: { horizontal: 'center', vertical: 'center' } };
+  if (wsInfo['A2']) wsInfo['A2'].s = { font: { name: 'Arial', sz: 9, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: SCHURCO_GREEN } }, alignment: { horizontal: 'center' } };
+  if (wsInfo['A4']) wsInfo['A4'].s = { font: { name: 'Arial', sz: 10, bold: true, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: SCHURCO_GREEN } } };
+  // Label column bold (rows 5-13 are detail labels, 15-16 are summary labels)
+  [5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16].forEach(r => {
+    const ref = 'A' + r;
+    if (wsInfo[ref]) wsInfo[ref].s = { font: { name: 'Arial', sz: 10, bold: true, color: { rgb: '218240' } } };
+  });
+  XLSX.utils.book_append_sheet(wb, wsInfo, 'Site Info');
+
+  // ── Sheet 2: Pump Inventory ──
+  // Three header rows: title / group / sub
+  const cols = [
+    'No.', 'Area / Section', 'Tag No.', 'Pump Series', 'Model', 'Size (D × S mm)',
+    'Liners', 'Impeller', 'Throat Bush',          // MOC group (cols 7-9, idx 6-8)
+    'Shaft Sealing', 'Bearing / Frame',
+    'Operating Speed (RPM)', 'Drive Type', 'Motor Power (kW)',
+    'Slurry Description', 'SG / Density',
+    'd50 (mm)', 'Max (mm)',                         // Particle group (idx 16-17)
+    'pH', 'Solids (%w/w)', 'Flow (m³/h)',
+    'Current Condition', 'Wear Parts Due', 'Spares On-Site',
+    'Competitor Brand', 'Potential Opportunity', 'Notes / Action Items', 'Photos'
+  ];
+  const nCols = cols.length;
+
+  const data = [];
+  data.push(new Array(nCols).fill('')); // row 1 title
+  // row 2 group headers
+  const groupRow = new Array(nCols).fill('');
+  groupRow[6] = 'MOC (Material of Construction)';
+  groupRow[16] = 'Particle Size';
+  data.push(groupRow);
+  // row 3 sub headers = full cols
+  data.push(cols.slice());
+  // data rows
+  pumps.forEach((p, i) => {
+    data.push([
+      i + 1, p.area || '', p.tag || '', p.type ? p.type + ' Series' : '', p.model || '', p.size || '',
+      p.liner || '', p.impeller || '', p.throat || '',
+      p.seal || '', p.bearing || '',
+      p.rpm || '', p.drive || '', p.kw || '',
+      p.slurry || '', p.sg || '',
+      p.d50 || '', p.dmax || '',
+      p.ph || '', p.solids || '', p.flow || '',
+      p.condition || '', p.wear || '', p.spares || '',
+      p.competitor || '', p.opp || '', p.notes || '', countPhotos(p)
+    ]);
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  ws['!cols'] = cols.map((c, i) =>
+    i === 0 ? { wch: 5 } : (i === 26 ? { wch: 30 } : (c.length > 14 ? { wch: 16 } : { wch: 13 })));
+  ws['!merges'] = [
+    { s: { r: 0, c: 0 }, e: { r: 0, c: nCols - 1 } },   // title row
+    { s: { r: 1, c: 6 }, e: { r: 1, c: 8 } },           // MOC group
+    { s: { r: 1, c: 16 }, e: { r: 1, c: 17 } }          // Particle group
+  ];
+  // Merge group header down for non-grouped columns (rows 2-3)
+  for (let c = 0; c < nCols; c++) {
+    if ((c >= 6 && c <= 8) || (c >= 16 && c <= 17)) continue;
+    ws['!merges'].push({ s: { r: 1, c }, e: { r: 2, c } });
+  }
+
+  // Title cell
+  const titleRef = XLSX.utils.encode_cell({ r: 0, c: 0 });
+  ws[titleRef].v = 'PUMP INVENTORY — ' + (audit.customer || '') + ' / ' + (audit.site || '');
+  ws[titleRef].s = { font: { name: 'Arial', sz: 13, bold: true, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: SCHURCO_GREEN } }, alignment: { horizontal: 'center', vertical: 'center' } };
+
+  // Style header rows 2 & 3
+  for (let c = 0; c < nCols; c++) {
+    const r2 = ws[XLSX.utils.encode_cell({ r: 1, c })];
+    const r3 = ws[XLSX.utils.encode_cell({ r: 2, c })];
+    const isGroupParent = (c === 6 || c === 16);
+    if (r2) r2.s = styleHeader(isGroupParent ? GREEN_DARK : SCHURCO_GREEN);
+    if (r3) r3.s = styleHeader(SCHURCO_GREEN);
+  }
+  // Style data rows
+  for (let r = 3; r < data.length; r++) {
+    for (let c = 0; c < nCols; c++) {
+      const cell = ws[XLSX.utils.encode_cell({ r, c })];
+      if (cell) cell.s = styleCell(r % 2 === 1);
+    }
+  }
+  ws['!freeze'] = { xSplit: 3, ySplit: 3 };
+  XLSX.utils.book_append_sheet(wb, ws, 'Pump Inventory');
+  return wb;
+}
+
+function auditFileName(audit) {
+  const clean = s => (s || '').replace(/[^A-Za-z0-9]+/g, '');
+  const d = audit.date ? audit.date.replace(/-/g, '.') : new Date().toISOString().split('T')[0].replace(/-/g, '.');
+  return `${clean(audit.customer)}${clean(audit.site)}_${d}.xlsx`;
+}
+
+function workbookBlob(wb) {
+  const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+  return new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+}
+
+// ── DOWNLOAD EXCEL (current audit) ────────────────────────────────────────────
+function downloadExcel() {
+  const audit = db.audits.find(x => x.id === currentAuditId);
+  if (!audit) { toast('No audit open', 'error'); return; }
+  if (!db.pumps.filter(p => p.auditId === audit.id).length) { toast('No pumps captured yet', 'error'); return; }
+  const blob = workbookBlob(buildWorkbook(audit));
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = auditFileName(audit);
+  a.click(); URL.revokeObjectURL(url);
+  toast('Excel downloaded to device ✓', 'success');
+}
+
+// ── SHARE EXCEL via WhatsApp / Email (Web Share API) ──────────────────────────
+async function shareExcel() {
+  const audit = db.audits.find(x => x.id === currentAuditId);
+  if (!audit) { toast('No audit open', 'error'); return; }
+  if (!db.pumps.filter(p => p.auditId === audit.id).length) { toast('No pumps captured yet', 'error'); return; }
+  const blob = workbookBlob(buildWorkbook(audit));
+  const fileName = auditFileName(audit);
+  const file = new File([blob], fileName, { type: blob.type });
+
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({
+        files: [file],
+        title: 'Schurco Site Audit',
+        text: `Site audit — ${audit.customer} / ${audit.site} (${audit.date})`
+      });
+      toast('Shared ✓', 'success');
+    } catch (e) {
+      if (e.name !== 'AbortError') toast('Share cancelled', '');
+    }
+  } else {
+    // Fallback: download the file, then offer WhatsApp/email text links
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = fileName; a.click(); URL.revokeObjectURL(url);
+    toast('Sharing not supported here — file downloaded instead', '');
+  }
+}
+
+// ── UPLOAD CURRENT AUDIT TO SHAREPOINT ────────────────────────────────────────
+async function uploadSharePoint() {
+  const audit = db.audits.find(x => x.id === currentAuditId);
+  if (!audit) { toast('No audit open', 'error'); return; }
+  const spUrl = (localStorage.getItem('schurco_creds') ? JSON.parse(localStorage.getItem('schurco_creds')).spUrl : '') || '';
+  const creds = JSON.parse(localStorage.getItem('schurco_creds') || '{}');
+  if (!creds.spUrl || !creds.spLib || !creds.spToken) {
+    toast('Set up SharePoint in the Sync tab first', 'error');
+    showTab('Sync'); return;
+  }
+  if (!navigator.onLine) { toast('No internet connection', 'error'); return; }
+
+  toast('Uploading to SharePoint…');
+  const blob = workbookBlob(buildWorkbook(audit));
+  const fileName = auditFileName(audit);
+  const siteBase = creds.spUrl.replace(/\/$/, '');
+  const libPath = creds.spLib.replace(/\/$/, '');
+  const uploadUrl = `${siteBase}/_api/web/GetFolderByServerRelativeUrl('${libPath}')/Files/add(url='${fileName}',overwrite=true)`;
+
+  try {
+    const buf = await blob.arrayBuffer();
+    const res = await fetch(uploadUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + creds.spToken,
+        'Accept': 'application/json;odata=verbose'
+      },
+      body: buf
+    });
+    if (res.ok) toast(`Uploaded ${fileName} ✓`, 'success');
+    else { console.error(await res.text()); toast('Upload failed — check token/URL', 'error'); }
+  } catch (e) {
+    toast('Upload error: ' + e.message, 'error');
+  }
+}
+
+// ── CREDENTIALS PERSIST ───────────────────────────────────────────────────────
+function saveCreds() {
+  localStorage.setItem('schurco_creds', JSON.stringify({
+    spUrl: document.getElementById('spUrl').value,
+    spLib: document.getElementById('spLib').value,
+    spToken: document.getElementById('spToken').value
+  }));
+}
+function loadCreds() {
+  try {
+    const c = JSON.parse(localStorage.getItem('schurco_creds') || '{}');
+    if (c.spUrl) document.getElementById('spUrl').value = c.spUrl;
+    if (c.spLib) document.getElementById('spLib').value = c.spLib;
+    if (c.spToken) document.getElementById('spToken').value = c.spToken;
+  } catch(e) {}
+}
+
+// ── CLEAR DATA ────────────────────────────────────────────────────────────────
+function clearAllData() {
+  if (!confirm('Delete ALL local audit data? This cannot be undone.')) return;
+  db = { audits: [], pumps: [] };
+  saveDB();
+  toast('All local data cleared', 'error');
+  updateSyncStats();
+}
+
+// ── DRAWERS ───────────────────────────────────────────────────────────────────
+function openDrawer(id) { document.getElementById(id).classList.add('open'); }
+function closeDrawer(id) { document.getElementById(id).classList.remove('open'); }
+
+// Close drawer on overlay tap
+document.querySelectorAll('.drawer-overlay').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+});
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+function toast(msg, type = '') {
+  const wrap = document.getElementById('toastWrap');
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.textContent = msg;
+  wrap.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+// ── SERVICE WORKER ────────────────────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+loadDB();
+loadCreds();
+updateNet();
+showTab('Home');
+</script>
+</body>
+</html>
