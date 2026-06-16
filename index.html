@@ -1641,17 +1641,23 @@ function savePump() {
     db.pumps.push(pump);
   }
   saveDB();
-  // Auto-capture GPS location on first pump added to this audit
-  if (!editingPumpId) {
-    const auditPumps = db.pumps.filter(p => p.auditId === currentAuditId);
-    const audit = db.audits.find(a => a.id === currentAuditId);
-    if (auditPumps.length === 1 && audit && !audit.location) {
-      captureLocationNow(currentAuditId, false);
-    }
-  }
+  // Close and update UI immediately — before anything that could throw
   closeDrawer('pumpDrawer');
   toast(editingPumpId ? 'Pump updated' : 'Pump saved ✓', 'success');
   renderPumpList();
+  // GPS auto-capture: wrapped in try-catch so a geolocation error never
+  // prevents the drawer from closing (common on file:// and some Android configs)
+  try {
+    if (!editingPumpId) {
+      const auditPumps = db.pumps.filter(p => p.auditId === currentAuditId);
+      const audit = db.audits.find(a => a.id === currentAuditId);
+      if (auditPumps.length === 1 && audit && !audit.location) {
+        captureLocationNow(currentAuditId, false);
+      }
+    }
+  } catch(e) {
+    console.warn('GPS auto-capture failed:', e);
+  }
   setTimeout(() => { updateLocationIndicator(); updateOppButton(); }, 50);
 }
 
@@ -2062,27 +2068,34 @@ function toast(msg, type = '') {
 
 // ── GPS LOCATION CAPTURE ────────────────────────────────────────────────────
 function captureLocationNow(auditId, manual) {
-  if (!navigator.geolocation) {
-    if (manual) toast('GPS not available on this device', 'error');
-    return;
+  try {
+    if (!navigator.geolocation) {
+      if (manual) toast('GPS not available on this device', 'error');
+      return;
+    }
+    if (manual) toast('Capturing location…');
+    navigator.geolocation.getCurrentPosition(pos => {
+      try {
+        const aid = auditId || currentAuditId;
+        const audit = db.audits.find(a => a.id === aid);
+        if (!audit) return;
+        audit.location = {
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+          accuracy: Math.round(pos.coords.accuracy),
+          capturedAt: Date.now()
+        };
+        saveDB();
+        updateLocationIndicator();
+        if (manual) toast('📍 Location captured ✓', 'success');
+      } catch(e) { console.warn('GPS save error:', e); }
+    }, () => {
+      if (manual) toast('Could not get location — check GPS permissions', 'error');
+    }, { timeout: 15000, enableHighAccuracy: true });
+  } catch(e) {
+    if (manual) toast('GPS not available', 'error');
+    console.warn('captureLocationNow error:', e);
   }
-  if (manual) toast('Capturing location…');
-  navigator.geolocation.getCurrentPosition(pos => {
-    const aid = auditId || currentAuditId;
-    const audit = db.audits.find(a => a.id === aid);
-    if (!audit) return;
-    audit.location = {
-      lat: pos.coords.latitude,
-      lng: pos.coords.longitude,
-      accuracy: Math.round(pos.coords.accuracy),
-      capturedAt: Date.now()
-    };
-    saveDB();
-    updateLocationIndicator();
-    if (manual) toast('📍 Location captured ✓', 'success');
-  }, () => {
-    if (manual) toast('Could not get location — check GPS permissions', 'error');
-  }, { timeout: 15000, enableHighAccuracy: true });
 }
 
 function updateLocationIndicator() {
@@ -2631,34 +2644,37 @@ function populateOppPumps(auditId, selectedPumpId) {
   if (selectedPumpId) sel.value = selectedPumpId;
 }
 function saveOpportunity() {
-  const title = document.getElementById('of_title').value.trim();
-  if(!title){toast('Title is required','error');return;}
+  const title = (document.getElementById('of_title')||{}).value||'';
+  if(!title.trim()){toast('Please select an opportunity type','error');return;}
   ensureDbExtensions();
-  const linkedAuditId = document.getElementById('of_auditId').value;
+  const linkedAuditId = (document.getElementById('of_auditId')||{}).value||'';
   const linkedAudit = db.audits.find(a=>a.id===linkedAuditId)||{};
+  // Null-safe reads — elements may not be in DOM in edge cases
+  const g = id => (document.getElementById(id)||{}).value||'';
   const opp = {
     id: editingOppId||genId(),
-    title: titleCase(title),
+    title: titleCase(title.trim()),
     customer: linkedAudit.customer || '',
     site: linkedAudit.site || '',
-    value: document.getElementById('of_value').value,
-    stage: document.getElementById('of_stage').value,
-    owner: titleCase(document.getElementById('of_owner').value),
-    closeDate: document.getElementById('of_closeDate').value,
+    value: g('of_value'),
+    stage: g('of_stage'),
+    owner: titleCase(g('of_owner')),
+    closeDate: g('of_closeDate'),
     auditId: linkedAuditId,
-    pumpId: document.getElementById('of_pumpId').value,
-    contactName: titleCase(document.getElementById('of_contactName').value),
-    contactRole: document.getElementById('of_contactRole').value,
-    notes: sentenceCase(document.getElementById('of_notes').value),
+    pumpId: g('of_pumpId'),
+    contactName: titleCase(g('of_contactName')),
+    contactRole: g('of_contactRole'),
+    notes: sentenceCase(g('of_notes')),
     savedAt: Date.now()
   };
   if(editingOppId){const i=db.opportunities.findIndex(x=>x.id===editingOppId);if(i>=0)db.opportunities[i]=opp;}
   else db.opportunities.push(opp);
   saveDB();
+  // Close immediately after save — before any other operations that could throw
   closeDrawer('oppDrawer');
   toast(editingOppId?'Opportunity updated':'Opportunity added ✓','success');
-  updateOppButton();
-  if(currentDashSection==='opportunities') showDashSection('opportunities');
+  try { updateOppButton(); } catch(e) {}
+  try { if(currentDashSection==='opportunities') showDashSection('opportunities'); } catch(e) {}
 }
 
 // ── USER PROFILE ───────────────────────────────────────────────────────────────
