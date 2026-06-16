@@ -251,7 +251,23 @@ let allAudits=[], allPumps=[], allOpps=[], allProfiles=[], allOrgs=[];
 let activeTab = 'overview';
 
 // ── AUTH ─────────────────────────────────────────────────────────────
+function loadSbLib() {
+  return new Promise(resolve => {
+    if (typeof window.supabase !== 'undefined') { resolve(true); return; }
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js';
+    s.onload = () => resolve(true);
+    s.onerror = () => resolve(false);
+    document.head.appendChild(s);
+  });
+}
+
 window.addEventListener('load', async () => {
+  await loadSbLib();
+  if (typeof window.supabase === 'undefined') {
+    showLoginErr('Could not load auth library. Check your internet connection and reload.');
+    return;
+  }
   sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
     auth: { persistSession: true, storageKey: 'schurco-admin-session' }
   });
@@ -271,6 +287,16 @@ async function adminLogin() {
   if (!email || !pwd) { showLoginErr('Enter email and password.'); return; }
   btn.textContent = 'Signing in…'; btn.disabled = true;
   hideLoginErr();
+  if (!sb) {
+    const ok = await loadSbLib();
+    if (!ok || typeof window.supabase === 'undefined') {
+      showLoginErr('Cannot connect — check your internet and reload.');
+      btn.textContent = 'Sign In'; btn.disabled = false; return;
+    }
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+      auth: { persistSession: true, storageKey: 'schurco-admin-session' }
+    });
+  }
   const { data, error } = await sb.auth.signInWithPassword({ email, password: pwd });
   if (error) { showLoginErr(error.message); btn.textContent='Sign In'; btn.disabled=false; return; }
   adminUser = data.user;
