@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Schurco Admin Dashboard</title>
+<title>Schurco Admin Dashboard v2</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <script src="supabase.bundle.js"></script>
 <style>
@@ -265,18 +265,20 @@ function loadSbLib() {
 window.addEventListener('load', async () => {
   await loadSbLib();
   if (typeof window.supabase === 'undefined') {
-    showLoginErr('Could not load auth library. Check your internet connection and reload.');
+    showLoginErr('Could not load auth library. Check your internet and reload.');
     return;
   }
   sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
     auth: { persistSession: true, storageKey: 'schurco-admin-session' }
   });
-  const { data: { session } } = await sb.auth.getSession();
-  if (session) {
-    adminUser = session.user;
-    const ok = await checkAdmin();
-    if (ok) enterDashboard();
-    else showLoginErr('Your account does not have admin access.');
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) {
+      adminUser = session.user;
+      await doAdminLogin();
+    }
+  } catch(e) {
+    showLoginErr('Init error: ' + e.message);
   }
 });
 
@@ -300,35 +302,40 @@ async function adminLogin() {
   const { data, error } = await sb.auth.signInWithPassword({ email, password: pwd });
   if (error) { showLoginErr(error.message); btn.textContent='Sign In'; btn.disabled=false; return; }
   adminUser = data.user;
+  await doAdminLogin();
+}
+
+async function doAdminLogin() {
+  const btn = document.getElementById('lBtn');
   try {
-    const ok = await checkAdmin();
-    if (!ok) {
-      await sb.auth.signOut();
-      btn.textContent = 'Sign In'; btn.disabled = false;
-      return;
+    // Step 1: fetch profile directly
+    const { data: profile, error: profErr } = await sb
+      .from('profiles')
+      .select('id, name, role, is_admin, org_id')
+      .eq('id', adminUser.id)
+      .maybeSingle();
+
+    if (profErr) { showLoginErr('Profile query error: ' + profErr.message); resetBtn(btn); return; }
+    if (!profile) { showLoginErr('No profile found for your account. Run the admin setup SQL in Supabase.'); resetBtn(btn); return; }
+    if (!profile.is_admin) { showLoginErr('Your account does not have admin access.'); resetBtn(btn); return; }
+
+    // Step 2: fetch org name separately (avoids join RLS issues)
+    let orgName = 'Schurco Slurry South Africa';
+    if (profile.org_id) {
+      const { data: org } = await sb.from('organisations').select('name').eq('id', profile.org_id).maybeSingle();
+      if (org) orgName = org.name;
     }
+
+    adminProfile = { ...profile, organisations: { name: orgName } };
     enterDashboard();
   } catch(e) {
     showLoginErr('Login error: ' + e.message);
-    btn.textContent = 'Sign In'; btn.disabled = false;
+    resetBtn(btn);
   }
 }
 
-async function checkAdmin() {
-  try {
-    const { data, error } = await sb.from('profiles')
-      .select('*, organisations(name, type)')
-      .eq('id', adminUser.id)
-      .single();
-    if (error) { showLoginErr('Profile error: ' + error.message); return false; }
-    if (!data)  { showLoginErr('No profile found. Ask Gideon to run the admin setup SQL.'); return false; }
-    if (!data.is_admin) { showLoginErr('Your account does not have admin access.'); return false; }
-    adminProfile = data;
-    return true;
-  } catch(e) {
-    showLoginErr('Check error: ' + e.message);
-    return false;
-  }
+function resetBtn(btn) {
+  if (btn) { btn.textContent = 'Sign In'; btn.disabled = false; }
 }
 
 async function adminLogout() {
