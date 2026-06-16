@@ -300,21 +300,35 @@ async function adminLogin() {
   const { data, error } = await sb.auth.signInWithPassword({ email, password: pwd });
   if (error) { showLoginErr(error.message); btn.textContent='Sign In'; btn.disabled=false; return; }
   adminUser = data.user;
-  const ok = await checkAdmin();
-  if (!ok) {
-    await sb.auth.signOut();
-    showLoginErr('Your account does not have admin access. Contact Gideon to request admin rights.');
-    btn.textContent='Sign In'; btn.disabled=false;
-    return;
+  try {
+    const ok = await checkAdmin();
+    if (!ok) {
+      await sb.auth.signOut();
+      btn.textContent = 'Sign In'; btn.disabled = false;
+      return;
+    }
+    enterDashboard();
+  } catch(e) {
+    showLoginErr('Login error: ' + e.message);
+    btn.textContent = 'Sign In'; btn.disabled = false;
   }
-  enterDashboard();
 }
 
 async function checkAdmin() {
-  const { data } = await sb.from('profiles').select('*,organisations(*)').eq('id', adminUser.id).single();
-  if (!data || !data.is_admin) return false;
-  adminProfile = data;
-  return true;
+  try {
+    const { data, error } = await sb.from('profiles')
+      .select('*, organisations(name, type)')
+      .eq('id', adminUser.id)
+      .single();
+    if (error) { showLoginErr('Profile error: ' + error.message); return false; }
+    if (!data)  { showLoginErr('No profile found. Ask Gideon to run the admin setup SQL.'); return false; }
+    if (!data.is_admin) { showLoginErr('Your account does not have admin access.'); return false; }
+    adminProfile = data;
+    return true;
+  } catch(e) {
+    showLoginErr('Check error: ' + e.message);
+    return false;
+  }
 }
 
 async function adminLogout() {
