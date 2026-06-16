@@ -3,454 +3,554 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
-<meta name="theme-color" content="#218240"/>
+<meta name="theme-color" content="#16A34A"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <title>Schurco Site Audit</title>
 <link rel="manifest" href="manifest.json"/>
-<script src="xlsx.bundle.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="xlsx.bundle.js"></script>
 <style>
-:root {
-  --green: #218240;
-  --green-dark: #185e2e;
-  --green-light: #2aa050;
-  --green-dim: #1a3320;
-  --green-glow: rgba(33,130,64,0.25);
-  --bg: #0d1710;
-  --bg2: #121f14;
-  --bg3: #182b1b;
-  --surface: #1c2e1f;
-  --surface2: #243527;
-  --border: #2d4a31;
-  --text: #e8f0e9;
-  --text-dim: #7a9e7e;
-  --text-muted: #4a6b4e;
-  --accent: #5dde82;
-  --warn: #f5a623;
-  --danger: #e8453c;
-  --radius: 12px;
-  --radius-sm: 8px;
-  --font-head: 'Barlow Condensed', sans-serif;
-  --font-body: 'Barlow', sans-serif;
-}
 
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+:root{
+  --green:#16A34A;--green-dark:#166534;--green-accent:#22C55E;
+  --green-light:#DCFCE7;--green-mid:#BBF7D0;--green-dim:#F0FDF4;
+  --bg:#F8FAFC;--surface:#FFFFFF;--surface2:#F1F5F9;
+  --border:#E2E8F0;--border2:#CBD5E1;
+  --text:#0F172A;--text-sec:#64748B;--text-muted:#94A3B8;
+  --success:#22C55E;--warn:#F59E0B;--danger:#EF4444;--info:#3B82F6;
+  --radius:16px;--radius-sm:10px;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.05);
+  --shadow:0 1px 3px rgba(0,0,0,.1),0 1px 2px rgba(0,0,0,.06);
+  --shadow-md:0 4px 6px rgba(0,0,0,.07),0 2px 4px rgba(0,0,0,.05);
+  --shadow-lg:0 10px 15px rgba(0,0,0,.1),0 4px 6px rgba(0,0,0,.05);
+  --font:'Poppins',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px}
+#app{display:flex;flex-direction:column;height:100vh;height:100dvh}
 
-html, body {
-  height: 100%; overflow: hidden;
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-body);
-  font-size: 15px;
-}
+/* TOPBAR */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);box-shadow:var(--shadow-sm);
+  padding:0 16px;height:60px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.topbar-brand{display:flex;align-items:center;gap:10px}
+.topbar-logoimg{height:36px;width:auto;display:block}
+.topbar-logo{font-family:var(--font);font-size:18px;font-weight:700;color:var(--text);letter-spacing:-.02em}
+.topbar-logo span{color:var(--green)}
+.topbar-badge{font-size:11px;font-weight:600;background:var(--green-dim);color:var(--green-dark);
+  border-radius:20px;padding:3px 10px;letter-spacing:.3px}
+.topbar-badge.offline{background:#FEF3C7;color:#92400E}
 
-/* ── LAYOUT ── */
-#app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
+/* SCREENS */
+.screen{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+.screen-inner{padding:16px;max-width:600px;margin:0 auto;padding-bottom:80px}
 
-.topbar {
-  background: var(--bg2);
-  border-bottom: 1px solid var(--border);
-  padding: 0 16px;
-  height: 56px;
-  display: flex; align-items: center; justify-content: space-between;
-  flex-shrink: 0;
-  position: relative;
-}
-.topbar-logo {
-  font-family: var(--font-head); font-size: 20px; font-weight: 800;
-  letter-spacing: 0.5px; color: var(--text);
-}
-.topbar-logo span { color: var(--green-light); }
-.topbar-badge {
-  font-family: var(--font-body); font-size: 11px; font-weight: 600;
-  background: var(--green-dim); color: var(--accent);
-  border: 1px solid var(--green); border-radius: 20px;
-  padding: 3px 10px; letter-spacing: 0.3px;
-}
-.topbar-badge.offline { background: #2a1a0a; color: var(--warn); border-color: var(--warn); }
+/* BOTTOM NAV */
+.bottomnav{background:var(--surface);border-top:1px solid var(--border);
+  box-shadow:0 -1px 0 var(--border);display:flex;flex-shrink:0;height:64px;position:relative}
+.bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;background:none;border:none;cursor:pointer;color:var(--text-muted);
+  font-family:var(--font);font-size:10px;font-weight:600;letter-spacing:.3px;
+  text-transform:uppercase;transition:color .15s;position:relative}
+.bnav-btn.active{color:var(--green)}
+.bnav-btn.active::after{content:'';position:absolute;top:0;left:20%;right:20%;
+  height:2px;background:var(--green);border-radius:0 0 3px 3px}
+.bnav-icon{font-size:22px;line-height:1}
 
-.screen { flex: 1; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
-.screen-inner { padding: 16px; max-width: 600px; margin: 0 auto; padding-bottom: 80px; }
+/* SECTION HEADINGS */
+.section-head{font-family:var(--font);font-size:22px;font-weight:700;letter-spacing:-.02em;
+  color:var(--text);margin-bottom:4px}
+.section-sub{font-size:13px;color:var(--text-sec);margin-bottom:20px}
 
-.bottomnav {
-  background: var(--bg2);
-  border-top: 1px solid var(--border);
-  display: flex; flex-shrink: 0;
-  height: 60px;
-}
-.bnav-btn {
-  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 4px; background: none; border: none; cursor: pointer;
-  color: var(--text-muted); font-family: var(--font-body); font-size: 10px; font-weight: 600;
-  letter-spacing: 0.3px; text-transform: uppercase; transition: color .15s;
-  position: relative;
-}
-.bnav-btn.active { color: var(--accent); }
-.bnav-btn.active::after {
-  content: ''; position: absolute; top: 0; left: 20%; right: 20%;
-  height: 2px; background: var(--accent); border-radius: 0 0 2px 2px;
-}
-.bnav-icon { font-size: 22px; line-height: 1; }
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:16px;margin-bottom:12px;box-shadow:var(--shadow-sm)}
+.card-head{font-family:var(--font);font-size:12px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.8px;color:var(--text-sec);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card-head-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0}
 
-/* ── SECTION HEADINGS ── */
-.section-head {
-  font-family: var(--font-head); font-size: 22px; font-weight: 700;
-  letter-spacing: 0.5px; color: var(--text); margin-bottom: 4px;
-}
-.section-sub { font-size: 13px; color: var(--text-dim); margin-bottom: 20px; }
+/* FORM */
+.field{margin-bottom:14px}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+label{display:block;font-size:11px;font-weight:600;color:var(--text-sec);
+  text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+label .req{color:var(--green);margin-left:2px}
+input[type=text],input[type=number],input[type=date],select,textarea{
+  width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);
+  color:var(--text);font-family:var(--font);font-size:15px;padding:10px 12px;
+  outline:none;transition:border-color .15s,box-shadow .15s;appearance:none;-webkit-appearance:none}
+input:focus,select:focus,textarea:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(22,163,74,.12)}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M0 0l6 8 6-8z' fill='%2364748B'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+textarea{resize:vertical;min-height:72px}
+input::placeholder,textarea::placeholder{color:var(--text-muted)}
 
-/* ── CARDS ── */
-.card {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 16px; margin-bottom: 12px;
-}
-.card-head {
-  font-family: var(--font-head); font-size: 15px; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-dim);
-  margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
-}
-.card-head-dot {
-  width: 8px; height: 8px; border-radius: 50%;
-  background: var(--green); flex-shrink: 0;
-}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:none;
+  border-radius:var(--radius-sm);cursor:pointer;font-family:var(--font);font-size:14px;
+  font-weight:600;letter-spacing:.2px;padding:11px 18px;transition:all .15s;user-select:none}
+.btn-primary{background:var(--green);color:#fff;width:100%}
+.btn-primary:active{background:var(--green-dark);transform:scale(.98)}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1.5px solid var(--border)}
+.btn-secondary:active{background:var(--border)}
+.btn-danger{background:transparent;color:var(--danger);border:1.5px solid var(--danger)}
+.btn-icon{padding:10px 14px;font-size:18px}
+.btn-sm{padding:7px 12px;font-size:12px;border-radius:8px}
+.btn-full{width:100%}
+.btn-row{display:flex;gap:10px}
+.btn-row .btn{flex:1}
 
-/* ── FORM ELEMENTS ── */
-.field { margin-bottom: 14px; }
-.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.field-row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-label {
-  display: block; font-size: 11px; font-weight: 600;
-  color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px;
-  margin-bottom: 5px;
-}
-label .req { color: var(--accent); margin-left: 2px; }
+/* PUMP LIST ITEMS */
+.pump-item{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);
+  padding:14px 16px;margin-bottom:10px;cursor:pointer;display:flex;align-items:center;gap:12px;
+  box-shadow:var(--shadow-sm);transition:box-shadow .15s,border-color .15s}
+.pump-item:active{box-shadow:var(--shadow-md);border-color:var(--green)}
+.pump-badge{width:44px;height:44px;border-radius:12px;background:var(--green-dim);
+  display:flex;align-items:center;justify-content:center;font-family:var(--font);
+  font-size:10px;font-weight:700;color:var(--green-dark);text-transform:uppercase;
+  letter-spacing:.3px;flex-shrink:0;text-align:center;line-height:1.2}
+.pump-info{flex:1;min-width:0}
+.pump-tag{font-family:var(--font);font-size:16px;font-weight:700;color:var(--text)}
+.pump-meta{font-size:12px;color:var(--text-sec);margin-top:2px;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.status-dot{width:10px;height:10px;border-radius:50%;background:var(--success);flex-shrink:0}
+.status-dot.warn{background:var(--warn)}
+.status-dot.bad{background:var(--danger)}
+.dup-btn{flex-shrink:0;background:var(--surface2);border:1.5px solid var(--border);
+  border-radius:8px;width:36px;height:36px;font-size:16px;color:var(--text-muted);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s}
+.dup-btn:active{background:var(--green-dim);border-color:var(--green);color:var(--green);transform:scale(.94)}
+.opp-quick-btn{flex-shrink:0;background:#FFF7ED;border:1.5px solid #FED7AA;
+  border-radius:8px;width:36px;height:36px;font-size:16px;color:#D97706;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s}
+.opp-quick-btn:active{background:#FEF3C7;border-color:#F59E0B;transform:scale(.94)}
 
-input[type=text], input[type=number], input[type=date], select, textarea {
-  width: 100%; background: var(--bg3); border: 1px solid var(--border);
-  border-radius: var(--radius-sm); color: var(--text);
-  font-family: var(--font-body); font-size: 15px;
-  padding: 10px 12px; outline: none; transition: border-color .15s, box-shadow .15s;
-  appearance: none; -webkit-appearance: none;
-}
-input:focus, select:focus, textarea:focus {
-  border-color: var(--green); box-shadow: 0 0 0 3px var(--green-glow);
-}
-select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M0 0l6 8 6-8z' fill='%237a9e7e'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
-textarea { resize: vertical; min-height: 72px; }
-input::placeholder, textarea::placeholder { color: var(--text-muted); }
+/* PHOTO GRID */
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.photo-thumb{aspect-ratio:1;border-radius:var(--radius-sm);overflow:hidden;
+  background:var(--surface2);border:1.5px solid var(--border);position:relative;cursor:pointer}
+.photo-thumb img{width:100%;height:100%;object-fit:cover}
+.photo-thumb .photo-del{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.6);
+  border:none;border-radius:50%;width:22px;height:22px;font-size:13px;color:#fff;
+  cursor:pointer;display:flex;align-items:center;justify-content:center}
+.photo-add{aspect-ratio:1;border-radius:var(--radius-sm);background:var(--surface2);
+  border:2px dashed var(--border2);display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:4px;cursor:pointer;color:var(--text-muted);
+  font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+.photo-add:active{border-color:var(--green);color:var(--green)}
+.photo-add-icon{font-size:24px}
+input[type=file]{display:none}
 
-/* ── BUTTONS ── */
-.btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  border: none; border-radius: var(--radius-sm); cursor: pointer;
-  font-family: var(--font-head); font-size: 15px; font-weight: 700;
-  letter-spacing: 0.5px; text-transform: uppercase; padding: 12px 20px;
-  transition: all .15s; user-select: none;
-}
-.btn-primary { background: var(--green); color: #fff; width: 100%; }
-.btn-primary:active { background: var(--green-dark); transform: scale(0.98); }
-.btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
-.btn-secondary:active { background: var(--bg3); }
-.btn-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
-.btn-icon { padding: 10px 14px; font-size: 18px; }
-.btn-sm { padding: 8px 14px; font-size: 13px; }
-.btn-full { width: 100%; }
-.btn-row { display: flex; gap: 10px; }
-.btn-row .btn { flex: 1; }
+/* GUIDED PHOTO SLOTS */
+.photo-slots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pslot{aspect-ratio:1;border-radius:var(--radius-sm);overflow:hidden;background:var(--surface2);
+  border:2px dashed var(--border2);position:relative;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:2px;padding:6px;transition:border-color .15s}
+.pslot:active{border-color:var(--green)}
+.pslot.filled{border-style:solid;border-color:var(--green);padding:0}
+.pslot img{width:100%;height:100%;object-fit:cover}
+.pslot .pslot-sil{width:56%;height:56%;opacity:.45;color:var(--text-sec)}
+.pslot .pslot-sil svg{width:100%;height:100%}
+.pslot .pslot-label{font-size:9.5px;font-weight:600;text-transform:uppercase;
+  letter-spacing:.3px;color:var(--text-muted);text-align:center;line-height:1.15}
+.pslot .pslot-check{position:absolute;top:4px;right:4px;background:var(--green);
+  border-radius:50%;width:20px;height:20px;font-size:11px;color:#fff;
+  display:flex;align-items:center;justify-content:center;z-index:2}
+.pslot .pslot-tag{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.55);
+  color:#fff;font-size:9px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.3px;text-align:center;padding:3px 2px;z-index:2}
+.pslot .pslot-del{position:absolute;top:4px;left:4px;background:rgba(0,0,0,.6);
+  border:none;border-radius:50%;width:20px;height:20px;font-size:11px;color:#fff;
+  z-index:3;cursor:pointer;display:flex;align-items:center;justify-content:center}
 
-/* ── PUMP LIST ITEMS ── */
-.pump-item {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 14px 16px;
-  margin-bottom: 10px; cursor: pointer;
-  display: flex; align-items: center; gap: 12px;
-  transition: border-color .15s, background .15s;
-  active-state: none;
-}
-.pump-item:active { background: var(--surface2); border-color: var(--green); }
-.pump-badge {
-  width: 42px; height: 42px; border-radius: 10px;
-  background: var(--green-dim); border: 1px solid var(--green);
-  display: flex; align-items: center; justify-content: center;
-  font-family: var(--font-head); font-size: 11px; font-weight: 800;
-  color: var(--accent); text-transform: uppercase; letter-spacing: 0.3px;
-  flex-shrink: 0; text-align: center; line-height: 1.2;
-}
-.pump-info { flex: 1; min-width: 0; }
-.pump-tag { font-family: var(--font-head); font-size: 17px; font-weight: 700; color: var(--text); }
-.pump-meta { font-size: 12px; color: var(--text-dim); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pump-status { flex-shrink: 0; }
-.status-dot {
-  width: 10px; height: 10px; border-radius: 50%;
-  background: var(--accent);
-}
-.status-dot.warn { background: var(--warn); }
-.status-dot.bad { background: var(--danger); }
-.dup-btn {
-  flex-shrink: 0; background: var(--bg3); border: 1px solid var(--border);
-  border-radius: 8px; width: 36px; height: 36px; font-size: 17px;
-  color: var(--text-dim); cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: all .12s;
-}
-.dup-btn:active { background: var(--green-dim); border-color: var(--green); color: var(--accent); transform: scale(0.94); }
+/* CHIPS */
+.chip-group{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:7px 14px;border-radius:20px;border:1.5px solid var(--border);
+  background:var(--surface2);color:var(--text-sec);font-size:13px;font-weight:500;
+  cursor:pointer;transition:all .12s;font-family:var(--font);white-space:nowrap}
+.chip.active{background:var(--green-dim);border-color:var(--green);color:var(--green-dark);font-weight:600}
+.chip:active{transform:scale(.96)}
 
-/* ── PHOTO CAPTURE ── */
-.photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
-.photo-thumb {
-  aspect-ratio: 1; border-radius: var(--radius-sm); overflow: hidden;
-  background: var(--bg3); border: 1px solid var(--border);
-  position: relative; cursor: pointer;
-}
-.photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
-.photo-thumb .photo-del {
-  position: absolute; top: 4px; right: 4px;
-  background: rgba(0,0,0,0.7); border: none; border-radius: 50%;
-  width: 22px; height: 22px; font-size: 13px; color: #fff;
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
-}
-.photo-add {
-  aspect-ratio: 1; border-radius: var(--radius-sm);
-  background: var(--bg3); border: 2px dashed var(--border);
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 4px; cursor: pointer; color: var(--text-muted);
-  font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px;
-  transition: border-color .15s;
-}
-.photo-add:active { border-color: var(--green); color: var(--accent); }
-.photo-add-icon { font-size: 26px; }
-input[type=file] { display: none; }
+/* AUDIT LIST */
+.audit-item{background:var(--surface);border:1.5px solid var(--border);
+  border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;cursor:pointer;
+  display:flex;align-items:center;gap:12px;box-shadow:var(--shadow-sm);transition:all .15s}
+.audit-item:active{box-shadow:var(--shadow-md);border-color:var(--green)}
 
-/* ── GUIDED PHOTO SLOTS ── */
-.photo-slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.pslot {
-  aspect-ratio: 1; border-radius: var(--radius-sm); overflow: hidden;
-  background: var(--bg3); border: 2px dashed var(--border);
-  position: relative; cursor: pointer; display: flex; flex-direction: column;
-  align-items: center; justify-content: center; gap: 2px; padding: 6px;
-  transition: border-color .15s;
-}
-.pslot:active { border-color: var(--green); }
-.pslot.filled { border-style: solid; border-color: var(--green); padding: 0; }
-.pslot img { width: 100%; height: 100%; object-fit: cover; }
-.pslot .pslot-sil { width: 56%; height: 56%; opacity: 0.5; }
-.pslot .pslot-sil svg { width: 100%; height: 100%; }
-.pslot .pslot-label {
-  font-size: 9.5px; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.3px; color: var(--text-dim); text-align: center; line-height: 1.15;
-}
-.pslot .pslot-check {
-  position: absolute; top: 4px; right: 4px;
-  background: var(--green); border-radius: 50%;
-  width: 20px; height: 20px; font-size: 12px; color: #fff;
-  display: flex; align-items: center; justify-content: center; z-index: 2;
-}
-.pslot .pslot-tag {
-  position: absolute; bottom: 0; left: 0; right: 0;
-  background: rgba(0,0,0,0.65); color: #fff; font-size: 9px; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.3px; text-align: center; padding: 3px 2px; z-index: 2;
-}
-.pslot .pslot-del {
-  position: absolute; top: 4px; left: 4px;
-  background: rgba(0,0,0,0.7); border: none; border-radius: 50%;
-  width: 20px; height: 20px; font-size: 11px; color: #fff; z-index: 3;
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
-}
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:48px 24px;color:var(--text-muted)}
+.empty-icon{font-size:52px;margin-bottom:16px;opacity:.6}
+.empty-title{font-size:20px;font-weight:700;color:var(--text-sec);margin-bottom:8px;font-family:var(--font)}
+.empty-desc{font-size:14px;line-height:1.6}
 
-/* ── TAG-STYLE CHIPS (for sealing, condition) ── */
-.chip-group { display: flex; flex-wrap: wrap; gap: 8px; }
-.chip {
-  padding: 7px 14px; border-radius: 20px;
-  border: 1px solid var(--border); background: var(--bg3);
-  color: var(--text-dim); font-size: 13px; font-weight: 600;
-  cursor: pointer; transition: all .12s; font-family: var(--font-body);
-  white-space: nowrap;
-}
-.chip.active { background: var(--green-dim); border-color: var(--green); color: var(--accent); }
-.chip:active { transform: scale(0.96); }
+/* MOC GROUP */
+.moc-group-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;
+  color:var(--green);margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--green-light)}
 
-/* ── SYNC PANEL ── */
-.sync-card {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 20px; margin-bottom: 14px;
-}
-.sync-title { font-family: var(--font-head); font-size: 18px; font-weight: 700; margin-bottom: 4px; }
-.sync-desc { font-size: 13px; color: var(--text-dim); margin-bottom: 16px; line-height: 1.5; }
-.sync-progress { background: var(--bg3); border-radius: 4px; height: 6px; margin: 10px 0; overflow: hidden; }
-.sync-bar { height: 100%; background: var(--accent); border-radius: 4px; transition: width .4s ease; }
-.sync-stat { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-dim); margin-top: 6px; }
-.stat-row { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
-.stat-box {
-  flex: 1; min-width: 80px; background: var(--bg3); border: 1px solid var(--border);
-  border-radius: var(--radius-sm); padding: 12px; text-align: center;
-}
-.stat-num { font-family: var(--font-head); font-size: 28px; font-weight: 800; color: var(--accent); }
-.stat-lbl { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.4px; margin-top: 2px; }
+/* DIVIDER */
+.divider{height:1px;background:var(--border);margin:18px 0}
 
-/* ── MODAL / DRAWER ── */
-.drawer-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.6);
-  z-index: 100; display: none; align-items: flex-end;
-  backdrop-filter: blur(2px);
-}
-.drawer-overlay.open { display: flex; }
-.drawer {
-  background: var(--bg2); border-radius: 20px 20px 0 0;
-  width: 100%; max-height: 95vh; overflow-y: auto;
-  padding: 0 0 env(safe-area-inset-bottom, 16px);
-  animation: slideUp .25s ease;
-}
-@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-.drawer-handle {
-  width: 40px; height: 4px; background: var(--border);
-  border-radius: 2px; margin: 12px auto 0;
-}
-.drawer-head {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 16px 12px; border-bottom: 1px solid var(--border);
-}
-.drawer-title { font-family: var(--font-head); font-size: 20px; font-weight: 800; }
-.drawer-close {
-  background: var(--surface); border: none; border-radius: 50%;
-  width: 32px; height: 32px; font-size: 18px; color: var(--text-dim);
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
-}
-.drawer-body { padding: 16px; padding-bottom: 24px; }
+/* SYNC CARD */
+.sync-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);
+  padding:20px;margin-bottom:14px;box-shadow:var(--shadow-sm)}
+.sync-title{font-family:var(--font);font-size:17px;font-weight:700;margin-bottom:4px;color:var(--text)}
+.sync-desc{font-size:13px;color:var(--text-sec);margin-bottom:16px;line-height:1.5}
+.stat-row{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.stat-box{flex:1;min-width:80px;background:var(--surface2);border:1.5px solid var(--border);
+  border-radius:var(--radius-sm);padding:12px;text-align:center}
+.stat-num{font-family:var(--font);font-size:28px;font-weight:800;color:var(--green)}
+.stat-lbl{font-size:11px;color:var(--text-sec);text-transform:uppercase;letter-spacing:.4px;margin-top:2px}
 
-/* ── EMPTY STATE ── */
-.empty-state {
-  text-align: center; padding: 48px 24px;
-  color: var(--text-muted);
-}
-.empty-icon { font-size: 56px; margin-bottom: 16px; opacity: 0.6; }
-.empty-title { font-family: var(--font-head); font-size: 20px; font-weight: 700; color: var(--text-dim); margin-bottom: 8px; }
-.empty-desc { font-size: 14px; line-height: 1.6; }
+/* DRAWER */
+.drawer-overlay{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:100;
+  display:none;align-items:flex-end;backdrop-filter:blur(3px)}
+.drawer-overlay.open{display:flex}
+.drawer{background:var(--surface);border-radius:20px 20px 0 0;width:100%;
+  max-height:95vh;overflow-y:auto;padding:0 0 env(safe-area-inset-bottom,16px);
+  animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.drawer-handle{width:40px;height:4px;background:var(--border2);border-radius:2px;margin:12px auto 0}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px 12px;border-bottom:1px solid var(--border)}
+.drawer-title{font-family:var(--font);font-size:19px;font-weight:700;color:var(--text)}
+.drawer-close{background:var(--surface2);border:none;border-radius:50%;
+  width:32px;height:32px;font-size:18px;color:var(--text-sec);
+  cursor:pointer;display:flex;align-items:center;justify-content:center}
+.drawer-body{padding:16px;padding-bottom:24px}
 
-/* ── TOAST ── */
-.toast-wrap { position: fixed; bottom: 72px; left: 16px; right: 16px; z-index: 200; pointer-events: none; }
-.toast {
-  background: var(--surface2); border: 1px solid var(--border);
-  border-radius: var(--radius-sm); padding: 12px 16px;
-  font-size: 14px; font-weight: 500; margin-top: 8px;
-  animation: toastIn .2s ease; box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-  pointer-events: all;
-}
-.toast.success { border-color: var(--green); color: var(--accent); }
-.toast.error { border-color: var(--danger); color: var(--danger); }
-@keyframes toastIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+/* TOAST */
+.toast-wrap{position:fixed;bottom:72px;left:16px;right:16px;z-index:200;pointer-events:none}
+.toast{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);
+  padding:12px 16px;font-size:14px;font-weight:500;margin-top:8px;
+  animation:toastIn .2s ease;box-shadow:var(--shadow-lg);pointer-events:all;color:var(--text)}
+.toast.success{border-color:var(--green);color:var(--green-dark)}
+.toast.error{border-color:var(--danger);color:var(--danger)}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 
-/* ── DIVIDER ── */
-.divider { height: 1px; background: var(--border); margin: 18px 0; }
-.moc-group-label {
-  font-size: 11px; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.8px; color: var(--green-light); margin-bottom: 8px;
-  padding-bottom: 4px; border-bottom: 1px solid var(--green-dim);
-}
+/* PDF REPORT STYLES (used in generateReport) */
+/* (kept in the JS template literal) */
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   DASHBOARD
+   ───────────────────────────────────────────────────────────────────────── */
+#screenDashboard{flex-direction:column;overflow:hidden}
+.dash-subnav{flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border);
+  padding:0 12px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;
+  height:48px;display:flex;align-items:center;gap:4px;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none}
+.dash-subnav::-webkit-scrollbar{display:none}
+.dash-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.dash-inner{padding:16px;max-width:600px;margin:0 auto;padding-bottom:80px}
+.dash-nav-btn{display:inline-flex;align-items:center;padding:6px 14px;border-radius:20px;
+  border:1.5px solid var(--border);background:var(--surface2);color:var(--text-sec);
+  font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;
+  white-space:nowrap;transition:all .12s;flex-shrink:0}
+.dash-nav-btn.active{background:var(--green);border-color:var(--green);color:#fff}
+.dash-section-head{font-family:var(--font);font-size:13px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.6px;color:var(--text-sec);
+  margin:20px 0 10px;display:flex;align-items:center;gap:10px}
+
+/* User Hero Card */
+.user-hero-card{background:linear-gradient(135deg,var(--green) 0%,var(--green-dark) 100%);
+  border-radius:var(--radius);padding:18px;display:flex;align-items:center;
+  gap:14px;margin-bottom:16px;box-shadow:var(--shadow-md)}
+.user-hero-avatar{width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.2);
+  border:2px solid rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;
+  font-size:20px;font-weight:700;color:#fff;flex-shrink:0}
+.user-hero-info{flex:1;min-width:0}
+.user-hero-name{font-family:var(--font);font-size:17px;font-weight:700;color:#fff}
+.user-hero-sub{font-size:12px;color:rgba(255,255,255,.75);margin-top:2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-hero-edit{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);
+  border-radius:8px;color:#fff;padding:6px 10px;font-size:14px;cursor:pointer}
+
+/* Engagement score */
+.engage-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);
+  padding:14px 16px;margin-bottom:16px;box-shadow:var(--shadow-sm)}
+.engage-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.engage-score{font-family:var(--font);font-size:26px;font-weight:800;color:var(--green)}
+.engage-label{font-size:12px;color:var(--text-sec);font-weight:500}
+.engage-bar-track{background:var(--surface2);border-radius:4px;height:8px;overflow:hidden;margin-top:2px}
+.engage-bar-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--green-accent));
+  border-radius:4px;transition:width .6s ease}
+
+/* KPI Grid */
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:6px}
+.kpi-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);
+  padding:14px 12px;box-shadow:var(--shadow-sm);text-align:center}
+.kpi-icon{font-size:22px;margin-bottom:4px}
+.kpi-value{font-family:var(--font);font-size:22px;font-weight:800;color:var(--text);line-height:1}
+.kpi-label{font-size:11px;color:var(--text-sec);font-weight:500;margin-top:2px;
+  text-transform:uppercase;letter-spacing:.4px}
+.kpi-sub{font-size:10px;color:var(--green);font-weight:600;margin-top:2px}
+
+/* Activity Row */
+.activity-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:4px}
+.activity-cell{background:var(--surface);border:1.5px solid var(--border);
+  border-radius:var(--radius-sm);padding:10px 8px;text-align:center;box-shadow:var(--shadow-sm)}
+.activity-num{font-family:var(--font);font-size:20px;font-weight:800;color:var(--text);line-height:1}
+.activity-lbl{font-size:10px;color:var(--text-sec);margin-top:2px;font-weight:500}
+
+/* Recent list */
+.dash-list-item{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);
+  padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;
+  cursor:pointer;box-shadow:var(--shadow-sm);transition:all .15s}
+.dash-list-item:active{box-shadow:var(--shadow-md);border-color:var(--green)}
+.dash-list-badge{width:38px;height:38px;border-radius:10px;background:var(--green-dim);
+  display:flex;align-items:center;justify-content:center;font-size:16px;
+  font-weight:700;color:var(--green-dark);flex-shrink:0}
+.dash-list-info{flex:1;min-width:0}
+.dash-list-title{font-size:15px;font-weight:600;color:var(--text)}
+.dash-list-sub{font-size:12px;color:var(--text-sec);margin-top:1px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dash-list-arrow{color:var(--border2);font-size:18px}
+
+/* Pipeline */
+.pipeline-chart{background:var(--surface);border:1.5px solid var(--border);
+  border-radius:var(--radius);padding:16px;box-shadow:var(--shadow-sm)}
+.pipeline-stage{margin-bottom:14px}
+.pipeline-stage:last-child{margin-bottom:0}
+.pipeline-bar-wrap{background:var(--surface2);border-radius:6px;height:32px;
+  overflow:hidden;margin-bottom:4px}
+.pipeline-bar{height:100%;border-radius:6px;display:flex;align-items:center;
+  padding:0 10px;min-width:40px;transition:width .6s ease}
+.pipeline-val{color:#fff;font-size:13px;font-weight:700;font-family:var(--font)}
+.pipeline-label{font-size:12px;color:var(--text-sec);font-weight:500;display:flex;align-items:center;gap:6px}
+.pipeline-conv{font-size:11px;font-weight:600;color:var(--green);
+  background:var(--green-dim);padding:1px 6px;border-radius:10px}
+
+/* Opp stage grid */
+.opp-stage-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:4px}
+.opp-stage-cell{background:var(--surface);border:1.5px solid var(--border);
+  border-radius:var(--radius-sm);padding:10px 8px;text-align:center;box-shadow:var(--shadow-sm)}
+.opp-stage-num{font-family:var(--font);font-size:22px;font-weight:800;color:var(--text)}
+.opp-stage-num.won{color:var(--green)}
+.opp-stage-num.lost{color:var(--danger)}
+.opp-stage-lbl{font-size:10px;color:var(--text-sec);margin-top:1px;font-weight:500}
+
+/* Bar Chart */
+.chart-bars{background:var(--surface);border:1.5px solid var(--border);
+  border-radius:var(--radius);padding:16px;box-shadow:var(--shadow-sm)}
+.chart-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.chart-bar-row:last-child{margin-bottom:0}
+.chart-label{width:80px;font-size:12px;font-weight:500;color:var(--text);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
+.chart-bar-track{flex:1;background:var(--surface2);border-radius:4px;height:26px;overflow:hidden}
+.chart-bar-fill{height:100%;border-radius:4px;transition:width .6s ease;min-width:4px}
+.chart-value{font-family:var(--font);font-size:13px;font-weight:700;color:var(--text);
+  min-width:48px;text-align:right;flex-shrink:0}
+.chart-pct{font-size:11px;font-weight:400;color:var(--text-sec)}
+.dash-note{font-size:12px;color:var(--text-muted);margin-top:10px;text-align:center}
+
+/* Quality */
+.quality-hero{display:flex;align-items:center;gap:20px;background:var(--surface);
+  border:1.5px solid var(--border);border-radius:var(--radius);padding:20px;
+  box-shadow:var(--shadow-sm);margin-bottom:4px}
+.quality-ring{width:110px;height:110px;border-radius:50%;flex-shrink:0;
+  background:conic-gradient(var(--score-color,#16A34A) calc(var(--score,0)*1%),var(--surface2) 0);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative}
+.quality-ring::before{content:'';position:absolute;inset:14px;background:var(--surface);border-radius:50%}
+.quality-score-num{font-family:var(--font);font-size:26px;font-weight:800;
+  color:var(--text);position:relative;z-index:1;line-height:1}
+.quality-score-lbl{font-size:10px;color:var(--text-sec);font-weight:500;
+  position:relative;z-index:1;margin-top:2px;text-align:center}
+.quality-breakdown{flex:1}
+.quality-row{display:flex;justify-content:space-between;align-items:center;
+  padding:7px 0;border-bottom:1px solid var(--border)}
+.quality-row:last-child{border-bottom:none}
+.quality-row span:first-child{font-size:13px;color:var(--text-sec)}
+.quality-val{font-family:var(--font);font-size:15px;font-weight:700;color:var(--text)}
+.quality-val.good{color:var(--green)}
+.quality-val.warn{color:var(--warn)}
+.quality-val.bad{color:var(--danger)}
+.criteria-list{background:var(--surface);border:1.5px solid var(--border);
+  border-radius:var(--radius);padding:12px 16px;box-shadow:var(--shadow-sm)}
+.criteria-item{display:flex;align-items:center;gap:10px;padding:7px 0;
+  border-bottom:1px solid var(--border);font-size:13px;color:var(--text-sec)}
+.criteria-item:last-child{border-bottom:none}
+.criteria-dot{width:10px;height:10px;border-radius:50%;background:var(--green);flex-shrink:0}
+
+/* Opportunity items */
+.opp-item{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);
+  padding:14px;margin-bottom:8px;cursor:pointer;box-shadow:var(--shadow-sm);transition:all .15s}
+.opp-item:active{box-shadow:var(--shadow-md);border-color:var(--green)}
+.opp-item-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
+.opp-name{font-size:15px;font-weight:600;color:var(--text);flex:1;min-width:0;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.opp-stage-badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;
+  white-space:nowrap;flex-shrink:0}
+.opp-item-sub{font-size:12px;color:var(--text-sec);margin-bottom:2px}
+.opp-contact{font-size:11px;color:var(--text-muted);margin-top:2px}
+
+/* Value summary */
+.value-summary{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.value-cell{background:var(--surface);border:1.5px solid var(--border);
+  border-radius:var(--radius);padding:14px;box-shadow:var(--shadow-sm)}
+.value-cell.won{border-color:var(--green-mid)}
+.value-num{font-family:var(--font);font-size:20px;font-weight:800;color:var(--text)}
+.value-cell.won .value-num{color:var(--green)}
+.value-lbl{font-size:11px;color:var(--text-sec);margin-top:2px;font-weight:500}
+
+/* No data */
+.no-data-msg{text-align:center;padding:28px 16px;color:var(--text-muted);
+  font-size:14px;font-style:italic}
+
+/* ── OPPORTUNITY BUTTON ── */
+.btn-opp{background:linear-gradient(135deg,#F59E0B,#D97706);color:#fff;font-weight:700;
+  border:none;box-shadow:0 2px 10px rgba(245,158,11,.3);width:100%}
+.btn-opp:active{background:#D97706;transform:scale(.98)}
+.opp-count-badge{background:rgba(255,255,255,.25);border-radius:10px;
+  padding:1px 8px;font-size:12px;margin-left:4px;font-weight:700}
+
+/* ── LOCATION INDICATOR ── */
+.loc-indicator{display:flex;align-items:center;gap:8px;padding:9px 14px;
+  border-radius:var(--radius-sm);font-size:12px;font-weight:500;margin-bottom:10px;
+  cursor:pointer;transition:all .15s;font-family:var(--font);user-select:none}
+.loc-indicator.no-loc{background:#FFF7ED;border:1.5px dashed #FED7AA;color:#92400E}
+.loc-indicator.has-loc{background:#F0FDF4;border:1.5px solid #BBF7D0;color:#166534;cursor:default}
+.loc-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;background:currentColor;opacity:.7}
+.loc-acc{color:var(--text-muted);font-size:11px;margin-left:2px}
+.loc-update-btn{margin-left:auto;background:none;border:1.5px solid var(--green);
+  color:var(--green);border-radius:6px;padding:2px 9px;font-size:11px;
+  font-weight:600;font-family:var(--font);cursor:pointer}
+
+/* ── FILTER PILLS (map) ── */
+.filter-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.fpill{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;
+  font-family:var(--font);white-space:nowrap;cursor:pointer;
+  border:1.5px solid transparent;transition:all .12s}
+.fpill.all{background:var(--green);color:#fff;border-color:var(--green)}
+.fpill.surveyed{background:var(--green-dim);color:var(--green-dark);border-color:var(--green-mid)}
+.fpill.critical{background:#FEF2F2;color:#991B1B;border-color:#FECACA}
+.fpill.opportunity{background:#FEF3C7;color:#92400E;border-color:#FDE68A}
+.fpill:active{transform:scale(.96)}
+
+/* Leaflet popup override */
+.leaflet-popup-content-wrapper{border-radius:12px!important;box-shadow:0 4px 20px rgba(0,0,0,.2)!important;padding:0!important;overflow:hidden}
+.leaflet-popup-content{margin:0!important;width:195px!important}
+.leaflet-popup-tip-container{display:none}
+
 </style>
 </head>
 <body>
+
 <div id="app">
   <div class="topbar">
-    <div class="topbar-logo">SCHURCO <span>AUDIT</span></div>
-    <div class="topbar-badge" id="netBadge">● ONLINE</div>
+    <div class="topbar-brand">
+      <img id="brandLogo" class="topbar-logoimg" alt="Schurco"/>
+      <div class="topbar-logo">SITE <span>AUDIT</span></div>
+    </div>
+    <div class="topbar-badge" id="netBadge">&#9679; ONLINE</div>
   </div>
 
-  <!-- SCREENS -->
+  <!-- HOME: Audit list -->
   <div class="screen" id="screenHome">
     <div class="screen-inner">
       <div class="section-head">Site Audits</div>
-      <div class="section-sub" id="auditCount">Loading saved audits…</div>
-
+      <div class="section-sub" id="auditCount">Loading...</div>
       <button class="btn btn-primary" onclick="openNewAuditDrawer()" style="margin-bottom:20px">
-        <span>＋</span> New Site Audit
+        <span>&#43;</span> New Site Audit
       </button>
-
       <div id="auditList"></div>
     </div>
   </div>
 
+  <!-- PUMPS: Pump list within audit -->
   <div class="screen" id="screenPumps" style="display:none">
     <div class="screen-inner">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px">
-        <button class="btn btn-secondary btn-icon" onclick="goHome()" style="padding:8px 10px;font-size:16px">←</button>
+        <button class="btn btn-secondary btn-icon" onclick="goHome()" style="padding:8px 10px;font-size:16px">&#8592;</button>
         <div>
           <div class="section-head" id="pumpScreenTitle" style="margin-bottom:0">Pumps</div>
-          <div style="font-size:12px;color:var(--text-dim)" id="pumpScreenSite"></div>
+          <div style="font-size:12px;color:var(--text-sec)" id="pumpScreenSite"></div>
         </div>
       </div>
-      <div class="section-sub" id="pumpCount" style="margin-top:4px;margin-bottom:16px"></div>
-
+      <div class="section-sub" id="pumpCount" style="margin-top:4px;margin-bottom:12px"></div>
       <button class="btn btn-primary" onclick="openPumpDrawer()" style="margin-bottom:10px">
-        <span>＋</span> Add Pump
+        <span>&#43;</span> Add Pump
       </button>
+      <button class="btn btn-opp" id="oppBtn" onclick="openOpportunityDrawer()" style="margin-bottom:10px">
+        &#128161; Log Opportunity
+      </button>
+      <div class="loc-indicator no-loc" id="locationIndicator" onclick="captureLocationNow(null,true)">
+        <span class="loc-dot"></span>&#128205; No location &#8212; tap to capture on-site
+      </div>
       <div class="btn-row" style="margin-bottom:8px">
-        <button class="btn btn-secondary btn-sm" onclick="generateReport()">📄 PDF</button>
-        <button class="btn btn-secondary btn-sm" onclick="downloadExcel()">📊 Excel</button>
+        <button class="btn btn-secondary btn-sm" onclick="generateReport()">&#128196; PDF</button>
+        <button class="btn btn-secondary btn-sm" onclick="downloadExcel()">&#128202; Excel</button>
       </div>
       <div class="btn-row" style="margin-bottom:16px">
-        <button class="btn btn-secondary btn-sm" onclick="shareExcel()">📤 Share</button>
-        <button class="btn btn-secondary btn-sm" onclick="uploadSharePoint()">☁ SharePoint</button>
+        <button class="btn btn-secondary btn-sm" onclick="shareExcel()">&#128228; Share</button>
+        <button class="btn btn-secondary btn-sm" onclick="uploadSharePoint()">&#9729; SharePoint</button>
       </div>
       <div id="pumpList"></div>
     </div>
   </div>
 
+  <!-- DASHBOARD (new) -->
+  <div class="screen" id="screenDashboard" style="display:none">
+    <div class="dash-subnav" id="dashSubnav">
+      <button class="dash-nav-btn active" data-section="overview" onclick="showDashSection('overview')">Overview</button>
+      <button class="dash-nav-btn" data-section="pipeline" onclick="showDashSection('pipeline')">Pipeline</button>
+      <button class="dash-nav-btn" data-section="competitors" onclick="showDashSection('competitors')">Competitors</button>
+      <button class="dash-nav-btn" data-section="opportunities" onclick="showDashSection('opportunities')">Opportunities</button>
+      <button class="dash-nav-btn" data-section="quality" onclick="showDashSection('quality')">Quality</button>
+      <button class="dash-nav-btn" data-section="sites" onclick="showDashSection('sites')">&#128205; Sites</button>
+    </div>
+    <div class="dash-scroll">
+      <div class="dash-inner" id="dashContent"></div>
+    </div>
+  </div>
+
+  <!-- SYNC -->
   <div class="screen" id="screenSync" style="display:none">
     <div class="screen-inner">
-      <div class="section-head">Sync & Export</div>
-      <div class="section-sub">Upload completed audits to monday.com and SharePoint, or export as Excel.</div>
-
+      <div class="section-head">Sync &amp; Settings</div>
+      <div class="section-sub">Upload completed audits to SharePoint or export as Excel.</div>
       <div class="stat-row">
         <div class="stat-box"><div class="stat-num" id="statAudits">0</div><div class="stat-lbl">Audits</div></div>
         <div class="stat-box"><div class="stat-num" id="statPumps">0</div><div class="stat-lbl">Pumps</div></div>
         <div class="stat-box"><div class="stat-num" id="statPhotos">0</div><div class="stat-lbl">Photos</div></div>
       </div>
-
       <div class="sync-card">
-        <div class="sync-title">☁ SharePoint / OneDrive</div>
-        <div class="sync-desc">Saved audits upload as a fully-formatted Excel workbook named <b>Client_Site_Date</b>. Configure your library once below — then upload straight from each audit screen.</div>
-        <div class="field">
-          <label>SharePoint Site URL</label>
-          <input type="text" id="spUrl" placeholder="https://schurco.sharepoint.com/sites/Sales" oninput="saveCreds()"/>
-        </div>
-        <div class="field">
-          <label>Library Path</label>
-          <input type="text" id="spLib" placeholder="/Shared Documents/Site Audits" oninput="saveCreds()"/>
-        </div>
-        <div class="field">
-          <label>Access Token (Bearer)</label>
-          <input type="text" id="spToken" placeholder="eyJ0eXAi…" oninput="saveCreds()"/>
-        </div>
-        <div style="font-size:12px;color:var(--text-dim);line-height:1.5">
-          Open an audit → tap <b>☁ SharePoint</b> to upload that site's workbook. The Microsoft 365 token comes from your org's SSO sign-in.
-        </div>
+        <div class="sync-title">&#9729; SharePoint / OneDrive</div>
+        <div class="sync-desc">Upload formatted Excel workbooks named <b>Client_Site_Date</b> directly to your SharePoint library. Configure once below.</div>
+        <div class="field"><label>SharePoint Site URL</label>
+          <input type="text" id="spUrl" placeholder="https://schurco.sharepoint.com/sites/Sales" oninput="saveCreds()"/></div>
+        <div class="field"><label>Library Path</label>
+          <input type="text" id="spLib" placeholder="/Shared Documents/Site Audits" oninput="saveCreds()"/></div>
+        <div class="field"><label>Access Token (Bearer)</label>
+          <input type="text" id="spToken" placeholder="eyJ0eXAi&#8230;" oninput="saveCreds()"/></div>
+        <div style="font-size:12px;color:var(--text-muted);line-height:1.5">Open an audit &rarr; tap <b>&#9729; SharePoint</b> to upload that site&rsquo;s workbook.</div>
       </div>
-
       <div class="sync-card">
-        <div class="sync-title">📤 Export & Share</div>
-        <div class="sync-desc">Excel download and WhatsApp / Email sharing are available inside each audit, on the pump list screen — so each file carries that site's name and date automatically.</div>
-        <button class="btn btn-secondary btn-full" onclick="goHome()">← Back to Audits</button>
+        <div class="sync-title">&#128228; Export &amp; Share</div>
+        <div class="sync-desc">Excel download and sharing are available inside each audit on the pump list screen.</div>
+        <button class="btn btn-secondary btn-full" onclick="goHome()">&#8592; Back to Audits</button>
       </div>
-
       <div style="margin-top:4px">
-        <button class="btn btn-danger btn-full btn-sm" onclick="clearAllData()">🗑 Clear All Local Data</button>
+        <button class="btn btn-danger btn-full btn-sm" onclick="clearAllData()">&#128465; Clear All Local Data</button>
       </div>
     </div>
   </div>
 
+  <!-- BOTTOM NAV -->
   <nav class="bottomnav">
     <button class="bnav-btn active" id="navHome" onclick="showTab('Home')">
-      <span class="bnav-icon">🏠</span>Audits
+      <span class="bnav-icon">&#127968;</span>Audits
+    </button>
+    <button class="bnav-btn" id="navDash" onclick="showTab('Dashboard')">
+      <span class="bnav-icon">&#128202;</span>Dashboard
     </button>
     <button class="bnav-btn" id="navSync" onclick="showTab('Sync')">
-      <span class="bnav-icon">☁</span>Sync
+      <span class="bnav-icon">&#9729;</span>Sync
     </button>
   </nav>
 </div>
 
-<!-- TOAST -->
 <div class="toast-wrap" id="toastWrap"></div>
 
 <!-- NEW AUDIT DRAWER -->
@@ -459,67 +559,44 @@ input[type=file] { display: none; }
     <div class="drawer-handle"></div>
     <div class="drawer-head">
       <div class="drawer-title" id="auditDrawerTitle">New Site Audit</div>
-      <button class="drawer-close" onclick="closeDrawer('newAuditDrawer')">✕</button>
+      <button class="drawer-close" onclick="closeDrawer('newAuditDrawer')">&#10005;</button>
     </div>
     <div class="drawer-body">
       <div class="card-head"><div class="card-head-dot"></div>Site Details</div>
-      <div class="field">
-        <label>Customer / Company <span class="req">*</span></label>
-        <input type="text" id="af_customer" placeholder="e.g. Anglo American Platinum"/>
-      </div>
-      <div class="field">
-        <label>Site Name <span class="req">*</span></label>
-        <input type="text" id="af_site" placeholder="e.g. Mogalakwena North Concentrator"/>
+      <div class="field"><label>Customer / Company <span class="req">*</span></label>
+        <input type="text" id="af_customer" placeholder="e.g. Anglo American Platinum"/></div>
+      <div class="field"><label>Site Name <span class="req">*</span></label>
+        <input type="text" id="af_site" placeholder="e.g. Mogalakwena North Concentrator"/></div>
+      <div class="field-row">
+        <div class="field"><label>Region / Area</label>
+          <input type="text" id="af_region" placeholder="e.g. Limpopo"/></div>
+        <div class="field"><label>Country</label>
+          <input type="text" id="af_country" placeholder="South Africa"/></div>
       </div>
       <div class="field-row">
-        <div class="field">
-          <label>Region / Area</label>
-          <input type="text" id="af_region" placeholder="e.g. Limpopo"/>
-        </div>
-        <div class="field">
-          <label>Country</label>
-          <input type="text" id="af_country" placeholder="South Africa"/>
-        </div>
+        <div class="field"><label>Date of Visit <span class="req">*</span></label>
+          <input type="date" id="af_date"/></div>
+        <div class="field"><label>Schurco Rep</label>
+          <input type="text" id="af_rep" placeholder="e.g. Gideon"/></div>
       </div>
       <div class="field-row">
-        <div class="field">
-          <label>Date of Visit <span class="req">*</span></label>
-          <input type="date" id="af_date"/>
-        </div>
-        <div class="field">
-          <label>Schurco Rep</label>
-          <input type="text" id="af_rep" placeholder="e.g. Gideon"/>
-        </div>
+        <div class="field"><label>Contact Name</label>
+          <input type="text" id="af_contactName" placeholder="e.g. John Smith"/></div>
+        <div class="field"><label>Contact Position</label>
+          <input type="text" id="af_contactPosition" placeholder="e.g. Plant Engineer"/></div>
       </div>
-      <div class="field-row">
-        <div class="field">
-          <label>Contact Name</label>
-          <input type="text" id="af_contactName" placeholder="e.g. John Smith"/>
-        </div>
-        <div class="field">
-          <label>Contact Position</label>
-          <input type="text" id="af_contactPosition" placeholder="e.g. Plant Engineer"/>
-        </div>
-      </div>
-      <div class="field">
-        <label>Visit Purpose</label>
+      <div class="field"><label>Visit Purpose</label>
         <select id="af_purpose">
-          <option value="">Select…</option>
-          <option>Routine Inspection</option>
-          <option>Quotation / Survey</option>
-          <option>Warranty / Complaint</option>
-          <option>Commissioning</option>
-          <option>Emergency Callout</option>
-          <option>Follow-Up</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Notes / Observations</label>
-        <textarea id="af_notes" placeholder="General site observations…"></textarea>
-      </div>
+          <option value="">Select&#8230;</option>
+          <option>Routine Inspection</option><option>Quotation / Survey</option>
+          <option>Warranty / Complaint</option><option>Commissioning</option>
+          <option>Emergency Callout</option><option>Follow-Up</option>
+        </select></div>
+      <div class="field"><label>Notes / Observations</label>
+        <textarea id="af_notes" placeholder="General site observations&#8230;"></textarea></div>
       <div class="btn-row">
         <button class="btn btn-secondary" onclick="closeDrawer('newAuditDrawer')">Cancel</button>
-        <button class="btn btn-primary" onclick="saveAudit()">Save & Open</button>
+        <button class="btn btn-primary" onclick="saveAudit()">Save &amp; Open</button>
       </div>
     </div>
   </div>
@@ -531,136 +608,149 @@ input[type=file] { display: none; }
     <div class="drawer-handle"></div>
     <div class="drawer-head">
       <div class="drawer-title" id="pumpDrawerTitle">Add Pump</div>
-      <button class="drawer-close" onclick="closeDrawer('pumpDrawer')">✕</button>
+      <button class="drawer-close" onclick="closeDrawer('pumpDrawer')">&#10005;</button>
     </div>
     <div class="drawer-body">
-
-      <!-- PUMP ID -->
       <div class="card-head"><div class="card-head-dot"></div>Identification</div>
       <div class="field-row">
-        <div class="field">
-          <label>Tag No. <span class="req">*</span></label>
-          <input type="text" id="pf_tag" placeholder="e.g. P-101A"/>
-        </div>
-        <div class="field">
-          <label>Area / Location</label>
+        <div class="field"><label>Tag No. <span class="req">*</span></label>
+          <input type="text" id="pf_tag" placeholder="e.g. P-101A"/></div>
+        <div class="field"><label>Area / Location</label>
           <select id="pf_area" onchange="onAreaChange()">
-            <option value="">Select…</option>
-            <option>Mill Discharge</option>
-            <option>Cyclone Feed</option>
-            <option>Cyclone Underflow</option>
-            <option>Tailings</option>
-            <option>Thickener Underflow</option>
-            <option>Separator / Classifier</option>
-            <option>Process Feed</option>
-            <option>Flotation</option>
-            <option>Concentrate</option>
-            <option>Heavy Media (DMS)</option>
-            <option>Filter Press Feed</option>
-            <option>Mine Dewatering</option>
-            <option>Sump / Floor</option>
-            <option>Gland Service</option>
-            <option>Reagent / Dosing</option>
-            <option>Slag Granulation</option>
+            <option value="">Select&#8230;</option>
+            <option>Mill Discharge</option><option>Cyclone Feed</option>
+            <option>Cyclone Underflow</option><option>Tailings</option>
+            <option>Thickener Underflow</option><option>Separator / Classifier</option>
+            <option>Process Feed</option><option>Flotation</option>
+            <option>Concentrate</option><option>Heavy Media (DMS)</option>
+            <option>Filter Press Feed</option><option>Mine Dewatering</option>
+            <option>Sump / Floor</option><option>Gland Service</option>
+            <option>Reagent / Dosing</option><option>Slag Granulation</option>
             <option>Dredging</option>
-            <option value="__other">Other (type below)…</option>
+            <option value="__other">Other (type below)&#8230;</option>
           </select>
         </div>
       </div>
       <div class="field" id="otherAreaField" style="display:none">
-        <label>Area / Location — specify</label>
+        <label>Area / Location &#8212; specify</label>
         <input type="text" id="pf_areaOther" placeholder="e.g. Reclaim sump"/>
       </div>
       <div class="field-row">
-        <div class="field">
-          <label>Pump Series <span class="req">*</span></label>
+        <div class="field"><label>Pump Series <span class="req">*</span></label>
           <select id="pf_type" onchange="onTypeChange()">
-            <option value="">Select…</option>
-            <option value="S">S Series — Severe Duty Lined</option>
-            <option value="L">L Series — Heavy-Duty Lined</option>
-            <option value="H">H Series — Metal-Lined High Head</option>
-            <option value="U">U Series — Unlined Metal</option>
-            <option value="P">P Series — Process / Dirty Water</option>
-            <option value="Z">Z Series — Large Solids / Dredge</option>
-            <option value="V">V Series — Vertical Sump</option>
-            <option value="DW">DW Series — De-Watering</option>
+            <option value="">Select&#8230;</option>
+            <option value="S">S Series &#8212; Severe Duty</option>
+            <option value="L">L Series &#8212; Heavy Duty</option>
+            <option value="H">H Series &#8212; High Head</option>
+            <option value="U">U Series &#8212; Unlined</option>
+            <option value="P">P Series &#8212; Process</option>
+            <option value="Z">Z Series &#8212; Large Solids</option>
+            <option value="V">V Series &#8212; Vertical</option>
+            <option value="DW">DW Series &#8212; Dewatering</option>
             <option value="Other">Other</option>
           </select>
         </div>
-        <div class="field">
-          <label>Model / Size (Disch × Suct)</label>
+        <div class="field"><label>Model / Size (D&#215;S)</label>
           <select id="pf_model" onchange="onModelChange()">
-            <option value="">Select series first…</option>
+            <option value="">Select series first&#8230;</option>
           </select>
         </div>
       </div>
       <div class="field" id="otherSizeField" style="display:none">
-        <label>Size — Discharge × Suction (mm)</label>
-        <input type="text" id="pf_size" placeholder="e.g. 100 × 150"/>
+        <label>Size &#8212; Discharge &#215; Suction (mm)</label>
+        <input type="text" id="pf_size" placeholder="e.g. 100 &#215; 150"/>
       </div>
       <div class="field-row">
-        <div class="field">
-          <label>Operating Speed (RPM)</label>
-          <input type="number" id="pf_rpm" placeholder="e.g. 650"/>
-        </div>
-        <div class="field">
-          <label>Bearing / Frame Size</label>
-          <input type="text" id="pf_bearing" placeholder="e.g. C-frame, 65mm shaft"/>
-        </div>
+        <div class="field"><label>Speed (RPM)</label>
+          <input type="number" id="pf_rpm" placeholder="e.g. 650"/></div>
+        <div class="field"><label>Bearing Frame</label>
+          <select id="pf_bearing" onchange="onBearingChange()">
+            <option value="">Select&#8230;</option>
+            <option>B</option><option>C</option><option>CC</option>
+            <option>D</option><option>DD</option><option>E</option><option>EE</option>
+            <option>F</option><option>FF</option><option>FAM</option>
+            <option>G</option><option>R</option><option>ST</option>
+            <option>TU</option><option>U</option>
+            <option value="OTHER">Other</option>
+          </select></div>
+      </div>
+      <div class="field" id="bearingOtherField" style="display:none">
+        <label>Bearing Frame &#8212; specify</label>
+        <input type="text" id="pf_bearingOther" placeholder="e.g. EE-SPECIAL"
+          oninput="this.value=this.value.toUpperCase()"/>
+      </div>
+      <div class="field" id="bearingSourceField" style="display:none">
+        <label>How was this confirmed?</label>
+        <select id="pf_bearingSource">
+          <option value="">Select&#8230;</option>
+          <option>Nameplate</option>
+          <option>Stamped on casting</option>
+          <option>Marked on bearing housing</option>
+          <option>Estimated from pump size</option>
+          <option>Client confirmed</option>
+          <option>Other</option>
+        </select>
       </div>
       <div class="field-row">
-        <div class="field">
-          <label>Drive Type</label>
+        <div class="field"><label>Drive Type</label>
           <select id="pf_drive">
-            <option value="">Select…</option>
+            <option value="">Select&#8230;</option>
             <option>Direct Drive</option><option>V-Belt</option>
             <option>Gearbox</option><option>VSD</option><option>Other</option>
           </select>
         </div>
-        <div class="field">
-          <label>Motor Power (kW)</label>
-          <input type="number" id="pf_kw" placeholder="e.g. 75"/>
-        </div>
+        <div class="field"><label>Motor Power (kW)</label>
+          <select id="pf_kw" onchange="onKwChange()">
+            <option value="">Select&#8230;</option>
+            <option>5.5</option><option>7.5</option><option>11</option>
+            <option>15</option><option>18.5</option><option>22</option>
+            <option>30</option><option>37</option><option>45</option>
+            <option>55</option><option>75</option><option>90</option>
+            <option>110</option><option>132</option><option>160</option>
+            <option>185</option><option>200</option><option>220</option>
+            <option>250</option><option>280</option><option>315</option>
+            <option>355</option><option>400</option><option>450</option>
+            <option>500</option>
+            <option value="OTHER">Other</option>
+          </select></div>
       </div>
-
+      <div class="field" id="kwOtherField" style="display:none">
+        <label>Motor Power &#8212; specify (kW)</label>
+        <input type="number" id="pf_kwOther" placeholder="e.g. 250" step="0.1"/>
+      </div>
+      <div id="mocWetEnd">
       <div class="divider"></div>
-
-      <!-- MOC -->
-      <div class="card-head"><div class="card-head-dot"></div>MOC — Materials of Construction</div>
-      <div class="moc-group-label">Wet-End Components (select each independently)</div>
+      <div class="card-head"><div class="card-head-dot"></div>MOC &#8212; Materials of Construction</div>
+      <div class="moc-group-label">Wet-End Components</div>
       <div class="field-row3">
-        <div class="field">
-          <label>Liners</label>
+        <div class="field"><label>Liners</label>
           <select id="pf_liner">
-            <option value="">–</option>
+            <option value="">&#8211;</option>
             <option>Natural Rubber</option><option>Poly (Urethane)</option>
             <option>White Iron (HC)</option><option>Ni-Hard</option>
             <option>Stainless</option><option>Ceramic</option>
           </select>
         </div>
-        <div class="field">
-          <label>Impeller</label>
+        <div class="field"><label>Impeller</label>
           <select id="pf_impeller">
-            <option value="">–</option>
+            <option value="">&#8211;</option>
             <option>Natural Rubber</option><option>Poly (Urethane)</option>
             <option>White Iron (HC)</option><option>Ni-Hard</option>
             <option>Stainless</option><option>Ceramic</option>
           </select>
         </div>
-        <div class="field">
-          <label>Throat Bush</label>
+        <div class="field"><label>Throat Bush</label>
           <select id="pf_throat">
-            <option value="">–</option>
+            <option value="">&#8211;</option>
             <option>Natural Rubber</option><option>Poly (Urethane)</option>
             <option>White Iron (HC)</option><option>Ni-Hard</option>
             <option>Stainless</option><option>Ceramic</option>
           </select>
         </div>
       </div>
-
+      </div><!-- /mocWetEnd -->
+      <div id="sealSection">
       <div class="divider"></div>
-
-      <!-- SHAFT SEALING -->
       <div class="card-head"><div class="card-head-dot"></div>Shaft Sealing</div>
       <div class="chip-group" id="sealChips">
         <div class="chip" onclick="toggleChip(this,'seal')">Expeller</div>
@@ -668,52 +758,36 @@ input[type=file] { display: none; }
         <div class="chip" onclick="toggleChip(this,'seal')">FF Stuffing Box</div>
         <div class="chip" onclick="toggleChip(this,'seal')">Mech. Seal</div>
       </div>
-
+      </div><!-- /sealSection -->
       <div class="divider"></div>
-
-      <!-- PROCESS / SLURRY -->
       <div class="card-head"><div class="card-head-dot"></div>Slurry / Process Data</div>
-      <div class="field">
-        <label>Slurry Description</label>
-        <input type="text" id="pf_slurry" placeholder="e.g. Copper tailings, abrasive"/>
+      <div class="field"><label>Slurry Description</label>
+        <input type="text" id="pf_slurry" placeholder="e.g. Copper tailings, abrasive"/></div>
+      <div class="field-row">
+        <div class="field"><label>SG / Density</label>
+          <input type="number" id="pf_sg" placeholder="e.g. 1.45" step="0.01"/></div>
+        <div class="field"><label>pH</label>
+          <input type="number" id="pf_ph" placeholder="e.g. 7.2" step="0.1"/></div>
+        <div class="field"><label>Slurry Temp (&#176;C)</label>
+          <input type="number" id="pf_temp" placeholder="e.g. 35" step="1"/></div>
       </div>
       <div class="field-row">
-        <div class="field">
-          <label>SG / Density</label>
-          <input type="number" id="pf_sg" placeholder="e.g. 1.45" step="0.01"/>
-        </div>
-        <div class="field">
-          <label>pH</label>
-          <input type="number" id="pf_ph" placeholder="e.g. 7.2" step="0.1"/>
-        </div>
+        <div class="field"><label>Solids (%w/w)</label>
+          <input type="number" id="pf_solids" placeholder="e.g. 45"/></div>
+        <div class="field"><label>Flow Rate (m&#179;/h)</label>
+          <input type="number" id="pf_flow" placeholder="e.g. 200"/></div>
+        <div class="field"><label>Head (m)</label>
+          <input type="number" id="pf_head" placeholder="e.g. 45" step="0.5"/></div>
       </div>
       <div class="field-row">
-        <div class="field">
-          <label>Solids Content (%w/w)</label>
-          <input type="number" id="pf_solids" placeholder="e.g. 45"/>
-        </div>
-        <div class="field">
-          <label>Flow Rate (m³/h)</label>
-          <input type="number" id="pf_flow" placeholder="e.g. 200"/>
-        </div>
+        <div class="field"><label>Particle d50 (mm)</label>
+          <input type="number" id="pf_d50" placeholder="e.g. 0.15" step="0.01"/></div>
+        <div class="field"><label>Particle Max (mm)</label>
+          <input type="number" id="pf_dmax" placeholder="e.g. 5.0" step="0.1"/></div>
       </div>
-      <div class="field-row">
-        <div class="field">
-          <label>Particle Size d50 (mm)</label>
-          <input type="number" id="pf_d50" placeholder="e.g. 0.15" step="0.01"/>
-        </div>
-        <div class="field">
-          <label>Particle Size Max (mm)</label>
-          <input type="number" id="pf_dmax" placeholder="e.g. 5.0" step="0.1"/>
-        </div>
-      </div>
-
       <div class="divider"></div>
-
-      <!-- CONDITION -->
-      <div class="card-head"><div class="card-head-dot"></div>Condition & Opportunity</div>
-      <div class="field">
-        <label>Current Condition</label>
+      <div class="card-head"><div class="card-head-dot"></div>Condition &amp; Opportunity</div>
+      <div class="field"><label>Current Condition</label>
         <div class="chip-group" id="condChips">
           <div class="chip" onclick="toggleChip(this,'cond')">Good</div>
           <div class="chip" onclick="toggleChip(this,'cond')">Serviceable</div>
@@ -722,55 +796,39 @@ input[type=file] { display: none; }
         </div>
       </div>
       <div class="field-row">
-        <div class="field">
-          <label>Wear Parts Due?</label>
-          <select id="pf_wear">
-            <option value="">–</option>
+        <div class="field"><label>Wear Parts Due?</label>
+          <select id="pf_wear"><option value="">&#8211;</option>
             <option>Imminent</option><option>Within 3 months</option>
             <option>Within 6 months</option><option>Not due</option>
           </select>
         </div>
-        <div class="field">
-          <label>Spares On-Site?</label>
-          <select id="pf_spares">
-            <option value="">–</option>
-            <option>Yes – adequate</option><option>Yes – low stock</option>
+        <div class="field"><label>Spares On-Site?</label>
+          <select id="pf_spares"><option value="">&#8211;</option>
+            <option>Yes &#8211; adequate</option><option>Yes &#8211; low stock</option>
             <option>No</option>
           </select>
         </div>
       </div>
-      <div class="field">
-        <label>Competitor Brand (if applicable)</label>
-        <input type="text" id="pf_competitor" placeholder="e.g. Warman, Metso"/>
-      </div>
-      <div class="field">
-        <label>Potential Opportunity</label>
-        <select id="pf_opp">
-          <option value="">–</option>
+      <div class="field"><label>Competitor Brand</label>
+        <input type="text" id="pf_competitor" placeholder="e.g. Warman, Metso"/></div>
+      <div class="field"><label>Potential Opportunity</label>
+        <select id="pf_opp"><option value="">&#8211;</option>
           <option>Wear Part Supply</option><option>Pump Replacement</option>
           <option>Competitive Conversion</option><option>New Installation</option>
           <option>Service Contract</option><option>None Identified</option>
         </select>
       </div>
-      <div class="field">
-        <label>Notes / Action Items</label>
-        <textarea id="pf_notes" placeholder="Anything the team should follow up…"></textarea>
-      </div>
-
+      <div class="field"><label>Notes / Action Items</label>
+        <textarea id="pf_notes" placeholder="Anything the team should follow up&#8230;"></textarea></div>
       <div class="divider"></div>
-
-      <!-- PHOTOS -->
       <div class="card-head"><div class="card-head-dot"></div>Guided Photos</div>
-      <div style="font-size:12px;color:var(--text-dim);margin-bottom:12px;margin-top:-6px">
-        Tap each tile to capture that view. Outlines show roughly what to frame.
-      </div>
+      <div style="font-size:12px;color:var(--text-sec);margin-bottom:12px;margin-top:-6px">
+        Tap each tile to capture that view.</div>
       <div class="photo-slots" id="photoSlots"></div>
-
       <div class="card-head" style="margin-top:18px"><div class="card-head-dot"></div>Extra Photos</div>
       <div class="photo-grid" id="extraGrid"></div>
       <input type="file" id="slotInput" accept="image/*" capture="environment" onchange="handleSlotPhoto(event)"/>
       <input type="file" id="extraInput" accept="image/*" capture="environment" multiple onchange="handleExtraPhotos(event)"/>
-
       <div style="height:16px"></div>
       <div class="btn-row">
         <button class="btn btn-secondary" onclick="closeDrawer('pumpDrawer')">Cancel</button>
@@ -780,7 +838,111 @@ input[type=file] { display: none; }
   </div>
 </div>
 
+<!-- OPPORTUNITY DRAWER -->
+<div class="drawer-overlay" id="oppDrawer">
+  <div class="drawer">
+    <div class="drawer-handle"></div>
+    <div class="drawer-head">
+      <div class="drawer-title" id="oppDrawerTitle">Add Opportunity</div>
+      <button class="drawer-close" onclick="closeDrawer('oppDrawer')">&#10005;</button>
+    </div>
+    <div class="drawer-body">
+      <div class="card-head"><div class="card-head-dot"></div>Opportunity Details</div>
+      <div class="field"><label>Opportunity Type <span class="req">*</span></label>
+        <select id="of_title">
+          <option value="">Select&#8230;</option>
+          <option value="Wear Part Supply">Wear Part Supply</option>
+          <option value="Pump Replacement">Pump Replacement</option>
+          <option value="Competitive Conversion">Competitive Conversion</option>
+          <option value="New Installation">New Installation</option>
+          <option value="Service Contract">Service Contract</option>
+          <option value="Spare Wet End Supply">Spare Wet End Supply</option>
+          <option value="Pump Repair / Rebuild">Pump Repair / Rebuild</option>
+          <option value="Emergency Supply">Emergency Supply</option>
+        </select></div>
+      <div class="field-row">
+        <div class="field"><label>Stage</label>
+          <select id="of_stage">
+            <option value="Identified">Identified</option><option value="Qualifying">Qualifying</option>
+            <option value="Quoting">Quoting</option><option value="Negotiation">Negotiation</option>
+            <option value="Won">Won</option><option value="Lost">Lost</option>
+          </select></div>
+        <div class="field"><label>Est. Value (R)</label>
+          <input type="number" id="of_value" placeholder="e.g. 250000"/></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Owner / Rep</label>
+          <input type="text" id="of_owner" placeholder="e.g. Gideon"/></div>
+        <div class="field"><label>Expected Close</label>
+          <input type="date" id="of_closeDate"/></div>
+      </div>
+      <div class="divider"></div>
+      <div class="card-head"><div class="card-head-dot"></div>Site &amp; Contact</div>
+      <div class="field"><label>Linked Survey (Site)</label>
+        <select id="of_auditId" onchange="onOppAuditChange()"><option value="">&#8212; Select survey &#8212;</option></select></div>
+      <div class="field"><label>Linked Pump</label>
+        <select id="of_pumpId"><option value="">&#8212; Select survey first &#8212;</option></select></div>
+      <div class="field-row">
+        <div class="field"><label>Site Contact Name</label>
+          <input type="text" id="of_contactName" placeholder="e.g. John Smith"/></div>
+        <div class="field"><label>Role</label>
+          <select id="of_contactRole">
+            <option value="">Select&#8230;</option>
+            <option>Plant Engineer</option>
+            <option>Head of Engineering</option>
+            <option>Maintenance Foreman</option>
+            <option>Maintenance Supervisor</option>
+            <option>Store Manager</option>
+            <option>Procurement Manager</option>
+            <option>Plant Manager</option>
+            <option>Production Manager</option>
+            <option>Other</option>
+          </select></div>
+      </div>
+      <div class="divider"></div>
+      <div class="card-head"><div class="card-head-dot"></div>Notes</div>
+      <div class="field">
+        <textarea id="of_notes" placeholder="Any relevant notes&#8230;" style="min-height:80px"></textarea></div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="closeDrawer('oppDrawer')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveOpportunity()">Save Opportunity</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE DRAWER -->
+<div class="drawer-overlay" id="profileDrawer">
+  <div class="drawer">
+    <div class="drawer-handle"></div>
+    <div class="drawer-head">
+      <div class="drawer-title">My Profile</div>
+      <button class="drawer-close" onclick="closeDrawer('profileDrawer')">&#10005;</button>
+    </div>
+    <div class="drawer-body">
+      <div class="field"><label>Your Name <span class="req">*</span></label>
+        <input type="text" id="prof_name" placeholder="e.g. Gideon"/></div>
+      <div class="field"><label>Company</label>
+        <input type="text" id="prof_company" placeholder="e.g. Schurco Slurry SA"/></div>
+      <div class="field"><label>Role / Designation</label>
+        <input type="text" id="prof_role" placeholder="e.g. Sales Manager"/></div>
+      <div class="field-row">
+        <div class="field"><label>Country</label>
+          <input type="text" id="prof_country" placeholder="e.g. South Africa"/></div>
+        <div class="field"><label>Region</label>
+          <input type="text" id="prof_region" placeholder="e.g. Gauteng"/></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="closeDrawer('profileDrawer')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveProfile()">Save Profile</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
+const SCHURCO_LOGO = 'data:image/png;base64,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';
+
 // ── STATE ─────────────────────────────────────────────────────────────────────
 let db = { audits: [], pumps: [] };
 let currentAuditId = null;
@@ -791,31 +953,97 @@ let activeSlot = null;     // which guided slot is currently capturing
 
 // ── GUIDED PHOTO SLOTS (key, label, silhouette SVG) ───────────────────────────
 const PHOTO_SLOTS = [
-  { key: 'tag', label: 'Pump Tag',
-    sil: `<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4">
-      <rect x="18" y="30" width="64" height="40" rx="4"/>
-      <circle cx="26" cy="38" r="2.5" fill="currentColor"/><circle cx="74" cy="38" r="2.5" fill="currentColor"/>
-      <line x1="28" y1="50" x2="72" y2="50"/><line x1="28" y1="58" x2="60" y2="58"/></svg>` },
-  { key: 'bearing', label: 'Bearing / Frame',
-    sil: `<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4">
-      <rect x="20" y="40" width="50" height="20" rx="3"/>
-      <line x1="70" y1="50" x2="88" y2="50"/>
-      <circle cx="32" cy="50" r="4"/><circle cx="50" cy="50" r="4"/>
-      <line x1="26" y1="60" x2="26" y2="70"/><line x1="62" y1="60" x2="62" y2="70"/></svg>` },
-  { key: 'sealing', label: 'Sealing Arr.',
-    sil: `<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4">
-      <circle cx="50" cy="50" r="28"/><circle cx="50" cy="50" r="16"/><circle cx="50" cy="50" r="6"/>
-      <line x1="50" y1="22" x2="50" y2="14"/><line x1="78" y1="50" x2="86" y2="50"/></svg>` },
   { key: 'wetend', label: 'Wet End',
-    sil: `<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4">
-      <path d="M30 70 A30 30 0 1 1 70 38"/>
-      <path d="M70 38 L86 38 L86 24 L66 24"/>
-      <circle cx="46" cy="52" r="9"/></svg>` },
+    sil: `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="52" r="38" stroke="currentColor" stroke-width="2.5"/>
+      <rect x="44" y="3" width="12" height="14" rx="2" stroke="currentColor" stroke-width="2"/>
+      <line x1="41" y1="3" x2="59" y2="3" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="44" y1="14" x2="44" y2="18" stroke="currentColor" stroke-width="1.2" opacity=".7"/>
+      <line x1="56" y1="14" x2="56" y2="18" stroke="currentColor" stroke-width="1.2" opacity=".7"/>
+      <path d="M38 90 L38 97 L62 97 L62 90" stroke="currentColor" stroke-width="2"/>
+      <line x1="36" y1="97" x2="64" y2="97" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="50.0" cy="22.0" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+      <circle cx="67.6" cy="27.7" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+      <circle cx="78.5" cy="42.7" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+      <circle cx="78.5" cy="61.3" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+      <circle cx="67.6" cy="76.3" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+      <circle cx="50.0" cy="82.0" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+      <circle cx="32.4" cy="76.3" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+      <circle cx="21.5" cy="61.3" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+      <circle cx="21.5" cy="42.7" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+      <circle cx="32.4" cy="27.7" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+      <circle cx="50" cy="54" r="21" stroke="currentColor" stroke-width="2.5"/>
+      <circle cx="50" cy="54" r="12" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 2"/>
+      <circle cx="50" cy="54" r="5.5" stroke="currentColor" stroke-width="1.5"/>
+      <circle cx="50" cy="54" r="2" fill="currentColor"/>
+      <path d="M50 32 C65 32 73 42 73 54" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" opacity=".6"/>
+    </svg>` },
+  { key: 'bearing', label: 'Bearing / Frame',
+    sil: `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="18" y="32" width="64" height="36" rx="4" stroke="currentColor" stroke-width="2.5"/>
+      <rect x="12" y="38" width="10" height="24" rx="3" stroke="currentColor" stroke-width="2"/>
+      <rect x="78" y="38" width="10" height="24" rx="3" stroke="currentColor" stroke-width="2"/>
+      <line x1="2" y1="50" x2="12" y2="50" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+      <line x1="88" y1="50" x2="98" y2="50" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="50" cy="32" r="4" stroke="currentColor" stroke-width="1.5"/>
+      <circle cx="50" cy="32" r="1.5" fill="currentColor"/>
+      <circle cx="30" cy="50" r="9" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3 2"/>
+      <circle cx="70" cy="50" r="9" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3 2"/>
+      <rect x="25" y="68" width="50" height="7" rx="2" stroke="currentColor" stroke-width="2"/>
+      <line x1="33" y1="68" x2="33" y2="75" stroke="currentColor" stroke-width="1.5"/>
+      <line x1="67" y1="68" x2="67" y2="75" stroke="currentColor" stroke-width="1.5"/>
+    </svg>` },
+  { key: 'sealing', label: 'Sealing Arr.',
+    sil: `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="8" y="36" width="14" height="28" rx="3" stroke="currentColor" stroke-width="2"/>
+      <rect x="20" y="32" width="44" height="36" rx="3" stroke="currentColor" stroke-width="2.5"/>
+      <line x1="30" y1="32" x2="30" y2="68" stroke="currentColor" stroke-width="1.5" opacity=".8"/>
+      <line x1="38" y1="32" x2="38" y2="68" stroke="currentColor" stroke-width="1.5" opacity=".8"/>
+      <line x1="48" y1="32" x2="48" y2="68" stroke="currentColor" stroke-width="1.5" opacity=".8"/>
+      <rect x="36" y="34" width="14" height="32" rx="1" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3 2"/>
+      <rect x="62" y="38" width="12" height="24" rx="2" stroke="currentColor" stroke-width="2"/>
+      <rect x="72" y="34" width="8" height="32" rx="2" stroke="currentColor" stroke-width="2"/>
+      <circle cx="65" cy="36" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+      <circle cx="70" cy="36" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+      <circle cx="65" cy="64" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+      <circle cx="70" cy="64" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+      <rect x="32" y="18" width="10" height="14" rx="2" stroke="currentColor" stroke-width="2"/>
+      <line x1="29" y1="18" x2="45" y2="18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="2" y1="50" x2="98" y2="50" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+      <rect x="80" y="30" width="5" height="40" rx="1" stroke="currentColor" stroke-width="2"/>
+    </svg>` },
   { key: 'assembly', label: 'Full Assembly',
-    sil: `<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4">
-      <circle cx="34" cy="52" r="20"/><circle cx="34" cy="52" r="6"/>
-      <rect x="58" y="40" width="28" height="24" rx="3"/>
-      <line x1="20" y1="76" x2="88" y2="76"/></svg>` }
+    sil: `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="5" y="78" width="90" height="8" rx="2" stroke="currentColor" stroke-width="2"/>
+      <line x1="15" y1="78" x2="15" y2="86" stroke="currentColor" stroke-width="2"/>
+      <line x1="85" y1="78" x2="85" y2="86" stroke="currentColor" stroke-width="2"/>
+      <circle cx="24" cy="55" r="20" stroke="currentColor" stroke-width="2.5"/>
+      <circle cx="24" cy="55" r="10" stroke="currentColor" stroke-width="1.5"/>
+      <circle cx="24" cy="55" r="4" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 2"/>
+      <rect x="18" y="26" width="12" height="17" rx="2" stroke="currentColor" stroke-width="2"/>
+      <line x1="16" y1="26" x2="32" y2="26" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <rect x="42" y="42" width="20" height="28" rx="3" stroke="currentColor" stroke-width="2"/>
+      <rect x="60" y="49" width="9" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/>
+      <rect x="67" y="40" width="27" height="30" rx="4" stroke="currentColor" stroke-width="2.5"/>
+      <line x1="73" y1="40" x2="73" y2="70" stroke="currentColor" stroke-width="1.5" opacity=".7"/>
+      <line x1="79" y1="40" x2="79" y2="70" stroke="currentColor" stroke-width="1.5" opacity=".7"/>
+      <line x1="85" y1="40" x2="85" y2="70" stroke="currentColor" stroke-width="1.5" opacity=".7"/>
+      <line x1="90" y1="55" x2="98" y2="55" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>` },
+  { key: 'tag', label: 'Pump Tag',
+    sil: `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="10" y="15" width="80" height="70" rx="6" stroke="currentColor" stroke-width="2.5"/>
+      <circle cx="20" cy="25" r="3.5" stroke="currentColor" stroke-width="1.5"/>
+      <circle cx="80" cy="25" r="3.5" stroke="currentColor" stroke-width="1.5"/>
+      <circle cx="20" cy="75" r="3.5" stroke="currentColor" stroke-width="1.5"/>
+      <circle cx="80" cy="75" r="3.5" stroke="currentColor" stroke-width="1.5"/>
+      <line x1="22" y1="38" x2="44" y2="38" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <rect x="48" y="33" width="28" height="8" rx="2" stroke="currentColor" stroke-width="1.5"/>
+      <line x1="22" y1="52" x2="44" y2="52" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <rect x="48" y="47" width="28" height="8" rx="2" stroke="currentColor" stroke-width="1.5"/>
+      <line x1="22" y1="66" x2="44" y2="66" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <rect x="48" y="61" width="28" height="8" rx="2" stroke="currentColor" stroke-width="1.5"/>
+    </svg>` }
 ];
 
 // ── TEXT NORMALISATION ────────────────────────────────────────────────────────
@@ -871,12 +1099,11 @@ window.addEventListener('offline', updateNet);
 
 // ── TABS ──────────────────────────────────────────────────────────────────────
 function showTab(tab) {
-  document.getElementById('screenHome').style.display = 'none';
-  document.getElementById('screenPumps').style.display = 'none';
-  document.getElementById('screenSync').style.display = 'none';
-  document.getElementById('navHome').classList.remove('active');
-  document.getElementById('navSync').classList.remove('active');
-
+  ['screenHome','screenPumps','screenDashboard','screenSync'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('active'));
   if (tab === 'Home') {
     document.getElementById('screenHome').style.display = '';
     document.getElementById('navHome').classList.add('active');
@@ -884,6 +1111,10 @@ function showTab(tab) {
   } else if (tab === 'Pumps') {
     document.getElementById('screenPumps').style.display = '';
     document.getElementById('navHome').classList.add('active');
+  } else if (tab === 'Dashboard') {
+    document.getElementById('screenDashboard').style.display = 'flex';
+    document.getElementById('navDash').classList.add('active');
+    renderDashboard();
   } else if (tab === 'Sync') {
     document.getElementById('screenSync').style.display = '';
     document.getElementById('navSync').classList.add('active');
@@ -928,6 +1159,8 @@ function openAudit(id) {
   document.getElementById('pumpScreenSite').textContent = a.customer + (a.rep ? ' · ' + a.rep : '');
   showTab('Pumps');
   renderPumpList();
+  // Update location indicator and opportunity button after DOM renders
+  setTimeout(() => { updateLocationIndicator(); updateOppButton(); }, 50);
 }
 
 // ── AUDIT FORM ────────────────────────────────────────────────────────────────
@@ -941,7 +1174,7 @@ function openNewAuditDrawer() {
   document.getElementById('af_purpose').value = '';
   const today = new Date().toISOString().split('T')[0];
   document.getElementById('af_date').value = today;
-  document.getElementById('af_rep').value = 'Gideon'; // default rep
+  document.getElementById('af_rep').value = (db.userProfile && db.userProfile.name) || 'Gideon';
   openDrawer('newAuditDrawer');
 }
 
@@ -989,7 +1222,9 @@ function renderPumpList() {
 
   const condColor = { 'Good':'', 'Serviceable':'', 'Worn':'warn', 'Critical':'bad' };
   list.innerHTML = pumps.map(p => {
-    const moc = [p.liner, p.impeller, p.throat].filter(Boolean).join(' / ') || '—';
+    const moc = p.type === 'DW'
+    ? 'Fixed standard (DW)'
+    : ([p.liner, p.impeller, p.throat].filter(Boolean).join(' / ') || '—');
     const seal = p.seal || '—';
     const photoCount = countPhotos(p);
     const cond = p.condition || '';
@@ -1000,14 +1235,16 @@ function renderPumpList() {
         <div class="pump-meta">${p.area||'—'} · MOC: ${moc} · Seal: ${seal}${photoCount?' · 📷'+photoCount:''}</div>
       </div>
       <button class="dup-btn" onclick="event.stopPropagation();duplicatePump('${p.id}')" title="Duplicate">⧉</button>
+      <button class="opp-quick-btn" onclick="event.stopPropagation();openOpportunityDrawer(null,'${p.id}')" title="Log Opportunity">&#128161;</button>
       <div class="status-dot ${condColor[cond]||''}"></div>
     </div>`;
   }).join('');
 }
 
 // ── PUMP FORM ─────────────────────────────────────────────────────────────────
-const pumpFields = ['tag','type','model','size','rpm','bearing','drive','kw','liner','impeller','throat',
-  'slurry','sg','ph','solids','flow','d50','dmax','wear','spares','competitor','opp','notes'];
+const pumpFields = ['tag','type','model','size','rpm','drive','liner','impeller','throat',
+  'slurry','sg','ph','temp','solids','flow','head','d50','dmax','wear','spares','competitor','opp','notes'];
+// bearing, kw, bearingSource handled separately due to OTHER logic
 // (area handled separately via dropdown + other)
 const PHOTO_KEYS = ['tag','bearing','sealing','wetend','assembly'];
 function countPhotos(p) {
@@ -1060,6 +1297,54 @@ function populateModelDropdown(series, selectedModel) {
 function onTypeChange() {
   const series = document.getElementById('pf_type').value;
   populateModelDropdown(series);
+  const isDW = series === 'DW';
+  // DW is a fixed standard pump — no wet-end, sealing, or bearing options
+  const toggles = [
+    {id:'mocWetEnd', hide:isDW},
+    {id:'sealSection', hide:isDW},
+    {id:'bearingOtherField', hide:true},  // reset conditional fields
+    {id:'bearingSourceField', hide:true},
+    {id:'kwOtherField', hide:true},
+  ];
+  toggles.forEach(t => {
+    const el = document.getElementById(t.id);
+    if (el) el.style.display = t.hide ? 'none' : '';
+  });
+  // For bearing/kW: keep visible unless DW
+  const bearingRow = document.getElementById('pf_bearing');
+  const kwRow = document.getElementById('pf_kw');
+  const bearingLabel = bearingRow && bearingRow.closest('.field-row');
+  // Reset bearing/source on DW change
+  if (isDW) {
+    if (bearingRow) bearingRow.value = '';
+    if (document.getElementById('pf_bearingOther')) document.getElementById('pf_bearingOther').value = '';
+    if (document.getElementById('pf_bearingSource')) document.getElementById('pf_bearingSource').value = '';
+    if (document.getElementById('pf_kwOther')) document.getElementById('pf_kwOther').value = '';
+  }
+}
+
+// ── BEARING FRAME CHANGE ──────────────────────────────────────────────────────
+function onBearingChange() {
+  const val = document.getElementById('pf_bearing').value;
+  const otherField = document.getElementById('bearingOtherField');
+  const sourceField = document.getElementById('bearingSourceField');
+  otherField.style.display = val === 'OTHER' ? '' : 'none';
+  sourceField.style.display = (val && val !== '') ? '' : 'none';
+  if (val !== 'OTHER') {
+    const el = document.getElementById('pf_bearingOther');
+    if (el) el.value = '';
+  }
+}
+
+// ── MOTOR kW CHANGE ──────────────────────────────────────────────────────────
+function onKwChange() {
+  const val = document.getElementById('pf_kw').value;
+  const otherField = document.getElementById('kwOtherField');
+  otherField.style.display = val === 'OTHER' ? '' : 'none';
+  if (val !== 'OTHER') {
+    const el = document.getElementById('pf_kwOther');
+    if (el) el.value = '';
+  }
 }
 
 function onModelChange() {
@@ -1102,6 +1387,30 @@ function openPumpDrawer(id) {
       if (p.type === 'Other' && p.size) {
         document.getElementById('otherSizeField').style.display = '';
         document.getElementById('pf_size').value = p.size;
+      }
+      // Bearing frame restore
+      const bearingSel = document.getElementById('pf_bearing');
+      const bearingOtherEl = document.getElementById('pf_bearingOther');
+      const bearingSourceEl = document.getElementById('pf_bearingSource');
+      if (p.bearingRaw === 'OTHER') {
+        bearingSel.value = 'OTHER';
+        bearingOtherEl.value = p.bearing || '';
+        document.getElementById('bearingOtherField').style.display = '';
+        document.getElementById('bearingSourceField').style.display = p.bearingSource ? '' : '';
+      } else if (p.bearing) {
+        bearingSel.value = p.bearing;
+        document.getElementById('bearingSourceField').style.display = '';
+      }
+      if (bearingSourceEl && p.bearingSource) bearingSourceEl.value = p.bearingSource;
+      // Motor kW restore
+      const kwSel = document.getElementById('pf_kw');
+      const kwOtherEl = document.getElementById('pf_kwOther');
+      if (p.kwRaw === 'OTHER') {
+        kwSel.value = 'OTHER';
+        kwOtherEl.value = p.kw || '';
+        document.getElementById('kwOtherField').style.display = '';
+      } else if (p.kw) {
+        kwSel.value = p.kw;
       }
       // Chips
       if (p.seal) document.querySelectorAll('#sealChips .chip').forEach(c => { if (c.textContent === p.seal) c.classList.add('active'); });
@@ -1169,7 +1478,8 @@ function generateReport() {
         <tr><td class="lbl">Area</td><td>${fmt(p.area)}</td><td class="lbl">Speed</td><td>${fmt(p.rpm)} RPM</td><td class="lbl">Bearing</td><td>${fmt(p.bearing)}</td><td class="lbl">Drive</td><td>${fmt(p.drive)}</td></tr>
         <tr class="moc-row"><td class="lbl">MOC – Liners</td><td>${fmt(p.liner)}</td><td class="lbl">Impeller</td><td>${fmt(p.impeller)}</td><td class="lbl">Throat Bush</td><td>${fmt(p.throat)}</td><td class="lbl">Shaft Seal</td><td>${fmt(p.seal)}</td></tr>
         <tr><td class="lbl">Slurry</td><td colspan="3">${fmt(p.slurry)}</td><td class="lbl">SG</td><td>${fmt(p.sg)}</td><td class="lbl">Motor</td><td>${fmt(p.kw)} kW</td></tr>
-        <tr><td class="lbl">Solids</td><td>${fmt(p.solids)}${p.solids?' %w/w':''}</td><td class="lbl">Flow</td><td>${fmt(p.flow)}${p.flow?' m³/h':''}</td><td class="lbl">d50</td><td>${fmt(p.d50)}${p.d50?' mm':''}</td><td class="lbl">Max Particle</td><td>${fmt(p.dmax)}${p.dmax?' mm':''}</td></tr>
+        <tr><td class="lbl">Solids</td><td>${fmt(p.solids)}${p.solids?' %w/w':''}</td><td class="lbl">Flow</td><td>${fmt(p.flow)}${p.flow?' m³/h':''}</td><td class="lbl">Head</td><td>${fmt(p.head)}${p.head?' m':''}</td><td class="lbl">d50</td><td>${fmt(p.d50)}${p.d50?' mm':''}</td></tr>
+        <tr><td class="lbl">pH</td><td>${fmt(p.ph)}</td><td class="lbl">Slurry Temp</td><td>${fmt(p.temp)}${p.temp?' °C':''}</td><td class="lbl">Max Particle</td><td>${fmt(p.dmax)}${p.dmax?' mm':''}</td><td></td><td></td></tr>
         <tr><td class="lbl">Wear Parts</td><td>${fmt(p.wear)}</td><td class="lbl">Spares</td><td>${fmt(p.spares)}</td><td class="lbl">Competitor</td><td>${fmt(p.competitor)}</td><td class="lbl">Opportunity</td><td>${fmt(p.opp)}</td></tr>
         ${p.notes ? `<tr><td class="lbl">Notes</td><td colspan="7">${fmt(p.notes)}</td></tr>` : ''}
       </table>
@@ -1187,7 +1497,8 @@ function generateReport() {
     @page { size: A4; margin: 14mm; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 10pt; color: #1a1a1a; padding: 20px; max-width: 800px; margin: 0 auto; }
-    .banner { background: #218240; color: #fff; padding: 18px 22px; border-radius: 6px; margin-bottom: 6px; }
+    .banner { background: #218240; color: #fff; padding: 18px 22px; border-radius: 6px; margin-bottom: 6px; display: flex; align-items: center; gap: 18px; }
+    .banner-logo { height: 58px; width: auto; background: #0d1710; border-radius: 8px; padding: 7px; }
     .banner h1 { font-size: 17pt; letter-spacing: 0.5px; }
     .banner .sub { font-size: 9pt; opacity: 0.85; margin-top: 3px; }
     .meta { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1px; background: #ddd; border: 1px solid #ddd; border-radius: 6px; overflow: hidden; margin: 12px 0 18px; }
@@ -1221,8 +1532,11 @@ function generateReport() {
   </style></head><body>
   <div class="print-hint">📄 Tap your browser menu → <b>Print</b> → <b>Save as PDF</b> to generate the PDF, or share this page directly.</div>
   <div class="banner">
-    <h1>SITE AUDIT REPORT</h1>
-    <div class="sub">SCHURCO SLURRY (PTY) LTD &nbsp;|&nbsp; www.schurcoslurry.com &nbsp;|&nbsp; sales@schurco.com &nbsp;|&nbsp; +27 0861 005 386</div>
+    <img src="${SCHURCO_LOGO}" class="banner-logo"/>
+    <div>
+      <h1>SITE AUDIT REPORT</h1>
+      <div class="sub">SCHURCO SLURRY (PTY) LTD &nbsp;|&nbsp; www.schurcoslurry.com &nbsp;|&nbsp; sales@schurco.com &nbsp;|&nbsp; +27 0861 005 386</div>
+    </div>
   </div>
   <div class="meta">
     <div><div class="k">Customer</div><div class="v">${fmt(audit.customer)}</div></div>
@@ -1283,7 +1597,7 @@ function savePump() {
   // Capture remaining fields with appropriate cleaning
   const sentenceFields = ['slurry', 'notes'];
   const titleFields = ['competitor'];
-  const codeFields = ['tag', 'model', 'size', 'bearing', 'rpm', 'kw', 'sg', 'ph', 'solids', 'flow', 'd50', 'dmax'];
+  const codeFields = ['tag', 'model', 'size', 'rpm', 'sg', 'ph', 'solids', 'flow', 'd50', 'dmax'];
   pumpFields.forEach(f => {
     const el = document.getElementById('pf_'+f);
     if (!el) return;
@@ -1293,6 +1607,25 @@ function savePump() {
     else if (codeFields.includes(f)) v = cleanCode(v);
     pump[f] = v;
   });
+  // Bearing Frame — use OTHER text if selected
+  const bearingVal = document.getElementById('pf_bearing').value;
+  if (bearingVal === 'OTHER') {
+    pump.bearing = (document.getElementById('pf_bearingOther').value || '').toUpperCase().trim();
+    pump.bearingRaw = 'OTHER';
+  } else {
+    pump.bearing = bearingVal;
+    pump.bearingRaw = bearingVal;
+  }
+  pump.bearingSource = document.getElementById('pf_bearingSource').value;
+  // Motor kW — use OTHER value if selected
+  const kwVal = document.getElementById('pf_kw').value;
+  if (kwVal === 'OTHER') {
+    pump.kw = document.getElementById('pf_kwOther').value || '';
+    pump.kwRaw = 'OTHER';
+  } else {
+    pump.kw = kwVal;
+    pump.kwRaw = kwVal;
+  }
 
   // ── Validation (non-blocking warnings) ──
   const warnings = validatePump(pump);
@@ -1308,9 +1641,18 @@ function savePump() {
     db.pumps.push(pump);
   }
   saveDB();
+  // Auto-capture GPS location on first pump added to this audit
+  if (!editingPumpId) {
+    const auditPumps = db.pumps.filter(p => p.auditId === currentAuditId);
+    const audit = db.audits.find(a => a.id === currentAuditId);
+    if (auditPumps.length === 1 && audit && !audit.location) {
+      captureLocationNow(currentAuditId, false);
+    }
+  }
   closeDrawer('pumpDrawer');
   toast(editingPumpId ? 'Pump updated' : 'Pump saved ✓', 'success');
   renderPumpList();
+  setTimeout(() => { updateLocationIndicator(); updateOppButton(); }, 50);
 }
 
 // ── DATA VALIDATION ───────────────────────────────────────────────────────────
@@ -1499,11 +1841,11 @@ function buildWorkbook(audit) {
   const cols = [
     'No.', 'Area / Section', 'Tag No.', 'Pump Series', 'Model', 'Size (D × S mm)',
     'Liners', 'Impeller', 'Throat Bush',          // MOC group (cols 7-9, idx 6-8)
-    'Shaft Sealing', 'Bearing / Frame',
+    'Shaft Sealing', 'Bearing / Frame', 'Frame Source',
     'Operating Speed (RPM)', 'Drive Type', 'Motor Power (kW)',
     'Slurry Description', 'SG / Density',
     'd50 (mm)', 'Max (mm)',                         // Particle group (idx 16-17)
-    'pH', 'Solids (%w/w)', 'Flow (m³/h)',
+    'pH', 'Slurry Temp (\u00b0C)', 'Solids (%w/w)', 'Flow (m\u00b3/h)', 'Head (m)',
     'Current Condition', 'Wear Parts Due', 'Spares On-Site',
     'Competitor Brand', 'Potential Opportunity', 'Notes / Action Items', 'Photos'
   ];
@@ -1512,22 +1854,31 @@ function buildWorkbook(audit) {
   const data = [];
   data.push(new Array(nCols).fill('')); // row 1 title
   // row 2 group headers
-  const groupRow = new Array(nCols).fill('');
-  groupRow[6] = 'MOC (Material of Construction)';
-  groupRow[16] = 'Particle Size';
-  data.push(groupRow);
-  // row 3 sub headers = full cols
-  data.push(cols.slice());
+  // Row 2: non-grouped column labels go in the TOP (displayed) cell of the
+  // vertical merge; grouped columns show the group-parent name here.
+  const row2 = cols.map((label, c) => {
+    if (c === 6) return 'MOC (Material of Construction)';
+    if (c === 16) return 'Particle Size';
+    if (c === 7 || c === 8 || c === 17) return ''; // covered by group merge
+    return label;
+  });
+  data.push(row2);
+  // Row 3: only the grouped sub-headers (non-grouped cells stay empty, merged up)
+  const row3 = cols.map((label, c) => {
+    if ((c >= 6 && c <= 8) || (c >= 16 && c <= 17)) return label;
+    return '';
+  });
+  data.push(row3);
   // data rows
   pumps.forEach((p, i) => {
     data.push([
       i + 1, p.area || '', p.tag || '', p.type ? p.type + ' Series' : '', p.model || '', p.size || '',
       p.liner || '', p.impeller || '', p.throat || '',
-      p.seal || '', p.bearing || '',
+      p.seal || '', p.bearing || '', p.bearingSource || '',
       p.rpm || '', p.drive || '', p.kw || '',
       p.slurry || '', p.sg || '',
       p.d50 || '', p.dmax || '',
-      p.ph || '', p.solids || '', p.flow || '',
+      p.ph || '', p.temp || '', p.solids || '', p.flow || '', p.head || '',
       p.condition || '', p.wear || '', p.spares || '',
       p.competitor || '', p.opp || '', p.notes || '', countPhotos(p)
     ]);
@@ -1567,7 +1918,6 @@ function buildWorkbook(audit) {
       if (cell) cell.s = styleCell(r % 2 === 1);
     }
   }
-  ws['!freeze'] = { xSplit: 3, ySplit: 3 };
   XLSX.utils.book_append_sheet(wb, ws, 'Pump Inventory');
   return wb;
 }
@@ -1584,15 +1934,18 @@ function workbookBlob(wb) {
 }
 
 // ── DOWNLOAD EXCEL (current audit) ────────────────────────────────────────────
+function downloadBlob(blob, fileName) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = fileName;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+}
 function downloadExcel() {
   const audit = db.audits.find(x => x.id === currentAuditId);
   if (!audit) { toast('No audit open', 'error'); return; }
   if (!db.pumps.filter(p => p.auditId === audit.id).length) { toast('No pumps captured yet', 'error'); return; }
-  const blob = workbookBlob(buildWorkbook(audit));
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = auditFileName(audit);
-  a.click(); URL.revokeObjectURL(url);
+  downloadBlob(workbookBlob(buildWorkbook(audit)), auditFileName(audit));
   toast('Excel downloaded to device ✓', 'success');
 }
 
@@ -1605,24 +1958,24 @@ async function shareExcel() {
   const fileName = auditFileName(audit);
   const file = new File([blob], fileName, { type: blob.type });
 
-  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+  const canShareFiles = !!(navigator.canShare && navigator.canShare({ files: [file] }));
+  if (navigator.share && canShareFiles) {
     try {
       await navigator.share({
         files: [file],
         title: 'Schurco Site Audit',
         text: `Site audit — ${audit.customer} / ${audit.site} (${audit.date})`
       });
-      toast('Shared ✓', 'success');
+      return; // share sheet handled it (WhatsApp / Email / etc.)
     } catch (e) {
-      if (e.name !== 'AbortError') toast('Share cancelled', '');
+      if (e.name === 'AbortError') return;   // user closed the sheet — nothing wrong
+      console.warn('Web Share failed:', e);  // real failure → fall through to download
     }
-  } else {
-    // Fallback: download the file, then offer WhatsApp/email text links
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = fileName; a.click(); URL.revokeObjectURL(url);
-    toast('Sharing not supported here — file downloaded instead', '');
   }
+  // Fallback (desktop, unsupported browser, or share error): save the file so it
+  // can be attached manually in WhatsApp or email.
+  downloadBlob(blob, fileName);
+  toast('Saved to device — attach it in WhatsApp or email', '');
 }
 
 // ── UPLOAD CURRENT AUDIT TO SHAREPOINT ────────────────────────────────────────
@@ -1706,6 +2059,189 @@ function toast(msg, type = '') {
   setTimeout(() => t.remove(), 3000);
 }
 
+
+// ── GPS LOCATION CAPTURE ────────────────────────────────────────────────────
+function captureLocationNow(auditId, manual) {
+  if (!navigator.geolocation) {
+    if (manual) toast('GPS not available on this device', 'error');
+    return;
+  }
+  if (manual) toast('Capturing location…');
+  navigator.geolocation.getCurrentPosition(pos => {
+    const aid = auditId || currentAuditId;
+    const audit = db.audits.find(a => a.id === aid);
+    if (!audit) return;
+    audit.location = {
+      lat: pos.coords.latitude,
+      lng: pos.coords.longitude,
+      accuracy: Math.round(pos.coords.accuracy),
+      capturedAt: Date.now()
+    };
+    saveDB();
+    updateLocationIndicator();
+    if (manual) toast('📍 Location captured ✓', 'success');
+  }, () => {
+    if (manual) toast('Could not get location — check GPS permissions', 'error');
+  }, { timeout: 15000, enableHighAccuracy: true });
+}
+
+function updateLocationIndicator() {
+  const el = document.getElementById('locationIndicator');
+  if (!el) return;
+  const audit = db.audits.find(a => a.id === currentAuditId);
+  if (audit && audit.location) {
+    const { lat, lng, accuracy } = audit.location;
+    el.className = 'loc-indicator has-loc';
+    el.onclick = null;
+    el.innerHTML = `<span class="loc-dot"></span>
+      <span>${lat.toFixed(5)}, ${lng.toFixed(5)}</span>
+      <span class="loc-acc">±${accuracy}m</span>
+      <button class="loc-update-btn" onclick="event.stopPropagation();captureLocationNow(null,true)">Update</button>`;
+  } else {
+    el.className = 'loc-indicator no-loc';
+    el.onclick = () => captureLocationNow(null, true);
+    el.innerHTML = `<span class="loc-dot"></span>📍 No location — tap to capture on-site`;
+  }
+}
+
+// ── OPPORTUNITY BUTTON COUNT BADGE ────────────────────────────────────────────
+function updateOppButton() {
+  const btn = document.getElementById('oppBtn');
+  if (!btn) return;
+  const count = (db.opportunities || []).filter(o => o.auditId === currentAuditId).length;
+  btn.innerHTML = count > 0
+    ? `💡 Log Opportunity <span class="opp-count-badge">${count}</span>`
+    : '💡 Log Opportunity';
+}
+
+// ── SITES MAP ─────────────────────────────────────────────────────────────────
+let siteMapInstance = null;
+let siteMarkerLayers = [];
+
+function renderSitesHTML() {
+  ensureDbExtensions();
+  const withLoc = db.audits.filter(a => a.location);
+  const withoutLoc = db.audits.filter(a => !a.location);
+  return `
+    <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--radius);
+      overflow:hidden;box-shadow:var(--shadow-sm)">
+      <div id="siteMap" style="height:380px;width:100%"></div>
+    </div>
+    <div class="filter-row">
+      <span class="fpill all" onclick="filterSitePins('all')">All Sites</span>
+      <span class="fpill surveyed" onclick="filterSitePins('surveyed')">✓ Good</span>
+      <span class="fpill critical" onclick="filterSitePins('critical')">⚠ Critical</span>
+      <span class="fpill opportunity" onclick="filterSitePins('opportunity')">💡 Opportunity</span>
+    </div>
+    ${withoutLoc.length ? `<div class="dash-note" style="margin-top:8px">
+      ${withoutLoc.length} survey${withoutLoc.length!==1?'s':''} without location — GPS captures automatically when the first pump is added on-site.
+    </div>` : ''}
+    ${!withLoc.length && !withoutLoc.length ? '<div class="no-data-msg">No surveys yet</div>' : ''}
+  `;
+}
+
+function initSiteMap() {
+  if (siteMapInstance) { siteMapInstance.remove(); siteMapInstance = null; }
+  const el = document.getElementById('siteMap');
+  if (!el) return;
+
+  if (typeof L === 'undefined') {
+    el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);font-size:13px;padding:20px;text-align:center">Map requires internet connection. GPS coordinates are stored offline and will show when you reconnect.</div>';
+    return;
+  }
+
+  ensureDbExtensions();
+  const withLoc = db.audits.filter(a => a.location);
+
+  siteMapInstance = L.map('siteMap', { zoomControl: true, attributionControl: true })
+    .setView([-28.4793, 24.6727], 5);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap',
+    maxZoom: 18
+  }).addTo(siteMapInstance);
+
+  siteMarkerLayers = [];
+
+  withLoc.forEach(a => {
+    const pumps = db.pumps.filter(p => p.auditId === a.id);
+    const opps  = db.opportunities.filter(o => o.auditId === a.id);
+    const crit  = pumps.filter(p => p.condition === 'Critical').length;
+    const worn  = pumps.filter(p => p.condition === 'Worn').length;
+
+    let pinColor = '#16A34A', pinType = 'surveyed';
+    if (crit > 0)       { pinColor = '#EF4444'; pinType = 'critical'; }
+    else if (worn > 0)  { pinColor = '#F59E0B'; pinType = 'warn'; }
+    if (opps.length > 0){ pinColor = '#3B82F6'; pinType = 'opportunity'; }
+
+    const daysSince = Math.floor((Date.now() - new Date(a.date).getTime()) / 864e5);
+    const sinceTxt  = daysSince === 0 ? 'Today' : daysSince === 1 ? 'Yesterday' : `${daysSince}d ago`;
+
+    const icon = L.divIcon({
+      className: '',
+      html: `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="36" viewBox="0 0 28 36">
+        <path d="M14 0C6.27 0 0 6.27 0 14c0 9.33 14 22 14 22S28 23.33 28 14C28 6.27 21.73 0 14 0z"
+          fill="${pinColor}" stroke="#fff" stroke-width="2"/>
+        <circle cx="14" cy="14" r="6" fill="#fff" opacity=".9"/>
+      </svg>`,
+      iconSize: [28,36], iconAnchor: [14,36], popupAnchor: [0,-38]
+    });
+
+    const popup = `<div style="font-family:'Poppins',sans-serif">
+      <div style="background:${pinColor};color:#fff;padding:8px 12px;border-radius:8px 8px 0 0">
+        <div style="font-size:12px;font-weight:700">${a.customer||''}</div>
+        <div style="font-size:10px;opacity:.85">${a.site||''}</div>
+      </div>
+      <div style="padding:8px 12px;font-size:11px">
+        <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f1f5f9;color:#64748B">
+          <span>Pumps</span><span style="font-weight:600;color:#0F172A">${pumps.length}</span></div>
+        <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f1f5f9;color:#64748B">
+          <span>Last visit</span><span style="font-weight:600;color:#0F172A">${sinceTxt}</span></div>
+        <div style="display:flex;justify-content:space-between;padding:3px 0;color:#64748B">
+          <span>Rep</span><span style="font-weight:600;color:#0F172A">${a.rep||'—'}</span></div>
+        ${crit>0?`<span style="display:inline-block;margin-top:5px;background:#FEE2E2;color:#991B1B;font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px">⚠ ${crit} critical</span>`:''}
+        ${opps.length>0?`<span style="display:inline-block;margin-top:5px;background:#DBEAFE;color:#1E40AF;font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px">💡 ${opps.length} opp${opps.length!==1?'s':''}</span>`:''}
+      </div>
+    </div>`;
+
+    const m = L.marker([a.location.lat, a.location.lng], { icon })
+      .bindPopup(popup, { maxWidth: 210 })
+      .addTo(siteMapInstance);
+    m._pinType = pinType;
+    siteMarkerLayers.push(m);
+  });
+
+  if (withLoc.length > 0) {
+    const g = L.featureGroup(siteMarkerLayers);
+    siteMapInstance.fitBounds(g.getBounds().pad(0.3), { maxZoom: 12 });
+  }
+  setTimeout(() => siteMapInstance && siteMapInstance.invalidateSize(), 120);
+}
+
+function filterSitePins(type) {
+  if (!siteMapInstance) return;
+  siteMarkerLayers.forEach(m => {
+    const show = type === 'all' || m._pinType === type ||
+      (type === 'surveyed' && (m._pinType === 'surveyed' || m._pinType === 'warn'));
+    show ? siteMapInstance.addLayer(m) : siteMapInstance.removeLayer(m);
+  });
+}
+
+// ── LOAD LEAFLET LAZILY ───────────────────────────────────────────────────────
+function loadLeaflet() {
+  return new Promise((resolve, reject) => {
+    if (typeof L !== 'undefined') { resolve(); return; }
+    const css = document.createElement('link');
+    css.rel = 'stylesheet';
+    css.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
+    document.head.appendChild(css);
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+    s.onload = resolve; s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
 // ── SERVICE WORKER ────────────────────────────────────────────────────────────
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').catch(() => {});
@@ -1715,7 +2251,442 @@ if ('serviceWorker' in navigator) {
 loadDB();
 loadCreds();
 updateNet();
+try { document.getElementById('brandLogo').src = SCHURCO_LOGO; } catch(e) {}
 showTab('Home');
+
+
+// ── DASHBOARD & OPPORTUNITIES ─────────────────────────────────────────────────
+let currentDashSection = 'overview';
+let editingOppId = null;
+
+function ensureDbExtensions() {
+  if (!db.opportunities) db.opportunities = [];
+  if (!db.userProfile) db.userProfile = {};
+}
+
+function renderDashboard() {
+  ensureDbExtensions();
+  showDashSection(currentDashSection);
+}
+
+function showDashSection(section) {
+  currentDashSection = section;
+  document.querySelectorAll('.dash-nav-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.section === section));
+  const kpis = calculateKPIs();
+  const el = document.getElementById('dashContent');
+  switch (section) {
+    case 'overview':      el.innerHTML = renderOverview(kpis); break;
+    case 'pipeline':      el.innerHTML = renderPipeline(kpis); break;
+    case 'competitors':   el.innerHTML = renderCompetitors(kpis); break;
+    case 'opportunities': el.innerHTML = renderOpportunitiesSection(kpis); break;
+    case 'quality':       el.innerHTML = renderQuality(kpis); break;
+    case 'sites':
+      el.innerHTML = renderSitesHTML();
+      loadLeaflet().then(() => initSiteMap()).catch(() => initSiteMap());
+      break;
+  }
+}
+
+// ── KPI CALCULATION ────────────────────────────────────────────────────────────
+function calculateKPIs() {
+  ensureDbExtensions();
+  const now = new Date();
+  const today = now.toISOString().split('T')[0];
+  const weekAgo = new Date(now.getTime()-7*864e5).toISOString().split('T')[0];
+  const monthAgo = new Date(now.getTime()-30*864e5).toISOString().split('T')[0];
+  const { audits, pumps, opportunities: opps, userProfile: profile } = db;
+
+  // Competitor counts
+  const compMap = {};
+  pumps.forEach(p => { const c=(p.competitor||'').trim(); if(c) compMap[c]=(compMap[c]||0)+1; });
+  const competitors = Object.entries(compMap).sort((a,b)=>b[1]-a[1]);
+  const totalCompetitors = competitors.reduce((s,[,v])=>s+v,0);
+
+  // Model counts
+  const modelMap = {};
+  pumps.forEach(p => { const m=p.model||(p.type?p.type+' Series':'Unknown'); modelMap[m]=(modelMap[m]||0)+1; });
+  const models = Object.entries(modelMap).sort((a,b)=>b[1]-a[1]);
+
+  // Quality
+  let totalScore=0;
+  const qualityItems = pumps.map(p => {
+    const hasTag=!!p.tag, hasMOC=!!(p.liner||p.impeller||p.throat),
+      hasPhotos=countPhotos(p)>=2, hasProcess=!!(p.sg||p.slurry), hasCond=!!p.condition;
+    const score=[hasTag,hasMOC,hasPhotos,hasProcess,hasCond].filter(Boolean).length;
+    totalScore+=score;
+    return {score,hasTag,hasMOC,hasPhotos,hasProcess,hasCond};
+  });
+  const complete=qualityItems.filter(q=>q.score===5).length;
+  const missingPhotos=qualityItems.filter(q=>!q.hasPhotos).length;
+  const missingData=qualityItems.filter(q=>!q.hasMOC||!q.hasProcess).length;
+  const avgQuality=pumps.length?Math.round((totalScore/(pumps.length*5))*100):0;
+
+  // Stage breakdown
+  const STAGES=['Identified','Qualifying','Quoting','Negotiation','Won','Lost'];
+  const oppsByStage=STAGES.map(s=>({stage:s,count:opps.filter(o=>o.stage===s).length}));
+
+  // Engagement score
+  const recentAudit=audits.find(a=>a.date>=weekAgo);
+  const engagementScore=Math.min(100,Math.round(
+    Math.min(audits.length/5,1)*40+
+    Math.min(pumps.reduce((n,p)=>n+countPhotos(p),0)/20,1)*20+
+    Math.min(pumps.length/20,1)*20+
+    (recentAudit?20:0)));
+
+  return {
+    totalAudits:audits.length, totalPumps:pumps.length,
+    activeSites:[...new Set(audits.map(a=>a.site||a.customer).filter(Boolean))].length,
+    totalPhotos:pumps.reduce((n,p)=>n+countPhotos(p),0),
+    totalOpps:opps.length,
+    auditsToday:audits.filter(a=>a.date===today).length,
+    auditsWeek:audits.filter(a=>a.date>=weekAgo).length,
+    auditsMonth:audits.filter(a=>a.date>=monthAgo).length,
+    auditsWithPumps:audits.filter(a=>pumps.some(p=>p.auditId===a.id)).length,
+    oppsWon:opps.filter(o=>o.stage==='Won').length,
+    totalOppValue:opps.reduce((n,o)=>n+(parseFloat(o.value)||0),0),
+    wonOppValue:opps.filter(o=>o.stage==='Won').reduce((n,o)=>n+(parseFloat(o.value)||0),0),
+    competitors,totalCompetitors,models,
+    quality:{avgQuality,complete,incomplete:pumps.length-complete,missingPhotos,missingData,total:pumps.length},
+    oppsByStage,engagementScore,profile
+  };
+}
+
+function fmtVal(v) {
+  if(v>=1e6)return(v/1e6).toFixed(1)+'M';
+  if(v>=1000)return(v/1000).toFixed(1)+'K';
+  return v.toFixed(0);
+}
+function kpiCard(icon,value,label,sub) {
+  return `<div class="kpi-card">
+    <div class="kpi-icon">${icon}</div>
+    <div class="kpi-value">${value}</div>
+    <div class="kpi-label">${label}</div>
+    ${sub?`<div class="kpi-sub">${sub}`:''}${sub?'</div>':''}
+  </div>`;
+}
+function hBars(items) {
+  if(!items.length) return '<div class="no-data-msg">No data yet</div>';
+  const max=items[0][1]||1;
+  return `<div class="chart-bars">${items.map(([label,count],i)=>{
+    const pct=(count/max*100).toFixed(0);
+    const colors=['#EF4444','#F59E0B','#3B82F6','#8B5CF6','#EC4899','#06B6D4','#10B981','#F97316'];
+    const col=colors[i%colors.length];
+    return `<div class="chart-bar-row">
+      <span class="chart-label">${label}</span>
+      <div class="chart-bar-track"><div class="chart-bar-fill" style="width:${pct}%;background:${col}"></div></div>
+      <span class="chart-value">${count}</span>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+// ── SECTION RENDERS ────────────────────────────────────────────────────────────
+function renderOverview(kpis) {
+  const p=db.userProfile||{};
+  const name=p.name||'Field User';
+  const role=p.role||'Sales Representative';
+  const company=p.company||'Schurco Slurry';
+  const initials=name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  return `
+    <div class="user-hero-card">
+      <div class="user-hero-avatar">${initials}</div>
+      <div class="user-hero-info">
+        <div class="user-hero-name">${name}</div>
+        <div class="user-hero-sub">${role} &middot; ${company}</div>
+      </div>
+      <button class="user-hero-edit" onclick="openProfileDrawer()">&#9998;</button>
+    </div>
+    <div class="engage-card">
+      <div class="engage-row">
+        <div><div class="engage-score">${kpis.engagementScore}</div><div class="engage-label">Engagement Score</div></div>
+      </div>
+      <div class="engage-bar-track"><div class="engage-bar-fill" style="width:${kpis.engagementScore}%"></div></div>
+    </div>
+    <div class="kpi-grid">
+      ${kpiCard('&#128203;',kpis.totalAudits,'Surveys',kpis.auditsToday?'+'+kpis.auditsToday+' today':'')}
+      ${kpiCard('&#9881;',kpis.totalPumps,'Pumps','Assessed')}
+      ${kpiCard('&#128205;',kpis.activeSites,'Sites','')}
+      ${kpiCard('&#128247;',kpis.totalPhotos,'Photos','Captured')}
+      ${kpiCard('&#128161;',kpis.totalOpps,'Opps',kpis.oppsWon?kpis.oppsWon+' won':'')}
+      ${kpiCard('&#127942;','R '+fmtVal(kpis.wonOppValue),'Won Value','')}
+    </div>
+    <div class="dash-section-head">Survey Activity</div>
+    <div class="activity-row">
+      <div class="activity-cell"><div class="activity-num">${kpis.auditsToday}</div><div class="activity-lbl">Today</div></div>
+      <div class="activity-cell"><div class="activity-num">${kpis.auditsWeek}</div><div class="activity-lbl">This Week</div></div>
+      <div class="activity-cell"><div class="activity-num">${kpis.auditsMonth}</div><div class="activity-lbl">This Month</div></div>
+      <div class="activity-cell"><div class="activity-num">${kpis.totalAudits}</div><div class="activity-lbl">All Time</div></div>
+    </div>
+    <div class="dash-section-head" style="margin-top:20px">Recent Surveys</div>
+    ${db.audits.slice(0,4).map(a=>{
+      const pc=db.pumps.filter(p=>p.auditId===a.id).length;
+      return `<div class="dash-list-item" onclick="openAudit('${a.id}')">
+        <div class="dash-list-badge">${(a.site||a.customer||'?').charAt(0).toUpperCase()}</div>
+        <div class="dash-list-info">
+          <div class="dash-list-title">${a.site||a.customer}</div>
+          <div class="dash-list-sub">${a.customer} &middot; ${a.date} &middot; ${pc} pump${pc!==1?'s':''}</div>
+        </div>
+        <div class="dash-list-arrow">&#8250;</div>
+      </div>`;
+    }).join('')||'<div class="no-data-msg">No surveys yet &mdash; tap the Audits tab to start one.</div>'}
+  `;
+}
+
+function renderPipeline(kpis) {
+  const stages=[
+    {label:'Surveys Started',value:kpis.totalAudits,color:'#3B82F6'},
+    {label:'Surveys with Pumps',value:kpis.auditsWithPumps,color:'#8B5CF6'},
+    {label:'Opportunities Identified',value:kpis.totalOpps,color:'#F59E0B'},
+    {label:'Opportunities Won',value:kpis.oppsWon,color:'#16A34A'}
+  ];
+  const maxV=stages[0].value||1;
+  return `
+    <div class="dash-section-head">Survey &#8594; Sales Pipeline</div>
+    <div class="pipeline-chart">
+      ${stages.map((s,i)=>{
+        const pct=(s.value/maxV*100).toFixed(0);
+        const conv=i>0&&stages[i-1].value>0?Math.round(s.value/stages[i-1].value*100)+'%':'';
+        return `<div class="pipeline-stage">
+          <div class="pipeline-bar-wrap">
+            <div class="pipeline-bar" style="width:${pct}%;background:${s.color}">
+              <span class="pipeline-val">${s.value}</span>
+            </div>
+          </div>
+          <div class="pipeline-label">${s.label}${conv?` <span class="pipeline-conv">&#8593;${conv}</span>`:''}</div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div class="dash-section-head" style="margin-top:20px">Opportunities by Stage</div>
+    <div class="opp-stage-grid">
+      ${kpis.oppsByStage.map(s=>`
+        <div class="opp-stage-cell">
+          <div class="opp-stage-num ${s.stage==='Won'?'won':s.stage==='Lost'?'lost':''}">${s.count}</div>
+          <div class="opp-stage-lbl">${s.stage}</div>
+        </div>`).join('')}
+    </div>
+  `;
+}
+
+function renderCompetitors(kpis) {
+  const total=kpis.totalCompetitors||1;
+  return `
+    <div class="dash-section-head">Competitor Pumps Found</div>
+    ${kpis.competitors.length?`
+      ${hBars(kpis.competitors)}
+      <div class="dash-note">${kpis.totalCompetitors} competitor pump${kpis.totalCompetitors!==1?'s':''} across ${kpis.totalPumps} assessed</div>
+    `:'<div class="no-data-msg">No competitor data recorded yet</div>'}
+    <div class="dash-section-head" style="margin-top:20px">Installed Base by Model</div>
+    ${kpis.models.length?hBars(kpis.models.slice(0,10)):'<div class="no-data-msg">No pump model data yet</div>'}
+  `;
+}
+
+function renderOpportunitiesSection(kpis) {
+  ensureDbExtensions();
+  const opps=db.opportunities;
+  const stageColors={Identified:'#94A3B8',Qualifying:'#3B82F6',Quoting:'#F59E0B',
+    Negotiation:'#8B5CF6',Won:'#16A34A',Lost:'#EF4444'};
+  return `
+    <div class="dash-section-head">
+      Opportunities
+      <button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="openOpportunityDrawer()">&#43; Add</button>
+    </div>
+    <div class="value-summary">
+      <div class="value-cell">
+        <div class="value-num">R ${fmtVal(kpis.totalOppValue)}</div>
+        <div class="value-lbl">Pipeline Value</div>
+      </div>
+      <div class="value-cell won">
+        <div class="value-num">R ${fmtVal(kpis.wonOppValue)}</div>
+        <div class="value-lbl">&#9989; Won</div>
+      </div>
+    </div>
+    ${opps.length?opps.map(o=>{
+      const audit=db.audits.find(a=>a.id===o.auditId)||{};
+      const col=stageColors[o.stage]||'#94A3B8';
+      return `<div class="opp-item" onclick="openOpportunityDrawer('${o.id}')">
+        <div class="opp-item-head">
+          <span class="opp-name">${o.title}</span>
+          <span class="opp-stage-badge" style="background:${col}18;color:${col};border-color:${col}40">${o.stage}</span>
+        </div>
+        <div class="opp-item-sub">
+          ${o.site||audit.customer||o.customer||'&mdash;'}${(() => {
+            const pump = o.pumpId ? db.pumps.find(p=>p.id===o.pumpId) : null;
+            return pump ? ` &middot; <b>${pump.tag}</b>${pump.area?' · '+pump.area:''}` : '';
+          })()}${o.value?' &middot; R '+parseFloat(o.value).toLocaleString():''}
+        </div>
+        ${o.contactName ? `<div class="opp-contact">&#128100; ${o.contactName}${o.contactRole?' &middot; '+o.contactRole:''}</div>` : ''}
+      </div>`;
+    }).join(''):'<div class="no-data-msg">No opportunities yet &mdash; tap + Add to start tracking.</div>'}
+  `;
+}
+
+function renderQuality(kpis) {
+  const q=kpis.quality;
+  const col=q.avgQuality>=80?'#16A34A':q.avgQuality>=60?'#F59E0B':'#EF4444';
+  return `
+    <div class="quality-hero">
+      <div class="quality-ring" style="--score-color:${col};--score:${q.avgQuality}">
+        <div class="quality-score-num">${q.avgQuality}%</div>
+        <div class="quality-score-lbl">Quality</div>
+      </div>
+      <div class="quality-breakdown">
+        <div class="quality-row"><span>Complete</span><span class="quality-val good">${q.complete}</span></div>
+        <div class="quality-row"><span>Incomplete</span><span class="quality-val warn">${q.incomplete}</span></div>
+        <div class="quality-row"><span>Missing Photos</span><span class="quality-val bad">${q.missingPhotos}</span></div>
+        <div class="quality-row"><span>Missing Data</span><span class="quality-val bad">${q.missingData}</span></div>
+      </div>
+    </div>
+    <div class="dash-section-head" style="margin-top:16px">Scoring Criteria (each 20%)</div>
+    <div class="criteria-list">
+      <div class="criteria-item"><div class="criteria-dot"></div><span>Tag Number captured</span></div>
+      <div class="criteria-item"><div class="criteria-dot"></div><span>MOC filled (any wet-end component)</span></div>
+      <div class="criteria-item"><div class="criteria-dot"></div><span>At least 2 photos</span></div>
+      <div class="criteria-item"><div class="criteria-dot"></div><span>Process data (SG or slurry description)</span></div>
+      <div class="criteria-item"><div class="criteria-dot"></div><span>Condition noted</span></div>
+    </div>
+    ${q.total===0?'<div class="no-data-msg" style="margin-top:16px">No pumps assessed yet</div>':''}
+  `;
+}
+
+// ── OPPORTUNITY CRUD ───────────────────────────────────────────────────────────
+function openOpportunityDrawer(id, prePumpId) {
+  editingOppId = id || null;
+  ensureDbExtensions();
+
+  // Populate survey dropdown
+  const auditSel = document.getElementById('of_auditId');
+  auditSel.innerHTML = '<option value="">&#8212; Select survey &#8212;</option>' +
+    db.audits.map(a=>`<option value="${a.id}">${a.customer||''} — ${a.site||''}</option>`).join('');
+
+  const o = id ? db.opportunities.find(x=>x.id===id) : null;
+  document.getElementById('of_title').value = o ? o.title||'' : '';
+  document.getElementById('of_value').value = o ? o.value||'' : '';
+  document.getElementById('of_stage').value = o ? o.stage||'Identified' : 'Identified';
+  document.getElementById('of_owner').value = o ? o.owner||'' : (db.userProfile.name||'');
+  document.getElementById('of_closeDate').value = o ? o.closeDate||'' : '';
+  document.getElementById('of_contactName').value = o ? o.contactName||'' : '';
+  document.getElementById('of_contactRole').value = o ? o.contactRole||'' : '';
+  document.getElementById('of_notes').value = o ? o.notes||'' : '';
+
+  // Set the linked audit (existing opp, pre-pump, or current audit)
+  const linkedAuditId = o ? o.auditId||'' : (prePumpId
+    ? (db.pumps.find(p=>p.id===prePumpId)||{}).auditId || currentAuditId||''
+    : currentAuditId||'');
+  auditSel.value = linkedAuditId;
+
+  // Pre-fill contact from audit if available
+  if (!o && linkedAuditId) {
+    const audit = db.audits.find(a=>a.id===linkedAuditId);
+    if (audit) {
+      if (audit.contactName && !document.getElementById('of_contactName').value)
+        document.getElementById('of_contactName').value = audit.contactName;
+      if (audit.contactPosition && !document.getElementById('of_contactRole').value)
+        document.getElementById('of_contactRole').value = '';
+    }
+  }
+
+  // Populate pump dropdown for the selected audit
+  populateOppPumps(linkedAuditId, o ? o.pumpId||'' : prePumpId||'');
+
+  // If coming from a pump card, pre-select type matching the pump's opportunity flag
+  if (prePumpId && !o) {
+    const pump = db.pumps.find(p=>p.id===prePumpId);
+    if (pump && pump.opp) {
+      const sel = document.getElementById('of_title');
+      // Try exact match first, then fallback to first option
+      const opt = Array.from(sel.options).find(op => op.value === pump.opp);
+      if (opt) sel.value = pump.opp;
+    }
+  }
+
+  document.getElementById('oppDrawerTitle').textContent = id ? 'Edit Opportunity' : 'Add Opportunity';
+  openDrawer('oppDrawer');
+}
+
+function onOppAuditChange() {
+  const auditId = document.getElementById('of_auditId').value;
+  populateOppPumps(auditId, '');
+  // Pre-fill contact name from the audit if blank
+  if (auditId) {
+    const audit = db.audits.find(a=>a.id===auditId);
+    const nameEl = document.getElementById('of_contactName');
+    if (audit && audit.contactName && !nameEl.value)
+      nameEl.value = audit.contactName;
+  }
+}
+
+function populateOppPumps(auditId, selectedPumpId) {
+  const sel = document.getElementById('of_pumpId');
+  if (!auditId) {
+    sel.innerHTML = '<option value="">&#8212; Select survey first &#8212;</option>';
+    return;
+  }
+  const pumps = db.pumps.filter(p=>p.auditId===auditId);
+  sel.innerHTML = '<option value="">&#8212; No specific pump &#8212;</option>' +
+    pumps.map(p=>{
+      const area = p.area ? ` · ${p.area}` : '';
+      const model = p.model || (p.type ? p.type+' Series' : '');
+      return `<option value="${p.id}">${p.tag||'?'}${model?' · '+model:''}${area}</option>`;
+    }).join('');
+  if (selectedPumpId) sel.value = selectedPumpId;
+}
+function saveOpportunity() {
+  const title = document.getElementById('of_title').value.trim();
+  if(!title){toast('Title is required','error');return;}
+  ensureDbExtensions();
+  const linkedAuditId = document.getElementById('of_auditId').value;
+  const linkedAudit = db.audits.find(a=>a.id===linkedAuditId)||{};
+  const opp = {
+    id: editingOppId||genId(),
+    title: titleCase(title),
+    customer: linkedAudit.customer || '',
+    site: linkedAudit.site || '',
+    value: document.getElementById('of_value').value,
+    stage: document.getElementById('of_stage').value,
+    owner: titleCase(document.getElementById('of_owner').value),
+    closeDate: document.getElementById('of_closeDate').value,
+    auditId: linkedAuditId,
+    pumpId: document.getElementById('of_pumpId').value,
+    contactName: titleCase(document.getElementById('of_contactName').value),
+    contactRole: document.getElementById('of_contactRole').value,
+    notes: sentenceCase(document.getElementById('of_notes').value),
+    savedAt: Date.now()
+  };
+  if(editingOppId){const i=db.opportunities.findIndex(x=>x.id===editingOppId);if(i>=0)db.opportunities[i]=opp;}
+  else db.opportunities.push(opp);
+  saveDB();
+  closeDrawer('oppDrawer');
+  toast(editingOppId?'Opportunity updated':'Opportunity added ✓','success');
+  updateOppButton();
+  if(currentDashSection==='opportunities') showDashSection('opportunities');
+}
+
+// ── USER PROFILE ───────────────────────────────────────────────────────────────
+function openProfileDrawer() {
+  ensureDbExtensions();
+  const p=db.userProfile;
+  document.getElementById('prof_name').value=p.name||'';
+  document.getElementById('prof_company').value=p.company||'';
+  document.getElementById('prof_role').value=p.role||'';
+  document.getElementById('prof_country').value=p.country||'';
+  document.getElementById('prof_region').value=p.region||'';
+  openDrawer('profileDrawer');
+}
+function saveProfile() {
+  ensureDbExtensions();
+  db.userProfile={
+    name:titleCase(document.getElementById('prof_name').value),
+    company:titleCase(document.getElementById('prof_company').value),
+    role:titleCase(document.getElementById('prof_role').value),
+    country:titleCase(document.getElementById('prof_country').value),
+    region:titleCase(document.getElementById('prof_region').value)
+  };
+  saveDB();
+  closeDrawer('profileDrawer');
+  toast('Profile saved ✓','success');
+  if(document.getElementById('screenDashboard').style.display!=='none') renderDashboard();
+}
+
 </script>
 </body>
 </html>
