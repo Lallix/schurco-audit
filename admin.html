@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Schurco Admin Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script src="supabase.bundle.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Poppins',sans-serif;background:#F8FAFC;color:#0F172A;min-height:100vh}
+:root{--green:#16A34A;--green-dark:#166534;--green-light:#DCFCE7;
+  --bg:#F8FAFC;--surface:#fff;--border:#E2E8F0;--text:#0F172A;
+  --text-sec:#64748B;--text-muted:#94A3B8;--warn:#F59E0B;--danger:#EF4444;
+  --font:'Poppins',sans-serif;--radius:14px;
+  --shadow:0 1px 3px rgba(0,0,0,.1),0 1px 2px rgba(0,0,0,.06)}
+
+/* LOGIN */
+#loginWrap{position:fixed;inset:0;background:#0a1628;display:flex;align-items:center;justify-content:center;z-index:99}
+.login-box{background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.12);border-radius:20px;padding:32px;width:340px}
+.login-title{font-size:20px;font-weight:800;color:#fff;margin-bottom:4px}
+.login-sub{font-size:13px;color:#64748B;margin-bottom:24px}
+.lfield{margin-bottom:14px}
+.lfield label{display:block;font-size:11px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.lfield input{width:100%;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15);border-radius:10px;color:#fff;font-family:var(--font);font-size:15px;padding:10px 12px;outline:none}
+.lfield input:focus{border-color:#22C55E}
+.lbtn{width:100%;background:#16A34A;color:#fff;border:none;border-radius:10px;padding:12px;font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;margin-top:8px}
+#lErr{color:#EF4444;font-size:13px;margin-top:10px;text-align:center;display:none}
+
+/* TOPBAR */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:64px;
+  display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;box-shadow:var(--shadow)}
+.tb-brand{display:flex;align-items:center;gap:12px}
+.tb-logo{font-size:20px;font-weight:800;color:var(--text);letter-spacing:-.02em}
+.tb-logo span{color:var(--green)}
+.tb-badge{background:#FEF3C7;color:#92400E;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.3px}
+.tb-right{display:flex;align-items:center;gap:12px}
+.tb-user{font-size:13px;color:var(--text-sec);font-weight:500}
+.tb-btn{background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:6px 14px;
+  font-family:var(--font);font-size:13px;font-weight:600;color:var(--text-sec);cursor:pointer;transition:all .12s}
+.tb-btn:hover{background:#F1F5F9}
+.tb-btn.green{background:var(--green);color:#fff;border-color:var(--green)}
+
+/* LAYOUT */
+.page{max-width:1200px;margin:0 auto;padding:32px 24px 80px}
+.page-title{font-size:26px;font-weight:800;color:var(--text);letter-spacing:-.02em;margin-bottom:4px}
+.page-sub{font-size:13px;color:var(--text-sec);margin-bottom:28px}
+
+/* TABS */
+.tabs{display:flex;gap:4px;border-bottom:2px solid var(--border);margin-bottom:28px}
+.tab{padding:10px 20px;font-family:var(--font);font-size:14px;font-weight:600;color:var(--text-muted);
+  cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .12s}
+.tab.active{color:var(--green);border-bottom-color:var(--green)}
+
+/* CARDS & GRIDS */
+.card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:28px}
+.kpi{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);
+  padding:18px;box-shadow:var(--shadow);text-align:center}
+.kpi-n{font-size:36px;font-weight:800;color:var(--text);line-height:1}
+.kpi-l{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-sec);margin-top:4px}
+.kpi-s{font-size:11px;color:var(--green);font-weight:600;margin-top:2px}
+.section-head{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-sec);margin:24px 0 12px}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;background:var(--surface);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+.tbl th{background:#F8FAFC;border-bottom:2px solid var(--border);padding:10px 14px;
+  font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-sec);text-align:left}
+.tbl td{padding:10px 14px;font-size:13px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:#F8FAFC}
+.badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 10px;border-radius:20px}
+.badge.admin{background:#FEF3C7;color:#92400E}
+.badge.schurco{background:var(--green-light);color:var(--green-dark)}
+.badge.distributor{background:#DBEAFE;color:#1E40AF}
+.badge.won{background:#DCFCE7;color:#166534}
+.badge.lost{background:#FEE2E2;color:#991B1B}
+
+/* INVITE FORM */
+.invite-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow)}
+.invite-grid{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:end}
+.field label{display:block;font-size:11px;font-weight:600;color:var(--text-sec);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.field input,.field select{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;
+  color:var(--text);font-family:var(--font);font-size:14px;padding:9px 12px;outline:none;transition:border-color .15s}
+.field input:focus,.field select:focus{border-color:var(--green)}
+.ibtn{background:var(--green);color:#fff;border:none;border-radius:10px;padding:10px 20px;
+  font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap}
+.ibtn:disabled{opacity:.5;cursor:default}
+
+/* ACTIVITY */
+.activity-item{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--border)}
+.activity-item:last-child{border-bottom:none}
+.activity-avatar{width:38px;height:38px;border-radius:50%;background:var(--green-light);
+  display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--green-dark);flex-shrink:0}
+.activity-info{flex:1;min-width:0}
+.activity-title{font-size:14px;font-weight:600;color:var(--text)}
+.activity-sub{font-size:12px;color:var(--text-sec);margin-top:1px}
+.activity-time{font-size:11px;color:var(--text-muted);white-space:nowrap}
+
+/* STATUS INDICATOR */
+.status-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px}
+.status-dot.green{background:var(--green)}
+.status-dot.amber{background:var(--warn)}
+
+#toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1.5px solid var(--border);
+  border-radius:12px;padding:12px 20px;font-size:14px;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,.12);
+  display:none;z-index:200;color:var(--text)}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginWrap">
+  <div class="login-box">
+    <div class="login-title">Admin Dashboard</div>
+    <div class="login-sub">Schurco Slurry · Management Access</div>
+    <div class="lfield"><label>Email</label>
+      <input type="email" id="aEmail" placeholder="your@email.com"
+        onkeydown="if(event.key==='Enter')document.getElementById('aPwd').focus()"/></div>
+    <div class="lfield"><label>Password</label>
+      <input type="password" id="aPwd" placeholder="••••••••"
+        onkeydown="if(event.key==='Enter')adminLogin()"/></div>
+    <button class="lbtn" onclick="adminLogin()" id="lBtn">Sign In</button>
+    <div id="lErr"></div>
+  </div>
+</div>
+
+<!-- MAIN DASHBOARD (hidden until logged in) -->
+<div id="mainDash" style="display:none">
+  <div class="topbar">
+    <div class="tb-brand">
+      <div class="tb-logo">SCHURCO <span>ADMIN</span></div>
+      <span class="tb-badge">⚡ Management View</span>
+    </div>
+    <div class="tb-right">
+      <div class="tb-user" id="adminName"></div>
+      <button class="tb-btn green" onclick="refreshAll()">&#8645; Refresh</button>
+      <button class="tb-btn" onclick="adminLogout()">Sign Out</button>
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="page-title">Intelligence Hub</div>
+    <div class="page-sub" id="lastRefreshed">Loading data…</div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('overview')">Overview</button>
+      <button class="tab" onclick="showTab('activity')">Activity</button>
+      <button class="tab" onclick="showTab('users')">Users</button>
+      <button class="tab" onclick="showTab('orgs')">Organisations</button>
+    </div>
+
+    <!-- OVERVIEW TAB -->
+    <div id="tabOverview">
+      <div class="kpi-grid" id="kpiGrid">
+        <div class="kpi"><div class="kpi-n">—</div><div class="kpi-l">Surveys</div></div>
+        <div class="kpi"><div class="kpi-n">—</div><div class="kpi-l">Pumps</div></div>
+        <div class="kpi"><div class="kpi-n">—</div><div class="kpi-l">Opportunities</div></div>
+        <div class="kpi"><div class="kpi-n">—</div><div class="kpi-l">Organisations</div></div>
+        <div class="kpi"><div class="kpi-n">—</div><div class="kpi-l">Active Users</div></div>
+      </div>
+
+      <div class="section-head">Opportunities Pipeline</div>
+      <div class="card" id="pipelineCard" style="padding:0;overflow:hidden">
+        <div style="padding:20px;color:var(--text-muted);font-size:14px">Loading…</div>
+      </div>
+
+      <div class="section-head" style="margin-top:24px">All Surveys</div>
+      <table class="tbl" id="surveysTable">
+        <thead><tr>
+          <th>Date</th><th>Customer</th><th>Site</th><th>Rep</th><th>Organisation</th><th>Pumps</th><th>Status</th>
+        </tr></thead>
+        <tbody><tr><td colspan="7" style="color:var(--text-muted)">Loading…</td></tr></tbody>
+      </table>
+    </div>
+
+    <!-- ACTIVITY TAB -->
+    <div id="tabActivity" style="display:none">
+      <div class="section-head">Recent Survey Activity — All Organisations</div>
+      <div class="card" id="activityFeed" style="padding:0 20px">
+        <div style="padding:20px;color:var(--text-muted)">Loading…</div>
+      </div>
+
+      <div class="section-head" style="margin-top:24px">Opportunities — All Organisations</div>
+      <table class="tbl" id="oppsTable">
+        <thead><tr>
+          <th>Title</th><th>Customer</th><th>Value (R)</th><th>Stage</th><th>Owner</th><th>Close Date</th>
+        </tr></thead>
+        <tbody><tr><td colspan="6" style="color:var(--text-muted)">Loading…</td></tr></tbody>
+      </table>
+    </div>
+
+    <!-- USERS TAB -->
+    <div id="tabUsers" style="display:none">
+      <div class="invite-card" style="margin-bottom:24px">
+        <div style="font-size:16px;font-weight:700;margin-bottom:16px">&#43; Invite New User</div>
+        <div class="invite-grid">
+          <div class="field"><label>Email *</label>
+            <input type="email" id="invEmail" placeholder="user@company.com"/></div>
+          <div class="field"><label>Full Name</label>
+            <input type="text" id="invName" placeholder="John Smith"/></div>
+          <div class="field"><label>Organisation *</label>
+            <select id="invOrg"><option value="">Select…</option></select></div>
+          <button class="ibtn" onclick="inviteUser()" id="invBtn">Send Invite</button>
+        </div>
+        <div id="invMsg" style="margin-top:10px;font-size:13px;display:none"></div>
+      </div>
+
+      <div class="section-head">All Users</div>
+      <table class="tbl" id="usersTable">
+        <thead><tr>
+          <th>Name</th><th>Email</th><th>Organisation</th><th>Role</th><th>Admin</th><th>Actions</th>
+        </tr></thead>
+        <tbody><tr><td colspan="6" style="color:var(--text-muted)">Loading…</td></tr></tbody>
+      </table>
+    </div>
+
+    <!-- ORGS TAB -->
+    <div id="tabOrgs" style="display:none">
+      <div class="invite-card" style="margin-bottom:24px">
+        <div style="font-size:16px;font-weight:700;margin-bottom:16px">&#43; Add Organisation</div>
+        <div class="invite-grid">
+          <div class="field"><label>Name *</label>
+            <input type="text" id="orgName" placeholder="Distributor Name"/></div>
+          <div class="field"><label>Type</label>
+            <select id="orgType"><option value="distributor">Distributor</option><option value="schurco">Schurco</option></select></div>
+          <div class="field"><label>Country</label>
+            <input type="text" id="orgCountry" placeholder="e.g. Angola"/></div>
+          <button class="ibtn" onclick="addOrg()" id="orgBtn">Add</button>
+        </div>
+        <div id="orgMsg" style="margin-top:10px;font-size:13px;display:none"></div>
+      </div>
+
+      <div class="section-head">All Organisations</div>
+      <table class="tbl" id="orgsTable">
+        <thead><tr><th>Name</th><th>Type</th><th>Country</th><th>Users</th><th>Surveys</th></tr></thead>
+        <tbody><tr><td colspan="5" style="color:var(--text-muted)">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const SUPABASE_URL = 'https://gxdyhhdyyobbzfnanoan.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd4ZHloaGR5eW9iYnpmbmFub2FuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MjY3MTMsImV4cCI6MjA5NzIwMjcxM30.fPziJT0H2XcMsZqA_QRIu1z6Ds9hqb5kxWtRJqnQtIs';
+let sb, adminUser, adminProfile;
+let allAudits=[], allPumps=[], allOpps=[], allProfiles=[], allOrgs=[];
+let activeTab = 'overview';
+
+// ── AUTH ─────────────────────────────────────────────────────────────
+window.addEventListener('load', async () => {
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+    auth: { persistSession: true, storageKey: 'schurco-admin-session' }
+  });
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    adminUser = session.user;
+    const ok = await checkAdmin();
+    if (ok) enterDashboard();
+    else showLoginErr('Your account does not have admin access.');
+  }
+});
+
+async function adminLogin() {
+  const email = document.getElementById('aEmail').value.trim();
+  const pwd   = document.getElementById('aPwd').value;
+  const btn   = document.getElementById('lBtn');
+  if (!email || !pwd) { showLoginErr('Enter email and password.'); return; }
+  btn.textContent = 'Signing in…'; btn.disabled = true;
+  hideLoginErr();
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pwd });
+  if (error) { showLoginErr(error.message); btn.textContent='Sign In'; btn.disabled=false; return; }
+  adminUser = data.user;
+  const ok = await checkAdmin();
+  if (!ok) {
+    await sb.auth.signOut();
+    showLoginErr('Your account does not have admin access. Contact Gideon to request admin rights.');
+    btn.textContent='Sign In'; btn.disabled=false;
+    return;
+  }
+  enterDashboard();
+}
+
+async function checkAdmin() {
+  const { data } = await sb.from('profiles').select('*,organisations(*)').eq('id', adminUser.id).single();
+  if (!data || !data.is_admin) return false;
+  adminProfile = data;
+  return true;
+}
+
+async function adminLogout() {
+  await sb.auth.signOut();
+  location.reload();
+}
+
+function enterDashboard() {
+  document.getElementById('loginWrap').style.display = 'none';
+  document.getElementById('mainDash').style.display = '';
+  document.getElementById('adminName').textContent = adminProfile.name || adminUser.email;
+  refreshAll();
+}
+
+function showLoginErr(msg) {
+  const e = document.getElementById('lErr');
+  e.textContent = msg; e.style.display = '';
+}
+function hideLoginErr() { document.getElementById('lErr').style.display='none'; }
+
+// ── DATA LOAD ─────────────────────────────────────────────────────────
+async function refreshAll() {
+  document.getElementById('lastRefreshed').textContent = 'Refreshing…';
+  const [aR,pR,oR,prR,orR] = await Promise.all([
+    sb.from('audits').select('*').order('date',{ascending:false}),
+    sb.from('pumps').select('*'),
+    sb.from('opportunities').select('*').order('saved_at',{ascending:false}),
+    sb.from('profiles').select('*,organisations(name,type)'),
+    sb.from('organisations').select('*')
+  ]);
+  allAudits   = aR.data||[];
+  allPumps    = pR.data||[];
+  allOpps     = oR.data||[];
+  allProfiles = prR.data||[];
+  allOrgs     = orR.data||[];
+  document.getElementById('lastRefreshed').textContent =
+    'Last refreshed: ' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  renderAll();
+  populateOrgDropdowns();
+}
+
+function renderAll() {
+  renderKPIs();
+  renderPipeline();
+  renderSurveys();
+  renderActivity();
+  renderOpps();
+  renderUsers();
+  renderOrgs();
+}
+
+// ── KPIs ──────────────────────────────────────────────────────────────
+function renderKPIs() {
+  const uniqueUsers = new Set(allAudits.map(a=>a.user_id)).size;
+  const grid = document.getElementById('kpiGrid');
+  const kpi = (n,l,s='') => `<div class="kpi"><div class="kpi-n">${n}</div><div class="kpi-l">${l}</div>${s?`<div class="kpi-s">${s}</div>`:''}</div>`;
+  grid.innerHTML =
+    kpi(allAudits.length,'Surveys') +
+    kpi(allPumps.length,'Pumps','Assessed') +
+    kpi(allOpps.length,'Opportunities', allOpps.filter(o=>o.stage==='Won').length+' won') +
+    kpi(allOrgs.length,'Organisations') +
+    kpi(uniqueUsers,'Active Users');
+}
+
+// ── PIPELINE ──────────────────────────────────────────────────────────
+function renderPipeline() {
+  const stages=['Identified','Qualifying','Quoting','Negotiation','Won','Lost'];
+  const colors={'Identified':'#94A3B8','Qualifying':'#3B82F6','Quoting':'#F59E0B','Negotiation':'#8B5CF6','Won':'#16A34A','Lost':'#EF4444'};
+  const counts = {};
+  stages.forEach(s => counts[s] = allOpps.filter(o=>o.stage===s).length);
+  const total = allOpps.reduce((s,o)=>s+(parseFloat(o.value)||0),0);
+  const won   = allOpps.filter(o=>o.stage==='Won').reduce((s,o)=>s+(parseFloat(o.value)||0),0);
+  const fmtR = v => v>=1e6?(v/1e6).toFixed(1)+'M':v>=1000?(v/1000).toFixed(0)+'K':v.toFixed(0);
+  document.getElementById('pipelineCard').innerHTML = `
+    <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;gap:24px">
+      <div><div style="font-size:22px;font-weight:800">R ${fmtR(total)}</div><div style="font-size:11px;color:var(--text-sec)">Pipeline Value</div></div>
+      <div><div style="font-size:22px;font-weight:800;color:var(--green)">R ${fmtR(won)}</div><div style="font-size:11px;color:var(--text-sec)">Won</div></div>
+    </div>
+    <div style="padding:16px 20px">
+      ${stages.map(s=>`<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+        <span style="width:110px;font-size:12px;color:var(--text-sec)">${s}</span>
+        <div style="flex:1;background:#F1F5F9;border-radius:4px;height:24px;overflow:hidden">
+          <div style="width:${allOpps.length?(counts[s]/allOpps.length*100).toFixed(0):0}%;background:${colors[s]};height:100%;border-radius:4px;display:flex;align-items:center;padding:0 8px;min-width:28px">
+            <span style="color:#fff;font-size:12px;font-weight:700">${counts[s]}</span>
+          </div>
+        </div>
+      </div>`).join('')}
+    </div>`;
+}
+
+// ── SURVEYS TABLE ─────────────────────────────────────────────────────
+function renderSurveys() {
+  const orgMap = {};
+  allProfiles.forEach(p => {
+    if(p.organisations) orgMap[p.id] = p.organisations.name;
+  });
+  const pumpMap = {};
+  allPumps.forEach(p => { pumpMap[p.audit_id] = (pumpMap[p.audit_id]||0)+1; });
+  const statusColor = {'open':'var(--green)','reviewed':'var(--warn)','closed':'var(--text-muted)'};
+  const rows = allAudits.slice(0,50).map(a => `<tr>
+    <td>${a.date||'—'}</td>
+    <td style="font-weight:600">${a.customer||'—'}</td>
+    <td>${a.site||'—'}</td>
+    <td>${a.rep_name||'—'}</td>
+    <td><span class="badge distributor">${orgMap[a.user_id]||'—'}</span></td>
+    <td style="text-align:center">${pumpMap[a.id]||0}</td>
+    <td><span style="color:${statusColor[a.status||'open']};font-weight:600;font-size:12px;text-transform:capitalize">${a.status||'open'}</span></td>
+  </tr>`).join('') || '<tr><td colspan="7" style="color:var(--text-muted)">No surveys yet</td></tr>';
+  document.querySelector('#surveysTable tbody').innerHTML = rows;
+}
+
+// ── ACTIVITY ──────────────────────────────────────────────────────────
+function renderActivity() {
+  const profileMap = {};
+  allProfiles.forEach(p => profileMap[p.id] = p);
+  const recent = [...allAudits].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,20);
+  const items = recent.map(a => {
+    const p = profileMap[a.user_id]||{};
+    const name = p.name||a.rep_name||'Unknown';
+    const initials = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const pumpCount = allPumps.filter(pm=>pm.audit_id===a.id).length;
+    const ago = timeAgo(a.created_at);
+    return `<div class="activity-item">
+      <div class="activity-avatar">${initials}</div>
+      <div class="activity-info">
+        <div class="activity-title">${name} submitted <strong>${a.customer||'Unknown'} — ${a.site||''}</strong></div>
+        <div class="activity-sub">${pumpCount} pump${pumpCount!==1?'s':''} assessed &middot; ${(p.organisations&&p.organisations.name)||''}</div>
+      </div>
+      <div class="activity-time">${ago}</div>
+    </div>`;
+  }).join('') || '<div style="padding:20px;color:var(--text-muted)">No activity yet</div>';
+  document.getElementById('activityFeed').innerHTML = items;
+}
+
+// ── OPPS TABLE ───────────────────────────────────────────────────────
+function renderOpps() {
+  const stageColor={'Won':'won','Lost':'lost','Identified':'','Qualifying':'','Quoting':'','Negotiation':''};
+  const rows = allOpps.slice(0,30).map(o=>`<tr>
+    <td style="font-weight:600">${o.title||'—'}</td>
+    <td>${o.customer||'—'}</td>
+    <td>${o.value?'R '+parseFloat(o.value).toLocaleString():'—'}</td>
+    <td><span class="badge ${stageColor[o.stage]||''}" style="background:${stageBg(o.stage)};color:${stageFg(o.stage)}">${o.stage||'—'}</span></td>
+    <td>${o.owner||'—'}</td>
+    <td>${o.close_date||'—'}</td>
+  </tr>`).join('') || '<tr><td colspan="6" style="color:var(--text-muted)">No opportunities yet</td></tr>';
+  document.querySelector('#oppsTable tbody').innerHTML = rows;
+}
+function stageBg(s){return{'Won':'#DCFCE7','Lost':'#FEE2E2','Quoting':'#FEF3C7','Negotiation':'#EDE9FE'}[s]||'#F1F5F9'}
+function stageFg(s){return{'Won':'#166534','Lost':'#991B1B','Quoting':'#92400E','Negotiation':'#5B21B6'}[s]||'#475569'}
+
+// ── USERS TABLE ───────────────────────────────────────────────────────
+function renderUsers() {
+  const rows = allProfiles.map(p=>`<tr>
+    <td style="font-weight:600">${p.name||'—'}</td>
+    <td style="color:var(--text-sec);font-size:12px">${p.id.slice(0,8)+'…'}</td>
+    <td>${p.organisations?`<span class="badge ${p.organisations.type}">${p.organisations.name}</span>`:'<span style="color:var(--text-muted)">Not assigned</span>'}</td>
+    <td>${p.role||'—'}</td>
+    <td>${p.is_admin?'<span class="badge admin">Admin</span>':''}</td>
+    <td>
+      <button onclick="toggleAdmin('${p.id}',${!p.is_admin})" style="font-size:11px;background:none;border:1.5px solid var(--border);border-radius:6px;padding:2px 8px;cursor:pointer;font-family:var(--font);font-weight:600;color:var(--text-sec)">${p.is_admin?'Remove Admin':'Make Admin'}</button>
+    </td>
+  </tr>`).join('') || '<tr><td colspan="6" style="color:var(--text-muted)">No users yet</td></tr>';
+  document.querySelector('#usersTable tbody').innerHTML = rows;
+}
+
+// ── ORGS TABLE ───────────────────────────────────────────────────────
+function renderOrgs() {
+  const userCount = {};
+  allProfiles.forEach(p=>{ if(p.org_id) userCount[p.org_id]=(userCount[p.org_id]||0)+1; });
+  const surveyCount = {};
+  allAudits.forEach(a=>{ if(a.org_id) surveyCount[a.org_id]=(surveyCount[a.org_id]||0)+1; });
+  const rows = allOrgs.map(o=>`<tr>
+    <td style="font-weight:600">${o.name}</td>
+    <td><span class="badge ${o.type}">${o.type}</span></td>
+    <td>${o.country||'—'}</td>
+    <td style="text-align:center">${userCount[o.id]||0}</td>
+    <td style="text-align:center">${surveyCount[o.id]||0}</td>
+  </tr>`).join('') || '<tr><td colspan="5" style="color:var(--text-muted)">No organisations yet</td></tr>';
+  document.querySelector('#orgsTable tbody').innerHTML = rows;
+}
+
+// ── INVITE USER ───────────────────────────────────────────────────────
+async function inviteUser() {
+  const email = document.getElementById('invEmail').value.trim();
+  const name  = document.getElementById('invName').value.trim();
+  const orgId = document.getElementById('invOrg').value;
+  const btn   = document.getElementById('invBtn');
+  const msg   = document.getElementById('invMsg');
+  if(!email||!orgId){showMsg(msg,'Email and organisation are required.','error');return;}
+  btn.disabled=true; btn.textContent='Sending…';
+  try {
+    const { data,error } = await sb.auth.admin.inviteUserByEmail(email,{
+      data: { name },
+      redirectTo: location.origin+'/index.html'
+    });
+    if(error) throw error;
+    // Assign org to their profile
+    if(data&&data.user) {
+      await sb.from('profiles').upsert({id:data.user.id,org_id:orgId,name,updated_at:new Date().toISOString()},{onConflict:'id'});
+    }
+    showMsg(msg,'Invite sent to '+email,'success');
+    document.getElementById('invEmail').value='';
+    document.getElementById('invName').value='';
+    await refreshAll();
+  } catch(e) {
+    showMsg(msg,'Error: '+e.message,'error');
+  } finally {
+    btn.disabled=false; btn.textContent='Send Invite';
+  }
+}
+
+// ── ADD ORG ───────────────────────────────────────────────────────────
+async function addOrg() {
+  const name    = document.getElementById('orgName').value.trim();
+  const type    = document.getElementById('orgType').value;
+  const country = document.getElementById('orgCountry').value.trim();
+  const btn = document.getElementById('orgBtn');
+  const msg = document.getElementById('orgMsg');
+  if(!name){showMsg(msg,'Name is required.','error');return;}
+  btn.disabled=true;
+  try {
+    const {error} = await sb.from('organisations').insert({name,type,country});
+    if(error) throw error;
+    showMsg(msg,'Organisation added.','success');
+    document.getElementById('orgName').value='';
+    document.getElementById('orgCountry').value='';
+    await refreshAll();
+  } catch(e) {
+    showMsg(msg,'Error: '+e.message,'error');
+  } finally {
+    btn.disabled=false;
+  }
+}
+
+// ── TOGGLE ADMIN ──────────────────────────────────────────────────────
+async function toggleAdmin(userId, makeAdmin) {
+  if(!confirm(makeAdmin?'Grant admin access to this user?':'Remove admin access from this user?')) return;
+  const {error} = await sb.from('profiles').update({is_admin:makeAdmin,updated_at:new Date().toISOString()}).eq('id',userId);
+  if(error) { adminToast('Error: '+error.message); return; }
+  adminToast(makeAdmin?'Admin access granted':'Admin access removed');
+  await refreshAll();
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────
+function populateOrgDropdowns() {
+  const sel = document.getElementById('invOrg');
+  sel.innerHTML = '<option value="">Select organisation…</option>' +
+    allOrgs.map(o=>`<option value="${o.id}">${o.name}</option>`).join('');
+}
+function showTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.getAttribute('onclick').includes("'"+tab+"'")));
+  ['overview','activity','users','orgs'].forEach(t=>{
+    const el=document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1));
+    if(el) el.style.display=t===tab?'':'none';
+  });
+}
+function timeAgo(ts) {
+  const d = Math.floor((Date.now()-new Date(ts).getTime())/1000);
+  if(d<60)return'just now';
+  if(d<3600)return Math.floor(d/60)+'m ago';
+  if(d<86400)return Math.floor(d/3600)+'h ago';
+  return Math.floor(d/86400)+'d ago';
+}
+function showMsg(el,msg,type) {
+  el.textContent=msg;
+  el.style.color=type==='success'?'#16A34A':'#EF4444';
+  el.style.display='';
+  setTimeout(()=>el.style.display='none',4000);
+}
+function adminToast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.style.display='block';
+  setTimeout(()=>t.style.display='none',3000);
+}
+</script>
+</body>
+</html>

@@ -10,6 +10,7 @@
 <link rel="manifest" href="manifest.json"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="supabase.bundle.js"></script>
 <script src="xlsx.bundle.js"></script>
 <style>
 
@@ -437,13 +438,54 @@ input[type=file]{display:none}
 </head>
 <body>
 
+
+<!-- ══ LOGIN OVERLAY ══════════════════════════════════════════════ -->
+<div id="loginOverlay" style="position:fixed;inset:0;background:#0a1628;z-index:999;display:flex;align-items:center;justify-content:center;padding:20px">
+  <div style="width:100%;max-width:360px">
+    <div style="text-align:center;margin-bottom:32px">
+      <img id="loginLogo" style="height:52px;margin-bottom:16px" alt="Schurco"/>
+      <div style="font-family:var(--font);font-size:22px;font-weight:800;color:#fff;letter-spacing:-.02em">SITE <span style="color:#22C55E">AUDIT</span></div>
+      <div style="font-size:13px;color:#64748B;margin-top:4px">Field Intelligence Platform</div>
+    </div>
+    <div style="background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.1);border-radius:16px;padding:24px">
+      <div class="field" style="margin-bottom:14px">
+        <label style="color:#94A3B8">Email</label>
+        <input type="email" id="loginEmail" placeholder="your@email.com"
+          style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:#fff"
+          onkeydown="if(event.key==='Enter')document.getElementById('loginPassword').focus()"/>
+      </div>
+      <div class="field" style="margin-bottom:14px">
+        <label style="color:#94A3B8">Password</label>
+        <input type="password" id="loginPassword" placeholder="••••••••"
+          style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:#fff"
+          onkeydown="if(event.key==='Enter')handleLogin()"/>
+      </div>
+      <label style="display:flex;align-items:center;gap:8px;color:#64748B;font-size:13px;cursor:pointer;margin-bottom:20px">
+        <input type="checkbox" id="rememberMe" checked style="width:16px;height:16px;accent-color:#16A34A"/>
+        Remember me on this device
+      </label>
+      <button class="btn btn-primary" onclick="handleLogin()" id="loginBtn">Sign In</button>
+      <div id="loginError" style="color:#EF4444;font-size:13px;margin-top:12px;text-align:center;display:none"></div>
+    </div>
+    <div style="text-align:center;margin-top:16px;font-size:12px;color:#334155">
+      Contact your administrator to request access
+    </div>
+  </div>
+</div>
+
+<!-- ══ SYNC STATUS BAR ══════════════════════════════════════════ -->
+<div id="syncBar" style="display:none;background:#166534;color:#DCFCE7;font-size:11px;font-weight:600;
+  text-align:center;padding:4px 16px;letter-spacing:.3px;flex-shrink:0">
+  Syncing…
+</div>
+
 <div id="app">
   <div class="topbar">
     <div class="topbar-brand">
       <img id="brandLogo" class="topbar-logoimg" alt="Schurco"/>
       <div class="topbar-logo">SITE <span>AUDIT</span></div>
     </div>
-    <div class="topbar-badge" id="netBadge">&#9679; ONLINE</div>
+    <div style="display:flex;align-items:center;gap:8px"><div class="topbar-badge" id="netBadge">&#9679; ONLINE</div><button id="syncBtn" onclick="syncNow(false)" title="Sync now" style="display:none;background:var(--green-dim);border:1.5px solid var(--green-mid);border-radius:8px;padding:4px 10px;font-size:11px;font-weight:600;color:var(--green-dark);cursor:pointer">&#8645;</button><button onclick="handleLogout()" title="Sign out" style="display:none;background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;color:var(--text-sec);cursor:pointer" id="logoutBtn">&#10005;</button></div>
   </div>
 
   <!-- HOME: Audit list -->
@@ -576,8 +618,6 @@ input[type=file]{display:none}
       <div class="field-row">
         <div class="field"><label>Date of Visit <span class="req">*</span></label>
           <input type="date" id="af_date"/></div>
-        <div class="field"><label>Schurco Rep</label>
-          <input type="text" id="af_rep" placeholder="e.g. Gideon"/></div>
       </div>
       <div class="field-row">
         <div class="field"><label>Contact Name</label>
@@ -870,11 +910,9 @@ input[type=file]{display:none}
         <div class="field"><label>Est. Value (R)</label>
           <input type="number" id="of_value" placeholder="e.g. 250000"/></div>
       </div>
-      <div class="field-row">
-        <div class="field"><label>Owner / Rep</label>
-          <input type="text" id="of_owner" placeholder="e.g. Gideon"/></div>
-        <div class="field"><label>Expected Close</label>
-          <input type="date" id="of_closeDate"/></div>
+      <div class="field">
+        <label>Expected Close</label>
+        <input type="date" id="of_closeDate"/>
       </div>
       <div class="divider"></div>
       <div class="card-head"><div class="card-head-dot"></div>Site &amp; Contact</div>
@@ -1190,7 +1228,7 @@ function saveAudit() {
     region: titleCase(document.getElementById('af_region').value),
     country: titleCase(document.getElementById('af_country').value) || 'South Africa',
     date,
-    rep: titleCase(document.getElementById('af_rep').value),
+    rep: (db.userProfile && db.userProfile.name) || '',
     contactName: titleCase(document.getElementById('af_contactName').value),
     contactPosition: titleCase(document.getElementById('af_contactPosition').value),
     purpose: document.getElementById('af_purpose').value,
@@ -2265,7 +2303,8 @@ loadDB();
 loadCreds();
 updateNet();
 try { document.getElementById('brandLogo').src = SCHURCO_LOGO; } catch(e) {}
-showTab('Home');
+try { document.getElementById('loginLogo').src = SCHURCO_LOGO; } catch(e) {}
+initAuth(); // Supabase auth — shows login or app
 
 
 // ── DASHBOARD & OPPORTUNITIES ─────────────────────────────────────────────────
@@ -2658,7 +2697,7 @@ function saveOpportunity() {
     site: linkedAudit.site || '',
     value: g('of_value'),
     stage: g('of_stage'),
-    owner: titleCase(g('of_owner')),
+    owner: (db.userProfile && db.userProfile.name) || '',
     closeDate: g('of_closeDate'),
     auditId: linkedAuditId,
     pumpId: g('of_pumpId'),
@@ -2702,6 +2741,312 @@ function saveProfile() {
   toast('Profile saved ✓','success');
   if(document.getElementById('screenDashboard').style.display!=='none') renderDashboard();
 }
+
+
+// ═══════════════════════════════════════════════════════════════════
+// SUPABASE — AUTH & SYNC
+// ═══════════════════════════════════════════════════════════════════
+const SUPABASE_URL = 'https://gxdyhhdyyobbzfnanoan.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd4ZHloaGR5eW9iYnpmbmFub2FuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MjY3MTMsImV4cCI6MjA5NzIwMjcxM30.fPziJT0H2XcMsZqA_QRIu1z6Ds9hqb5kxWtRJqnQtIs';
+
+let sbClient = null;
+let currentUser = null;
+let currentProfile = null;
+let currentOrgId = null;
+
+// ── Initialise ──────────────────────────────────────────────────────
+async function initAuth() {
+  try {
+    if (typeof window.supabase === 'undefined') {
+      console.warn('Supabase library not loaded — offline mode');
+      showApp(); return;
+    }
+    sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+      auth: { persistSession: true, storageKey: 'schurco-audit-session' }
+    });
+    const { data: { session } } = await sbClient.auth.getSession();
+    if (session) {
+      currentUser = session.user;
+      await loadUserProfile();
+      showApp();
+      setTimeout(() => syncNow(true), 1500);
+    } else {
+      showLogin();
+    }
+  } catch(e) {
+    console.error('Auth init error:', e);
+    showApp(); // Fail open — offline mode
+  }
+}
+
+function showLogin() {
+  document.getElementById('loginOverlay').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+}
+
+function showApp() {
+  document.getElementById('loginOverlay').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  document.getElementById('syncBtn').style.display = currentUser ? '' : 'none';
+  document.getElementById('logoutBtn').style.display = currentUser ? '' : 'none';
+  showTab('Home');
+}
+
+// ── Login / Logout ──────────────────────────────────────────────────
+async function handleLogin() {
+  const email    = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const errEl    = document.getElementById('loginError');
+  const btn      = document.getElementById('loginBtn');
+  if (!email || !password) {
+    errEl.textContent = 'Please enter email and password.';
+    errEl.style.display = '';
+    return;
+  }
+  btn.textContent = 'Signing in…';
+  btn.disabled = true;
+  errEl.style.display = 'none';
+  try {
+    const { data, error } = await sbClient.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    currentUser = data.user;
+    await loadUserProfile();
+    showApp();
+    setTimeout(() => syncNow(true), 1000);
+  } catch(e) {
+    errEl.textContent = e.message || 'Sign in failed. Check your email and password.';
+    errEl.style.display = '';
+  } finally {
+    btn.textContent = 'Sign In';
+    btn.disabled = false;
+  }
+}
+
+async function handleLogout() {
+  if (!confirm('Sign out of this device?')) return;
+  if (sbClient) await sbClient.auth.signOut();
+  currentUser = null; currentProfile = null; currentOrgId = null;
+  showLogin();
+}
+
+// ── Profile ─────────────────────────────────────────────────────────
+async function loadUserProfile() {
+  if (!sbClient || !currentUser) return;
+  try {
+    const { data } = await sbClient
+      .from('profiles')
+      .select('*, organisations(name,type,country,region)')
+      .eq('id', currentUser.id)
+      .single();
+    if (data) {
+      currentProfile = data;
+      currentOrgId   = data.org_id;
+      db.userProfile = {
+        name:    data.name    || '',
+        role:    data.role    || '',
+        company: data.company || (data.organisations && data.organisations.name) || '',
+        country: data.country || '',
+        region:  data.region  || ''
+      };
+      saveDB();
+    }
+  } catch(e) { console.warn('Profile load error:', e); }
+}
+
+async function syncProfileToSupabase() {
+  if (!sbClient || !currentUser) return;
+  try {
+    const p = db.userProfile || {};
+    await sbClient.from('profiles').upsert({
+      id:         currentUser.id,
+      org_id:     currentOrgId,
+      name:       p.name    || '',
+      role:       p.role    || '',
+      company:    p.company || '',
+      country:    p.country || '',
+      region:     p.region  || '',
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'id' });
+  } catch(e) { console.warn('Profile sync error:', e); }
+}
+
+// ── Data Mapping ─────────────────────────────────────────────────────
+function auditToRow(a) {
+  return {
+    id: a.id, org_id: currentOrgId, user_id: currentUser.id,
+    customer: a.customer||'', site: a.site||'',
+    region: a.region||'', country: a.country||'', date: a.date||'',
+    rep_name: a.rep||'', contact_name: a.contactName||'',
+    contact_position: a.contactPosition||'',
+    purpose: a.purpose||'', notes: a.notes||'',
+    location: a.location||null, status: a.status||'open',
+    updated_at: new Date().toISOString()
+  };
+}
+function rowToAudit(r) {
+  return {
+    id: r.id, customer: r.customer, site: r.site,
+    region: r.region, country: r.country, date: r.date,
+    rep: r.rep_name, contactName: r.contact_name,
+    contactPosition: r.contact_position, purpose: r.purpose,
+    notes: r.notes, location: r.location, status: r.status,
+    _userId: r.user_id, _synced: true
+  };
+}
+
+function pumpToRow(p) {
+  // Store photo slot keys only (no base64 — photos stay local / SharePoint)
+  const photoMeta = {};
+  if (p.photos) Object.keys(p.photos).forEach(k => { if(p.photos[k]) photoMeta[k] = true; });
+  return {
+    id: p.id, audit_id: p.auditId, org_id: currentOrgId, user_id: currentUser.id,
+    tag: p.tag||'', area: p.area||'', type: p.type||'', model: p.model||'',
+    size: p.size||'', rpm: p.rpm||'', bearing: p.bearing||'',
+    bearing_raw: p.bearingRaw||'', bearing_source: p.bearingSource||'',
+    drive: p.drive||'', kw: p.kw||'', kw_raw: p.kwRaw||'',
+    liner: p.liner||'', impeller: p.impeller||'', throat: p.throat||'',
+    seal: p.seal||'', slurry: p.slurry||'', sg: p.sg||'', ph: p.ph||'',
+    temp: p.temp||'', solids: p.solids||'', flow: p.flow||'',
+    head: p.head||'', d50: p.d50||'', dmax: p.dmax||'',
+    condition: p.condition||'', wear: p.wear||'', spares: p.spares||'',
+    competitor: p.competitor||'', opp: p.opp||'', notes: p.notes||'',
+    photos_meta: photoMeta,
+    extra_count: (p.extraPhotos||[]).length,
+    saved_at: p.savedAt||null,
+    updated_at: new Date().toISOString()
+  };
+}
+function rowToPump(r) {
+  return {
+    id: r.id, auditId: r.audit_id, tag: r.tag, area: r.area,
+    type: r.type, model: r.model, size: r.size, rpm: r.rpm,
+    bearing: r.bearing, bearingRaw: r.bearing_raw, bearingSource: r.bearing_source,
+    drive: r.drive, kw: r.kw, kwRaw: r.kw_raw,
+    liner: r.liner, impeller: r.impeller, throat: r.throat,
+    seal: r.seal, slurry: r.slurry, sg: r.sg, ph: r.ph,
+    temp: r.temp, solids: r.solids, flow: r.flow, head: r.head,
+    d50: r.d50, dmax: r.dmax, condition: r.condition,
+    wear: r.wear, spares: r.spares, competitor: r.competitor,
+    opp: r.opp, notes: r.notes,
+    photos: {}, extraPhotos: [],  // Photos stay device-local
+    savedAt: r.saved_at, _userId: r.user_id, _synced: true
+  };
+}
+
+function oppToRow(o) {
+  return {
+    id: o.id, audit_id: o.auditId, pump_id: o.pumpId||null,
+    org_id: currentOrgId, user_id: currentUser.id,
+    title: o.title||'', customer: o.customer||'', site: o.site||'',
+    value: o.value||'', stage: o.stage||'',
+    owner: o.owner||'', close_date: o.closeDate||'',
+    contact_name: o.contactName||'', contact_role: o.contactRole||'',
+    notes: o.notes||'', saved_at: o.savedAt||null,
+    updated_at: new Date().toISOString()
+  };
+}
+function rowToOpp(r) {
+  return {
+    id: r.id, auditId: r.audit_id, pumpId: r.pump_id,
+    title: r.title, customer: r.customer, site: r.site,
+    value: r.value, stage: r.stage, owner: r.owner,
+    closeDate: r.close_date, contactName: r.contact_name,
+    contactRole: r.contact_role, notes: r.notes,
+    savedAt: r.saved_at, _userId: r.user_id, _synced: true
+  };
+}
+
+// ── Sync ────────────────────────────────────────────────────────────
+let isSyncing = false;
+
+async function syncNow(silent = false) {
+  if (!sbClient || !currentUser || !currentOrgId) {
+    if (!silent) toast('Sign in required to sync', 'error');
+    return;
+  }
+  if (!navigator.onLine) {
+    if (!silent) toast('No connection — data saved locally', 'error');
+    return;
+  }
+  if (isSyncing) return;
+  isSyncing = true;
+  setSyncStatus('syncing');
+  try {
+    await pushAll();
+    await pullAll();
+    db.lastSynced = Date.now();
+    saveDB();
+    setSyncStatus('done');
+    if (!silent) toast('Synced ✓', 'success');
+  } catch(e) {
+    console.error('Sync error:', e);
+    setSyncStatus('error');
+    if (!silent) toast('Sync failed — ' + (e.message||e), 'error');
+  } finally {
+    isSyncing = false;
+  }
+}
+
+async function pushAll() {
+  ensureDbExtensions();
+  const batchUpsert = async (table, rows) => {
+    if (!rows.length) return;
+    const { error } = await sbClient.from(table).upsert(rows, { onConflict: 'id' });
+    if (error) throw error;
+  };
+  await batchUpsert('audits',        db.audits.map(auditToRow));
+  await batchUpsert('pumps',         db.pumps.map(pumpToRow));
+  await batchUpsert('opportunities', (db.opportunities||[]).map(oppToRow));
+  await syncProfileToSupabase();
+}
+
+async function pullAll() {
+  const [aRes, pRes, oRes] = await Promise.all([
+    sbClient.from('audits').select('*').order('date', { ascending: false }),
+    sbClient.from('pumps').select('*'),
+    sbClient.from('opportunities').select('*')
+  ]);
+  if (aRes.error) throw aRes.error;
+  if (pRes.error) throw pRes.error;
+  if (oRes.error) throw oRes.error;
+  mergePull(aRes.data||[], 'audits',        rowToAudit,  'id');
+  mergePull(pRes.data||[], 'pumps',         rowToPump,   'id');
+  mergePull(oRes.data||[], 'opportunities', rowToOpp,    'id');
+}
+
+function mergePull(rows, key, convert, idKey) {
+  rows.forEach(row => {
+    const idx = db[key].findIndex(x => x[idKey||'id'] === row.id);
+    if (idx < 0) {
+      // New record from another user — add it
+      db[key].push(convert(row));
+    }
+    // If exists locally, keep local version (user's own live data)
+  });
+}
+
+function setSyncStatus(state) {
+  const bar = document.getElementById('syncBar');
+  const btn = document.getElementById('syncBtn');
+  if (!bar) return;
+  if (state === 'syncing') {
+    bar.style.display = '';
+    bar.textContent = '⟳ Syncing…';
+    bar.style.background = '#1e3a5f';
+    if (btn) btn.textContent = '⟳';
+  } else if (state === 'done') {
+    bar.textContent = '✓ Synced — ' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    bar.style.background = '#166534';
+    setTimeout(() => { bar.style.display = 'none'; if(btn)btn.textContent='⇅'; }, 3000);
+  } else if (state === 'error') {
+    bar.textContent = '⚠ Sync failed — data saved locally';
+    bar.style.background = '#7f1d1d';
+    setTimeout(() => { bar.style.display = 'none'; if(btn)btn.textContent='⇅'; }, 4000);
+  }
+}
+
+// Sync on coming back online
+window.addEventListener('online', () => syncNow(true));
 
 </script>
 </body>
