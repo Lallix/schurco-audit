@@ -11,6 +11,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <script src="supabase.bundle.js"></script>
+<script>
+// If local bundle didn't load, fall back to CDN
+if (typeof window.supabase === 'undefined') {
+  document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"><\/script>');
+}
+</script>
 <script src="xlsx.bundle.js"></script>
 <style>
 
@@ -2756,10 +2762,12 @@ let currentOrgId = null;
 
 // ── Initialise ──────────────────────────────────────────────────────
 async function initAuth() {
+  // Always show login first — never bypass auth
+  showLogin();
   try {
     if (typeof window.supabase === 'undefined') {
-      console.warn('Supabase library not loaded — offline mode');
-      showApp(); return;
+      setLoginMsg('⚠ Could not load auth library. Check your internet connection and reload.', true);
+      return;
     }
     sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
       auth: { persistSession: true, storageKey: 'schurco-audit-session' }
@@ -2770,13 +2778,20 @@ async function initAuth() {
       await loadUserProfile();
       showApp();
       setTimeout(() => syncNow(true), 1500);
-    } else {
-      showLogin();
     }
+    // else: login screen is already showing, user signs in manually
   } catch(e) {
     console.error('Auth init error:', e);
-    showApp(); // Fail open — offline mode
+    setLoginMsg('⚠ Auth error: ' + e.message, true);
   }
+}
+
+function setLoginMsg(msg, isError) {
+  const el = document.getElementById('loginError');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.display = msg ? '' : 'none';
+  el.style.color = isError ? '#EF4444' : '#4ADE80';
 }
 
 function showLogin() {
@@ -2805,7 +2820,7 @@ async function handleLogin() {
   }
   btn.textContent = 'Signing in…';
   btn.disabled = true;
-  errEl.style.display = 'none';
+  setLoginMsg('', false);
   try {
     const { data, error } = await sbClient.auth.signInWithPassword({ email, password });
     if (error) throw error;
