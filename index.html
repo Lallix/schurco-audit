@@ -11,12 +11,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <script src="supabase.bundle.js"></script>
-<script>
-// If local bundle didn't load, fall back to CDN
-if (typeof window.supabase === 'undefined') {
-  document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"><\/script>');
-}
-</script>
 <script src="xlsx.bundle.js"></script>
 <style>
 
@@ -2761,14 +2755,26 @@ let currentProfile = null;
 let currentOrgId = null;
 
 // ── Initialise ──────────────────────────────────────────────────────
+// Load Supabase JS — tries local bundle first, falls back to CDN
+function loadSupabaseLib() {
+  return new Promise((resolve) => {
+    if (typeof window.supabase !== 'undefined') { resolve(true); return; }
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js';
+    s.onload  = () => resolve(true);
+    s.onerror = () => resolve(false);
+    document.head.appendChild(s);
+  });
+}
+
 async function initAuth() {
-  // Always show login first — never bypass auth
   showLogin();
+  const loaded = await loadSupabaseLib();
+  if (!loaded || typeof window.supabase === 'undefined') {
+    setLoginMsg('⚠ Could not load authentication library. Check your internet connection and reload.', true);
+    return;
+  }
   try {
-    if (typeof window.supabase === 'undefined') {
-      setLoginMsg('⚠ Could not load auth library. Check your internet connection and reload.', true);
-      return;
-    }
     sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
       auth: { persistSession: true, storageKey: 'schurco-audit-session' }
     });
@@ -2779,10 +2785,9 @@ async function initAuth() {
       showApp();
       setTimeout(() => syncNow(true), 1500);
     }
-    // else: login screen is already showing, user signs in manually
   } catch(e) {
     console.error('Auth init error:', e);
-    setLoginMsg('⚠ Auth error: ' + e.message, true);
+    setLoginMsg('⚠ ' + (e.message || 'Authentication error — please reload.'), true);
   }
 }
 
@@ -2814,9 +2819,20 @@ async function handleLogin() {
   const errEl    = document.getElementById('loginError');
   const btn      = document.getElementById('loginBtn');
   if (!email || !password) {
-    errEl.textContent = 'Please enter email and password.';
-    errEl.style.display = '';
+    setLoginMsg('Please enter your email and password.', true);
     return;
+  }
+  if (!sbClient) {
+    // Supabase not ready — try loading it now
+    setLoginMsg('Connecting…', false);
+    const ok = await loadSupabaseLib();
+    if (!ok || typeof window.supabase === 'undefined') {
+      setLoginMsg('⚠ Cannot connect — check your internet and reload the page.', true);
+      return;
+    }
+    sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+      auth: { persistSession: true, storageKey: 'schurco-audit-session' }
+    });
   }
   btn.textContent = 'Signing in…';
   btn.disabled = true;
