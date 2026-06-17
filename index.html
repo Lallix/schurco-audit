@@ -2989,19 +2989,18 @@ async function loadUserProfile() {
 }
 
 async function syncProfileToSupabase() {
-  if (!sbClient || !currentUser) return;
+  if (!sbClient || !currentUser || !currentOrgId) return; // Never sync without org — would null it out
   try {
     const p = db.userProfile || {};
-    await sbClient.from('profiles').upsert({
-      id:         currentUser.id,
-      org_id:     currentOrgId,
+    const { error } = await sbClient.from('profiles').update({
       name:       p.name    || '',
       role:       p.role    || '',
       company:    p.company || '',
       country:    p.country || '',
       region:     p.region  || '',
       updated_at: new Date().toISOString()
-    }, { onConflict: 'id' });
+    }).eq('id', currentUser.id);
+    if (error) console.warn('Profile sync error:', error.message);
   } catch(e) { console.warn('Profile sync error:', e); }
 }
 
@@ -3138,8 +3137,9 @@ async function pushAll() {
   const batchUpsert = async (table, rows) => {
     if (!rows.length) return;
     const { error } = await sbClient.from(table).upsert(rows, { onConflict: 'id' });
-    if (error) throw error;
+    if (error) throw new Error(table + ': ' + error.message);
   };
+  // Use UPDATE for existing records (avoids upsert trigger conflicts on org_id)
   await batchUpsert('audits',        db.audits.map(auditToRow));
   await batchUpsert('pumps',         db.pumps.map(pumpToRow));
   await batchUpsert('opportunities', (db.opportunities||[]).map(oppToRow));

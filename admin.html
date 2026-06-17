@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Schurco Admin Dashboard v5</title>
+<title>Schurco Admin Dashboard v6</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <script src="supabase.bundle.js"></script>
 <style>
@@ -194,7 +194,7 @@ body{font-family:'Poppins',sans-serif;background:#F8FAFC;color:#0F172A;min-heigh
     <!-- USERS TAB -->
     <div id="tabUsers" style="display:none">
       <div class="invite-card" style="margin-bottom:24px">
-        <div style="font-size:16px;font-weight:700;margin-bottom:16px">&#43; Invite New User</div>
+        <div style="font-size:16px;font-weight:700;margin-bottom:16px">&#43; Create New User Account</div>
         <div class="invite-grid">
           <div class="field"><label>Email *</label>
             <input type="email" id="invEmail" placeholder="user@company.com"/></div>
@@ -202,7 +202,7 @@ body{font-family:'Poppins',sans-serif;background:#F8FAFC;color:#0F172A;min-heigh
             <input type="text" id="invName" placeholder="John Smith"/></div>
           <div class="field"><label>Organisation *</label>
             <select id="invOrg"><option value="">Select…</option></select></div>
-          <button class="ibtn" onclick="inviteUser()" id="invBtn">Send Invite</button>
+          <button class="ibtn" onclick="inviteUser()" id="invBtn">Create Account</button>
         </div>
         <div id="invMsg" style="margin-top:10px;font-size:13px;display:none"></div>
       </div>
@@ -555,25 +555,36 @@ async function inviteUser() {
   const btn   = document.getElementById('invBtn');
   const msg   = document.getElementById('invMsg');
   if(!email||!orgId){showMsg(msg,'Email and organisation are required.','error');return;}
-  btn.disabled=true; btn.textContent='Sending…';
+  btn.disabled=true; btn.textContent='Creating…';
   try {
-    const { data,error } = await sb.auth.admin.inviteUserByEmail(email,{
-      data: { name },
-      redirectTo: location.origin+'/index.html'
+    // Generate a temporary password — admin shares this with the user
+    const tempPwd = 'Schurco@' + Math.random().toString(36).slice(-6).toUpperCase();
+    const { data, error } = await sb.auth.signUp({
+      email,
+      password: tempPwd,
+      options: { data: { name } }
     });
     if(error) throw error;
-    // Assign org to their profile
-    if(data&&data.user) {
-      await sb.from('profiles').upsert({id:data.user.id,org_id:orgId,name,updated_at:new Date().toISOString()},{onConflict:'id'});
-    }
-    showMsg(msg,'Invite sent to '+email,'success');
+    if(!data.user) throw new Error('User creation failed — try again');
+
+    // Assign org and name to their profile
+    await sb.from('profiles').upsert({
+      id: data.user.id,
+      org_id: orgId,
+      name: name || email.split('@')[0],
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'id' });
+
+    showMsg(msg,
+      `✓ Account created for ${email}. Temporary password: ${tempPwd} — share this with the user via WhatsApp or email. They can change it from the app.`,
+      'success');
     document.getElementById('invEmail').value='';
     document.getElementById('invName').value='';
     await refreshAll();
   } catch(e) {
     showMsg(msg,'Error: '+e.message,'error');
   } finally {
-    btn.disabled=false; btn.textContent='Send Invite';
+    btn.disabled=false; btn.textContent='Create Account';
   }
 }
 
