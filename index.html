@@ -561,9 +561,9 @@ input[type=file]{display:none}
         <div class="sync-title">&#9729; SharePoint / OneDrive</div>
         <div class="sync-desc">Upload formatted Excel workbooks named <b>Client_Site_Date</b> directly to your SharePoint library. Configure once below.</div>
         <div class="field"><label>SharePoint Site URL</label>
-          <input type="text" id="spUrl" placeholder="https://schurco.sharepoint.com/sites/Sales" oninput="saveCreds()"/></div>
+          <input type="text" id="spUrl" placeholder="https://schurco.sharepoint.com/sites/Sales" oninput="saveCreds()" value="https://schurcojax.sharepoint.com"/></div>
         <div class="field"><label>Library Path</label>
-          <input type="text" id="spLib" placeholder="/Shared Documents/Site Audits" oninput="saveCreds()"/></div>
+          <input type="text" id="spLib" placeholder="/Shared Documents/Site Audits" oninput="saveCreds()" value="/Shared Documents/Schurco Site Data Capture"/></div>
         <div class="field"><label>Access Token (Bearer)</label>
           <input type="text" id="spToken" placeholder="eyJ0eXAi&#8230;" oninput="saveCreds()"/></div>
         <div style="font-size:12px;color:var(--text-muted);line-height:1.5">Open an audit &rarr; tap <b>&#9729; SharePoint</b> to upload that site&rsquo;s workbook.</div>
@@ -2079,10 +2079,16 @@ function saveCreds() {
   }));
 }
 function loadCreds() {
+  const defaults = {
+    spUrl: 'https://schurcojax.sharepoint.com',
+    spLib: '/Shared Documents/Schurco Site Data Capture'
+  };
   try {
     const c = JSON.parse(localStorage.getItem('schurco_creds') || '{}');
     if (c.spUrl) document.getElementById('spUrl').value = c.spUrl;
+    else document.getElementById('spUrl').value = defaults.spUrl;
     if (c.spLib) document.getElementById('spLib').value = c.spLib;
+    else document.getElementById('spLib').value = defaults.spLib;
     if (c.spToken) document.getElementById('spToken').value = c.spToken;
   } catch(e) {}
 }
