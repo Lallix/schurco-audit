@@ -1205,14 +1205,12 @@ function openAudit(id) {
 function openNewAuditDrawer() {
   editingPumpId = null;
   document.getElementById('auditDrawerTitle').textContent = 'New Site Audit';
-  ['customer','site','region','country','date','rep','contactName','contactPosition','notes'].forEach(f => {
+  ['customer','site','region','country','date','contactName','contactPosition','notes'].forEach(f => {
     const el = document.getElementById('af_'+f);
     if (el) el.value = '';
   });
   document.getElementById('af_purpose').value = '';
-  const today = new Date().toISOString().split('T')[0];
-  document.getElementById('af_date').value = today;
-  document.getElementById('af_rep').value = (db.userProfile && db.userProfile.name) || 'Gideon';
+  document.getElementById('af_date').value = new Date().toISOString().split('T')[0];
   openDrawer('newAuditDrawer');
 }
 
