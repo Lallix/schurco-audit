@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Schurco Admin Dashboard v7</title>
+<title>Schurco Admin Dashboard v8</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <script src="supabase.bundle.js"></script>
 <style>
@@ -376,7 +376,7 @@ async function refreshAll() {
       sb.from('audits').select('*').order('date',{ascending:false}),
       sb.from('pumps').select('*'),
       sb.from('opportunities').select('*').order('saved_at',{ascending:false}),
-      sb.from('profiles').select('id,name,role,company,is_admin,org_id,created_at'),
+      sb.from('profiles').select('id,name,role,company,is_admin,org_id,email,created_at'),
       sb.from('organisations').select('*')
     ]);
 
@@ -527,12 +527,13 @@ function stageFg(s){return{'Won':'#166534','Lost':'#991B1B','Quoting':'#92400E',
 function renderUsers() {
   const rows = allProfiles.map(p=>`<tr>
     <td style="font-weight:600">${p.name||'—'}</td>
-    <td style="color:var(--text-sec);font-size:12px">${p.id.slice(0,8)+'…'}</td>
+    <td style="color:var(--text-sec);font-size:12px">${p.email||'—'}</td>
     <td>${p.organisations?`<span class="badge ${p.organisations.type}">${p.organisations.name}</span>`:'<span style="color:var(--text-muted)">Not assigned</span>'}</td>
     <td>${p.role||'—'}</td>
     <td>${p.is_admin?'<span class="badge admin">Admin</span>':''}</td>
     <td style="display:flex;gap:6px;flex-wrap:wrap">
       <button onclick="editUser('${p.id}')" class="action-btn">&#9998; Edit</button>
+      ${p.email?`<button onclick="sendPasswordReset('${p.email}','${(p.name||p.email).replace(/'/g,"\\'")}','${p.id}')" class="action-btn">&#128273; Reset PW</button>`:''}
       <button onclick="toggleAdmin('${p.id}',${!p.is_admin})" class="action-btn">${p.is_admin?'&#8854; Admin':'&#10022; Admin'}</button>
       <button onclick="deactivateUser('${p.id}','${(p.name||'this user').replace(/'/g,"\\'")}','${p.organisations?.name||''}')" class="action-btn danger">&#10005; Remove</button>
     </td>
@@ -575,7 +576,10 @@ async function inviteUser() {
     const { data, error } = await sb.auth.signUp({
       email,
       password: tempPwd,
-      options: { data: { name } }
+      options: {
+        data: { name },
+        emailRedirectTo: 'https://lallix.github.io/schurco-audit/'
+      }
     });
     if(error) throw error;
     if(!data.user) throw new Error('User creation failed — try again');
@@ -585,15 +589,34 @@ async function inviteUser() {
       id: data.user.id,
       org_id: orgId,
       name: name || email.split('@')[0],
+      email: email,
       updated_at: new Date().toISOString()
     }, { onConflict: 'id' });
 
-    showMsg(msg,
-      `✓ Account created for ${email}. Temporary password: ${tempPwd} — share this with the user via WhatsApp or email. They can change it from the app.`,
-      'success');
     document.getElementById('invEmail').value='';
     document.getElementById('invName').value='';
     await refreshAll();
+    // Show password in persistent modal — stays until admin closes it
+    openModal('Account Created ✓', `
+      <div style="margin-bottom:12px;font-size:14px;color:var(--text-sec)">
+        Account created for <strong style="color:var(--text)">${email}</strong>
+      </div>
+      <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-sec);margin-bottom:8px">Temporary Password</div>
+      <div style="background:#F0FDF4;border:2px solid #16A34A;border-radius:10px;padding:14px 16px;
+        display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px">
+        <span style="font-size:20px;font-weight:800;font-family:monospace;letter-spacing:3px;color:#166534">${tempPwd}</span>
+        <button onclick="navigator.clipboard.writeText('${tempPwd}').then(()=>adminToast('Copied ✓'))"
+          style="background:#16A34A;color:#fff;border:none;border-radius:8px;padding:8px 14px;
+          font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">
+          &#128203; Copy
+        </button>
+      </div>
+      <div style="font-size:12px;color:var(--text-muted);line-height:1.6">
+        Share this password with <strong>${name||email}</strong> via WhatsApp or email.<br/>
+        They can change it after logging into the app.
+      </div>
+    `, () => closeModal());
+    document.getElementById('modalSaveBtn').textContent = 'Done';
   } catch(e) {
     showMsg(msg,'Error: '+e.message,'error');
   } finally {
@@ -766,6 +789,17 @@ async function deleteOrg(orgId, name, userCount, surveyCount) {
   if (error) { adminToast('Error: ' + error.message); return; }
   adminToast('Organisation deleted ✓');
   await refreshAll();
+}
+
+
+// ── SEND PASSWORD RESET ───────────────────────────────────────────────────────
+async function sendPasswordReset(email, name, userId) {
+  if (!confirm('Send password reset email to ' + name + '?\n\nThey will receive a link to set a new password.')) return;
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: 'https://lallix.github.io/schurco-audit/'
+  });
+  if (error) { adminToast('Error: ' + error.message); return; }
+  adminToast('Password reset email sent to ' + email + ' \u2713');
 }
 
 </script>
