@@ -2882,17 +2882,31 @@ async function loadUserProfile() {
   if (!sbClient || !currentUser) return;
   try {
     // Use maybeSingle — won't throw if no rows returned
-    const { data: profile, error } = await sbClient
+    const { data: rows, error } = await sbClient
       .from('profiles')
       .select('id, name, role, company, country, region, is_admin, org_id')
       .eq('id', currentUser.id)
-      .maybeSingle();
+      .limit(1);
+    const profile = rows && rows.length > 0 ? rows[0] : null;
 
-    if (error) { console.warn('Profile query error:', error.message); return; }
-    if (!profile) { console.warn('No profile found for user:', currentUser.id); return; }
+    if (error) {
+      console.warn('Profile query error:', error.message);
+      toast('Profile error: ' + error.message, 'error');
+      return;
+    }
+    if (!profile) {
+      console.warn('No profile found for user:', currentUser.id);
+      toast('No profile found — run admin setup SQL', 'error');
+      return;
+    }
 
     currentProfile = profile;
     currentOrgId   = profile.org_id;
+
+    if (!currentOrgId) {
+      toast('Profile has no organisation — assign one in admin dashboard', 'error');
+      return;
+    }
 
     // Fetch org name separately — avoids join RLS issues
     let orgName = '';
