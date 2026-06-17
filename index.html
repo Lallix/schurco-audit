@@ -623,7 +623,21 @@ input[type=file]{display:none}
         <div class="field"><label>Contact Name</label>
           <input type="text" id="af_contactName" placeholder="e.g. John Smith"/></div>
         <div class="field"><label>Contact Position</label>
-          <input type="text" id="af_contactPosition" placeholder="e.g. Plant Engineer"/></div>
+          <select id="af_contactPosition">
+            <option value="">Select&#8230;</option>
+            <option>Plant Engineer</option>
+            <option>Head of Engineering</option>
+            <option>Maintenance Foreman</option>
+            <option>Maintenance Supervisor</option>
+            <option>Plant Manager</option>
+            <option>Operations Manager</option>
+            <option>Store Manager</option>
+            <option>Procurement Manager</option>
+            <option>Production Manager</option>
+            <option>Project Engineer</option>
+            <option>Metallurgist</option>
+            <option>Other</option>
+          </select></div>
       </div>
       <div class="field"><label>Visit Purpose</label>
         <select id="af_purpose">
@@ -1853,7 +1867,7 @@ function buildWorkbook(audit) {
     ['Country', audit.country || ''],
     ['Date of Visit', audit.date || ''],
     ['Visit Purpose', audit.purpose || ''],
-    ['Schurco Representative', audit.rep || ''],
+    ['Schurco Representative', audit.rep || (db.userProfile && db.userProfile.name) || ''],
     ['Contact Name', audit.contactName || ''],
     ['Contact Position', audit.contactPosition || ''],
     [],
@@ -2612,7 +2626,6 @@ function openOpportunityDrawer(id, prePumpId) {
   document.getElementById('of_title').value = o ? o.title||'' : '';
   document.getElementById('of_value').value = o ? o.value||'' : '';
   document.getElementById('of_stage').value = o ? o.stage||'Identified' : 'Identified';
-  document.getElementById('of_owner').value = o ? o.owner||'' : (db.userProfile.name||'');
   document.getElementById('of_closeDate').value = o ? o.closeDate||'' : '';
   document.getElementById('of_contactName').value = o ? o.contactName||'' : '';
   document.getElementById('of_contactRole').value = o ? o.contactRole||'' : '';
