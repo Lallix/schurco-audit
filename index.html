@@ -2881,23 +2881,40 @@ async function handleLogout() {
 async function loadUserProfile() {
   if (!sbClient || !currentUser) return;
   try {
-    const { data } = await sbClient
+    // Use maybeSingle — won't throw if no rows returned
+    const { data: profile, error } = await sbClient
       .from('profiles')
-      .select('*, organisations(name,type,country,region)')
+      .select('id, name, role, company, country, region, is_admin, org_id')
       .eq('id', currentUser.id)
-      .single();
-    if (data) {
-      currentProfile = data;
-      currentOrgId   = data.org_id;
-      db.userProfile = {
-        name:    data.name    || '',
-        role:    data.role    || '',
-        company: data.company || (data.organisations && data.organisations.name) || '',
-        country: data.country || '',
-        region:  data.region  || ''
-      };
-      saveDB();
+      .maybeSingle();
+
+    if (error) { console.warn('Profile query error:', error.message); return; }
+    if (!profile) { console.warn('No profile found for user:', currentUser.id); return; }
+
+    currentProfile = profile;
+    currentOrgId   = profile.org_id;
+
+    // Fetch org name separately — avoids join RLS issues
+    let orgName = '';
+    if (profile.org_id) {
+      const { data: org } = await sbClient
+        .from('organisations')
+        .select('name')
+        .eq('id', profile.org_id)
+        .maybeSingle();
+      if (org) orgName = org.name;
     }
+
+    db.userProfile = {
+      name:    profile.name    || '',
+      role:    profile.role    || '',
+      company: profile.company || orgName || '',
+      country: profile.country || '',
+      region:  profile.region  || ''
+    };
+    saveDB();
+    // Update UI if already showing
+    try { updateLocationIndicator(); } catch(e){}
   } catch(e) { console.warn('Profile load error:', e); }
 }
 
@@ -3008,9 +3025,17 @@ function rowToOpp(r) {
 let isSyncing = false;
 
 async function syncNow(silent = false) {
-  if (!sbClient || !currentUser || !currentOrgId) {
-    if (!silent) toast('Sign in required to sync', 'error');
+  if (!sbClient || !currentUser) {
+    if (!silent) toast('Please sign in to sync', 'error');
     return;
+  }
+  // If org not loaded yet, try fetching profile first
+  if (!currentOrgId) {
+    await loadUserProfile();
+    if (!currentOrgId) {
+      if (!silent) toast('Profile not set up — contact your administrator', 'error');
+      return;
+    }
   }
   if (!navigator.onLine) {
     if (!silent) toast('No connection — data saved locally', 'error');
