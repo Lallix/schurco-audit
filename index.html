@@ -1207,6 +1207,14 @@ function sentenceCase(s) {
   // capitalise the first letter of each sentence
   return lowered.replace(/(^\s*|[.!?]\s+)([a-z])/g, (m, pre, c) => pre + c.toUpperCase());
 }
+function initials(name) {
+  if (!name || !name.trim()) return '?';
+  const particles = ['van','de','den','der','von','le','la','du','di','da','del','dos','das','al','bin','binte'];
+  return name.trim().split(/\s+/).map(w => {
+    return particles.includes(w.toLowerCase()) ? w[0].toLowerCase() : w[0].toUpperCase();
+  }).join('');
+}
+
 function titleCase(s) {
   if (!s) return s;
   s = String(s).trim().replace(/\s+/g, ' ');
@@ -1282,7 +1290,7 @@ function renderAuditList() {
     const pumpCount = db.pumps.filter(p => p.auditId === a.id).length;
     const date = a.date ? new Date(a.date).toLocaleDateString('en-ZA') : 'No date';
     return `<div class="pump-item" onclick="openAudit('${a.id}')">
-      <div class="pump-badge">${a.customer.slice(0,4).toUpperCase()}</div>
+      <div class="pump-badge">${initials(a.rep||'?')}</div>
       <div class="pump-info">
         <div class="pump-tag">${a.site || a.customer}</div>
         <div class="pump-meta">${a.customer} · ${date} · ${pumpCount} pump${pumpCount!==1?'s':''}</div>
