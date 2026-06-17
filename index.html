@@ -473,6 +473,87 @@ input[type=file]{display:none}
   </div>
 </div>
 
+<!-- ══ FIRST-LOGIN SETUP OVERLAY ═════════════════════════════════════════ -->
+<div id="setupOverlay" style="position:fixed;inset:0;background:#0a1628;z-index:998;
+  display:none;align-items:center;justify-content:center;padding:20px">
+  <div style="width:100%;max-width:400px">
+
+    <!-- Progress bar -->
+    <div style="display:flex;gap:8px;margin-bottom:32px;justify-content:center">
+      <div id="step1Dot" style="height:6px;border-radius:3px;background:#22C55E;transition:all .3s;width:48px"></div>
+      <div id="step2Dot" style="height:6px;border-radius:3px;background:#1e3a5f;transition:all .3s;width:48px"></div>
+    </div>
+
+    <!-- STEP 1: Change password -->
+    <div id="setupStep1">
+      <div style="text-align:center;margin-bottom:28px">
+        <div style="font-size:32px;margin-bottom:12px">🔐</div>
+        <div style="font-family:var(--font);font-size:22px;font-weight:800;color:#fff;letter-spacing:-.02em">
+          Set Your Password
+        </div>
+        <div style="font-size:13px;color:#64748B;margin-top:6px">
+          You're using a temporary password.<br/>Please set a new one to continue.
+        </div>
+      </div>
+      <div style="background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.1);border-radius:16px;padding:24px">
+        <div class="field" style="margin-bottom:14px">
+          <label style="color:#94A3B8">New Password</label>
+          <input type="password" id="su_newPwd" placeholder="Min. 8 characters"
+            style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:#fff"
+            oninput="setupPwdCheck()"/>
+        </div>
+        <div class="field" style="margin-bottom:20px">
+          <label style="color:#94A3B8">Confirm Password</label>
+          <input type="password" id="su_confirmPwd" placeholder="Repeat your password"
+            style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:#fff"
+            oninput="setupPwdCheck()" onkeydown="if(event.key==='Enter')saveNewPassword()"/>
+        </div>
+        <div id="su_pwdMsg" style="font-size:12px;margin-bottom:12px;display:none;text-align:center"></div>
+        <button class="btn btn-primary" onclick="saveNewPassword()" id="su_pwdBtn"
+          style="opacity:.5;pointer-events:none">Set Password</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: Complete profile -->
+    <div id="setupStep2" style="display:none">
+      <div style="text-align:center;margin-bottom:28px">
+        <div style="font-size:32px;margin-bottom:12px">👤</div>
+        <div style="font-family:var(--font);font-size:22px;font-weight:800;color:#fff;letter-spacing:-.02em">
+          Complete Your Profile
+        </div>
+        <div style="font-size:13px;color:#64748B;margin-top:6px">
+          Your details appear on every survey you submit.
+        </div>
+      </div>
+      <div style="background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.1);border-radius:16px;padding:24px">
+        <div class="field" style="margin-bottom:14px">
+          <label style="color:#94A3B8">Full Name <span style="color:#EF4444">*</span></label>
+          <input type="text" id="su_name" placeholder="e.g. Marc Smith"
+            style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:#fff"/>
+        </div>
+        <div class="field" style="margin-bottom:14px">
+          <label style="color:#94A3B8">Role / Title <span style="color:#EF4444">*</span></label>
+          <input type="text" id="su_role" placeholder="e.g. Sales Representative"
+            style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:#fff"/>
+        </div>
+        <div class="field" style="margin-bottom:14px">
+          <label style="color:#94A3B8">Country</label>
+          <input type="text" id="su_country" placeholder="e.g. South Africa"
+            style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:#fff"/>
+        </div>
+        <div class="field" style="margin-bottom:20px">
+          <label style="color:#94A3B8">Region / Area</label>
+          <input type="text" id="su_region" placeholder="e.g. Gauteng"
+            style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:#fff"/>
+        </div>
+        <div id="su_profileMsg" style="font-size:12px;margin-bottom:12px;display:none;color:#EF4444;text-align:center"></div>
+        <button class="btn btn-primary" onclick="saveProfile_Setup()">Save &amp; Enter App</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 <!-- ══ SYNC STATUS BAR ══════════════════════════════════════════ -->
 <div id="syncBar" style="display:none;background:#166534;color:#DCFCE7;font-size:11px;font-weight:600;
   text-align:center;padding:4px 16px;letter-spacing:.3px;flex-shrink:0">
@@ -2883,10 +2964,54 @@ function showLogin() {
 
 function showApp() {
   document.getElementById('loginOverlay').style.display = 'none';
-  document.getElementById('app').style.display = 'flex';
   document.getElementById('syncBtn').style.display = currentUser ? '' : 'none';
   document.getElementById('logoutBtn').style.display = currentUser ? '' : 'none';
+
+  // Check if setup is required before showing the app
+  if (currentProfile) {
+    const needsPwdChange    = currentProfile.password_changed === false;
+    const needsProfileSetup = !currentProfile.name || !currentProfile.role;
+    if (needsPwdChange || needsProfileSetup) {
+      showSetupOverlay(needsPwdChange, needsProfileSetup);
+      return;
+    }
+  }
+  enterApp();
+}
+
+function enterApp() {
+  document.getElementById('setupOverlay').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
   showTab('Home');
+}
+
+function showSetupOverlay(needsPwd, needsProfile) {
+  document.getElementById('setupOverlay').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  if (needsPwd) {
+    document.getElementById('setupStep1').style.display = '';
+    document.getElementById('setupStep2').style.display = 'none';
+    document.getElementById('step1Dot').style.background = '#22C55E';
+    document.getElementById('step2Dot').style.background = '#1e3a5f';
+  } else {
+    goToProfileStep();
+  }
+}
+
+function goToProfileStep() {
+  document.getElementById('setupStep1').style.display = 'none';
+  document.getElementById('setupStep2').style.display = '';
+  document.getElementById('step1Dot').style.background = '#16A34A';
+  document.getElementById('step2Dot').style.background = '#22C55E';
+  // Pre-fill any existing data
+  const p = currentProfile;
+  if (p) {
+    const g = (id, v) => { const el = document.getElementById(id); if (el) el.value = v||''; };
+    g('su_name',    p.name);
+    g('su_role',    p.role);
+    g('su_country', p.country);
+    g('su_region',  p.region);
+  }
 }
 
 // ── Login / Logout ──────────────────────────────────────────────────
@@ -3197,6 +3322,101 @@ function setSyncStatus(state) {
 
 // Sync on coming back online
 window.addEventListener('online', () => syncNow(true));
+
+
+// ── FIRST-LOGIN SETUP ─────────────────────────────────────────────────────────
+function setupPwdCheck() {
+  const pwd  = document.getElementById('su_newPwd').value;
+  const conf = document.getElementById('su_confirmPwd').value;
+  const btn  = document.getElementById('su_pwdBtn');
+  const msg  = document.getElementById('su_pwdMsg');
+  if (pwd.length < 8) {
+    msg.textContent = 'Password must be at least 8 characters';
+    msg.style.color = '#F87171'; msg.style.display = '';
+    btn.style.opacity = '.5'; btn.style.pointerEvents = 'none';
+  } else if (conf && pwd !== conf) {
+    msg.textContent = 'Passwords do not match';
+    msg.style.color = '#F87171'; msg.style.display = '';
+    btn.style.opacity = '.5'; btn.style.pointerEvents = 'none';
+  } else if (pwd.length >= 8 && pwd === conf) {
+    msg.textContent = '✓ Passwords match';
+    msg.style.color = '#4ADE80'; msg.style.display = '';
+    btn.style.opacity = '1'; btn.style.pointerEvents = '';
+  } else {
+    msg.style.display = 'none';
+    btn.style.opacity = '.5'; btn.style.pointerEvents = 'none';
+  }
+}
+
+async function saveNewPassword() {
+  const pwd  = document.getElementById('su_newPwd').value;
+  const conf = document.getElementById('su_confirmPwd').value;
+  const btn  = document.getElementById('su_pwdBtn');
+  const msg  = document.getElementById('su_pwdMsg');
+  if (pwd !== conf || pwd.length < 8) return;
+
+  btn.textContent = 'Saving…'; btn.disabled = true;
+  try {
+    const { error } = await sbClient.auth.updateUser({ password: pwd });
+    if (error) throw error;
+
+    // Mark password as changed in profile
+    await sbClient.from('profiles').update({
+      password_changed: true,
+      updated_at: new Date().toISOString()
+    }).eq('id', currentUser.id);
+
+    if (currentProfile) currentProfile.password_changed = true;
+
+    // Check if profile also needs completing
+    const needsProfile = !currentProfile?.name || !currentProfile?.role;
+    if (needsProfile) {
+      goToProfileStep();
+    } else {
+      enterApp();
+    }
+  } catch(e) {
+    msg.textContent = 'Error: ' + e.message;
+    msg.style.color = '#F87171'; msg.style.display = '';
+    btn.textContent = 'Set Password'; btn.disabled = false;
+  }
+}
+
+async function saveProfile_Setup() {
+  const name    = (document.getElementById('su_name').value||'').trim();
+  const role    = (document.getElementById('su_role').value||'').trim();
+  const country = (document.getElementById('su_country').value||'').trim();
+  const region  = (document.getElementById('su_region').value||'').trim();
+  const msg     = document.getElementById('su_profileMsg');
+
+  if (!name || !role) {
+    msg.textContent = 'Name and Role are required';
+    msg.style.display = ''; return;
+  }
+
+  try {
+    const { error } = await sbClient.from('profiles').update({
+      name, role, country, region,
+      password_changed: true,
+      updated_at: new Date().toISOString()
+    }).eq('id', currentUser.id);
+    if (error) throw error;
+
+    // Update local profile + db
+    if (currentProfile) {
+      currentProfile.name    = name;
+      currentProfile.role    = role;
+      currentProfile.country = country;
+      currentProfile.region  = region;
+    }
+    db.userProfile = { name, role, company: db.userProfile?.company||'', country, region };
+    saveDB();
+    enterApp();
+  } catch(e) {
+    msg.textContent = 'Error: ' + e.message;
+    msg.style.display = '';
+  }
+}
 
 </script>
 </body>
