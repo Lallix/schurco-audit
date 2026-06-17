@@ -1827,8 +1827,17 @@ function savePump() {
   } else {
     db.pumps.push(pump);
   }
-  saveDB();
-  // Close and update UI immediately — before anything that could throw
+  // saveDB in try-catch — large photos can exceed localStorage quota
+  try {
+    saveDB();
+  } catch(e) {
+    console.warn('saveDB quota exceeded — retrying without photos:', e.message);
+    const idx = db.pumps.findIndex(x => x.id === pump.id);
+    if (idx >= 0) { db.pumps[idx].photos = {}; db.pumps[idx].extraPhotos = []; }
+    try { saveDB(); } catch(e2) { console.error('saveDB failed completely:', e2); }
+    toast('Storage full — pump saved without photos', 'error');
+  }
+  // Always close drawer — even if saveDB had issues
   closeDrawer('pumpDrawer');
   toast(editingPumpId ? 'Pump updated' : 'Pump saved ✓', 'success');
   renderPumpList();
@@ -1892,6 +1901,33 @@ const FRAME_BY_DISCHARGE = [
 ];
 
 // ── PHOTOS (guided slots + extras) ────────────────────────────────────────────
+// Compress image to max 1024px, JPEG 0.8 — keeps files ~100-300KB
+function compressImage(file, callback) {
+  const img = new Image();
+  const url = URL.createObjectURL(file);
+  img.onload = () => {
+    const MAX = 1024;
+    let w = img.naturalWidth, h = img.naturalHeight;
+    if (w > MAX || h > MAX) {
+      if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+      else        { w = Math.round(w * MAX / h); h = MAX; }
+    }
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    c.getContext('2d').drawImage(img, 0, 0, w, h);
+    URL.revokeObjectURL(url);
+    callback(c.toDataURL('image/jpeg', 0.8));
+  };
+  img.onerror = () => {
+    // Fallback — read raw if canvas fails
+    URL.revokeObjectURL(url);
+    const r = new FileReader();
+    r.onload = ev => callback(ev.target.result);
+    r.readAsDataURL(file);
+  };
+  img.src = url;
+}
+
 function captureSlot(key) {
   activeSlot = key;
   document.getElementById('slotInput').click();
@@ -1899,9 +1935,7 @@ function captureSlot(key) {
 function handleSlotPhoto(e) {
   const file = e.target.files[0];
   if (file && activeSlot) {
-    const reader = new FileReader();
-    reader.onload = ev => { slotPhotos[activeSlot] = ev.target.result; renderPhotoSlots(); };
-    reader.readAsDataURL(file);
+    compressImage(file, data => { slotPhotos[activeSlot] = data; renderPhotoSlots(); });
   }
   e.target.value = '';
 }
@@ -1929,9 +1963,7 @@ function renderPhotoSlots() {
 }
 function handleExtraPhotos(e) {
   Array.from(e.target.files).forEach(file => {
-    const reader = new FileReader();
-    reader.onload = ev => { extraPhotos.push(ev.target.result); renderExtraGrid(); };
-    reader.readAsDataURL(file);
+    compressImage(file, data => { extraPhotos.push(data); renderExtraGrid(); });
   });
   e.target.value = '';
 }
