@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Schurco Admin Dashboard v6</title>
+<title>Schurco Admin Dashboard v7</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <script src="supabase.bundle.js"></script>
 <style>
@@ -102,6 +102,13 @@ body{font-family:'Poppins',sans-serif;background:#F8FAFC;color:#0F172A;min-heigh
 .status-dot.green{background:var(--green)}
 .status-dot.amber{background:var(--warn)}
 
+.action-btn{font-size:11px;font-weight:600;padding:3px 10px;border-radius:6px;
+  cursor:pointer;font-family:var(--font);border:1.5px solid var(--border);
+  background:var(--surface);color:var(--text-sec);white-space:nowrap;transition:all .12s}
+.action-btn:hover{background:#F1F5F9}
+.action-btn.danger{border-color:#FECACA;color:#DC2626}
+.action-btn.danger:hover{background:#FEF2F2}
+#editModal.open{display:flex}
 #toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1.5px solid var(--border);
   border-radius:12px;padding:12px 20px;font-size:14px;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,.12);
   display:none;z-index:200;color:var(--text)}
@@ -234,7 +241,7 @@ body{font-family:'Poppins',sans-serif;background:#F8FAFC;color:#0F172A;min-heigh
 
       <div class="section-head">All Organisations</div>
       <table class="tbl" id="orgsTable">
-        <thead><tr><th>Name</th><th>Type</th><th>Country</th><th>Users</th><th>Surveys</th></tr></thead>
+        <thead><tr><th>Name</th><th>Type</th><th>Country</th><th>Users</th><th>Surveys</th><th>Actions</th></tr></thead>
         <tbody><tr><td colspan="5" style="color:var(--text-muted)">Loading…</td></tr></tbody>
       </table>
     </div>
@@ -524,8 +531,10 @@ function renderUsers() {
     <td>${p.organisations?`<span class="badge ${p.organisations.type}">${p.organisations.name}</span>`:'<span style="color:var(--text-muted)">Not assigned</span>'}</td>
     <td>${p.role||'—'}</td>
     <td>${p.is_admin?'<span class="badge admin">Admin</span>':''}</td>
-    <td>
-      <button onclick="toggleAdmin('${p.id}',${!p.is_admin})" style="font-size:11px;background:none;border:1.5px solid var(--border);border-radius:6px;padding:2px 8px;cursor:pointer;font-family:var(--font);font-weight:600;color:var(--text-sec)">${p.is_admin?'Remove Admin':'Make Admin'}</button>
+    <td style="display:flex;gap:6px;flex-wrap:wrap">
+      <button onclick="editUser('${p.id}')" class="action-btn">&#9998; Edit</button>
+      <button onclick="toggleAdmin('${p.id}',${!p.is_admin})" class="action-btn">${p.is_admin?'&#8854; Admin':'&#10022; Admin'}</button>
+      <button onclick="deactivateUser('${p.id}','${(p.name||'this user').replace(/'/g,"\\'")}','${p.organisations?.name||''}')" class="action-btn danger">&#10005; Remove</button>
     </td>
   </tr>`).join('') || '<tr><td colspan="6" style="color:var(--text-muted)">No users yet</td></tr>';
   document.querySelector('#usersTable tbody').innerHTML = rows;
@@ -543,7 +552,11 @@ function renderOrgs() {
     <td>${o.country||'—'}</td>
     <td style="text-align:center">${userCount[o.id]||0}</td>
     <td style="text-align:center">${surveyCount[o.id]||0}</td>
-  </tr>`).join('') || '<tr><td colspan="5" style="color:var(--text-muted)">No organisations yet</td></tr>';
+    <td style="display:flex;gap:6px">
+      <button onclick="editOrg('${o.id}')" class="action-btn">&#9998; Edit</button>
+      <button onclick="deleteOrg('${o.id}','${o.name.replace(/'/g,"\\'")}',${userCount[o.id]||0},${surveyCount[o.id]||0})" class="action-btn danger">&#128465; Delete</button>
+    </td>
+  </tr>`).join('') || '<tr><td colspan="6" style="color:var(--text-muted)">No organisations yet</td></tr>';
   document.querySelector('#orgsTable tbody').innerHTML = rows;
 }
 
@@ -652,6 +665,124 @@ function adminToast(msg) {
   t.textContent=msg; t.style.display='block';
   setTimeout(()=>t.style.display='none',3000);
 }
+
+// ── MODAL ────────────────────────────────────────────────────────────────────
+let modalSaveCallback = null;
+function openModal(title, bodyHtml, onSave) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalBody').innerHTML = bodyHtml;
+  modalSaveCallback = onSave;
+  document.getElementById('editModal').style.display = 'flex';
+}
+function closeModal() {
+  document.getElementById('editModal').style.display = 'none';
+  modalSaveCallback = null;
+}
+async function saveModal() {
+  if (modalSaveCallback) {
+    const btn = document.getElementById('modalSaveBtn');
+    btn.textContent = 'Saving…'; btn.disabled = true;
+    await modalSaveCallback();
+    btn.textContent = 'Save'; btn.disabled = false;
+  }
+}
+function mField(label, id, val, type='text', options=null) {
+  const opts = options ? '<option value="">Select…</option>' +
+    options.map(o=>`<option value="${o.id}" ${o.id===val?'selected':''}>${o.name}</option>`).join('') : '';
+  const input = options
+    ? `<select id="${id}" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;font-family:var(--font);font-size:14px">${opts}</select>`
+    : `<input type="${type}" id="${id}" value="${val||''}" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;font-family:var(--font);font-size:14px"/>`;
+  return `<div style="margin-bottom:14px">
+    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-sec);margin-bottom:5px">${label}</div>
+    ${input}</div>`;
+}
+
+// ── EDIT USER ─────────────────────────────────────────────────────────────────
+function editUser(userId) {
+  const p = allProfiles.find(x => x.id === userId);
+  if (!p) return;
+  const orgOptions = allOrgs.map(o => ({id:o.id, name:o.name}));
+  const body =
+    mField('Full Name',    'eu_name', p.name) +
+    mField('Role / Title', 'eu_role', p.role) +
+    mField('Organisation', 'eu_org',  p.org_id, 'text', orgOptions);
+  openModal('Edit User — ' + (p.name||p.id.slice(0,8)), body, async () => {
+    const name  = document.getElementById('eu_name').value.trim();
+    const role  = document.getElementById('eu_role').value.trim();
+    const orgId = document.getElementById('eu_org').value;
+    const { error } = await sb.from('profiles').update({
+      name, role, org_id: orgId||null, updated_at: new Date().toISOString()
+    }).eq('id', userId);
+    if (error) { adminToast('Error: ' + error.message); return; }
+    adminToast('User updated ✓');
+    closeModal();
+    await refreshAll();
+  });
+}
+
+// ── DEACTIVATE USER ───────────────────────────────────────────────────────────
+async function deactivateUser(userId, name, orgName) {
+  if (!confirm('Remove ' + name + ' from ' + (orgName||'their organisation') + '?\n\nThis clears their organisation access. To fully delete the account, remove them from the Supabase dashboard under Authentication → Users.')) return;
+  const { error } = await sb.from('profiles').update({
+    org_id: null, is_admin: false, updated_at: new Date().toISOString()
+  }).eq('id', userId);
+  if (error) { adminToast('Error: ' + error.message); return; }
+  adminToast('User removed from organisation ✓');
+  await refreshAll();
+}
+
+// ── EDIT ORGANISATION ─────────────────────────────────────────────────────────
+function editOrg(orgId) {
+  const o = allOrgs.find(x => x.id === orgId);
+  if (!o) return;
+  const body =
+    mField('Organisation Name', 'eo_name',    o.name) +
+    mField('Country',           'eo_country', o.country) +
+    '<div style="margin-bottom:14px"><div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-sec);margin-bottom:5px">Type</div>' +
+    '<select id="eo_type" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;font-family:var(--font);font-size:14px">' +
+    '<option value="distributor" ' + (o.type==='distributor'?'selected':'') + '>Distributor</option>' +
+    '<option value="schurco" '     + (o.type==='schurco'?'selected':'')     + '>Schurco</option></select></div>';
+  openModal('Edit Organisation — ' + o.name, body, async () => {
+    const name    = document.getElementById('eo_name').value.trim();
+    const country = document.getElementById('eo_country').value.trim();
+    const type    = document.getElementById('eo_type').value;
+    if (!name) { adminToast('Name is required'); return; }
+    const { error } = await sb.from('organisations').update({ name, country, type }).eq('id', orgId);
+    if (error) { adminToast('Error: ' + error.message); return; }
+    adminToast('Organisation updated ✓');
+    closeModal();
+    await refreshAll();
+  });
+}
+
+// ── DELETE ORGANISATION ────────────────────────────────────────────────────────
+async function deleteOrg(orgId, name, userCount, surveyCount) {
+  if (userCount > 0 || surveyCount > 0) {
+    alert('Cannot delete "' + name + '" — it has ' + userCount + ' user(s) and ' + surveyCount + ' survey(s).\n\nReassign or remove them first.');
+    return;
+  }
+  if (!confirm('Delete organisation "' + name + '"?\n\nThis cannot be undone.')) return;
+  const { error } = await sb.from('organisations').delete().eq('id', orgId);
+  if (error) { adminToast('Error: ' + error.message); return; }
+  adminToast('Organisation deleted ✓');
+  await refreshAll();
+}
+
 </script>
+
+<!-- ══ EDIT MODAL ═══════════════════════════════════════════════════════ -->
+<div id="editModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);
+  z-index:50;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--surface);border-radius:16px;padding:28px;width:100%;max-width:480px;
+    box-shadow:0 20px 60px rgba(0,0,0,.2)">
+    <div style="font-size:18px;font-weight:700;margin-bottom:20px" id="modalTitle">Edit</div>
+    <div id="modalBody"></div>
+    <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end">
+      <button onclick="closeModal()" class="tb-btn">Cancel</button>
+      <button onclick="saveModal()" id="modalSaveBtn" class="tb-btn green">Save</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
