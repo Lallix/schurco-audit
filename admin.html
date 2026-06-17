@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Schurco Admin Dashboard v2</title>
+<title>Schurco Admin Dashboard v3</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <script src="supabase.bundle.js"></script>
 <style>
@@ -308,25 +308,25 @@ async function adminLogin() {
 async function doAdminLogin() {
   const btn = document.getElementById('lBtn');
   try {
-    // Step 1: fetch profile directly
-    const { data: profile, error: profErr } = await sb
-      .from('profiles')
-      .select('id, name, role, is_admin, org_id')
-      .eq('id', adminUser.id)
-      .maybeSingle();
-
-    if (profErr) { showLoginErr('Profile query error: ' + profErr.message); resetBtn(btn); return; }
-    if (!profile) { showLoginErr('No profile found for your account. Run the admin setup SQL in Supabase.'); resetBtn(btn); return; }
-    if (!profile.is_admin) { showLoginErr('Your account does not have admin access.'); resetBtn(btn); return; }
-
-    // Step 2: fetch org name separately (avoids join RLS issues)
-    let orgName = 'Schurco Slurry South Africa';
-    if (profile.org_id) {
-      const { data: org } = await sb.from('organisations').select('name').eq('id', profile.org_id).maybeSingle();
-      if (org) orgName = org.name;
+    // Check admin flag from JWT app_metadata — bypasses RLS entirely
+    const isAdmin = adminUser.app_metadata && adminUser.app_metadata.is_admin === true;
+    if (!isAdmin) {
+      showLoginErr('Your account does not have admin access. Contact your administrator.');
+      resetBtn(btn);
+      return;
     }
 
-    adminProfile = { ...profile, organisations: { name: orgName } };
+    // Load profile for display — best effort, not critical for access
+    let profile = { name: adminUser.email, role: '', is_admin: true, org_id: null };
+    try {
+      const { data } = await sb.from('profiles')
+        .select('id, name, role, is_admin, org_id')
+        .eq('id', adminUser.id)
+        .maybeSingle();
+      if (data) profile = data;
+    } catch(e) { /* use email fallback */ }
+
+    adminProfile = profile;
     enterDashboard();
   } catch(e) {
     showLoginErr('Login error: ' + e.message);
