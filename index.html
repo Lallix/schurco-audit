@@ -639,6 +639,12 @@ input[type=file]{display:none}
             <option>Other</option>
           </select></div>
       </div>
+      <div class="field-row">
+        <div class="field"><label>Contact Email</label>
+          <input type="email" id="af_contactEmail" placeholder="e.g. john@company.com"/></div>
+        <div class="field"><label>Contact No.</label>
+          <input type="tel" id="af_contactPhone" placeholder="e.g. +27 11 000 0000"/></div>
+      </div>
       <div class="field"><label>Visit Purpose</label>
         <select id="af_purpose">
           <option value="">Select&#8230;</option>
@@ -999,6 +1005,7 @@ const SCHURCO_LOGO = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPAAAADaCAYA
 let db = { audits: [], pumps: [] };
 let currentAuditId = null;
 let editingPumpId = null;
+let editingAuditId = null;
 let slotPhotos = {};       // { tag, bearing, sealing, wetend, assembly } base64
 let extraPhotos = [];      // additional base64 photos
 let activeSlot = null;     // which guided slot is currently capturing
@@ -1199,6 +1206,7 @@ function renderAuditList() {
         <div class="pump-tag">${a.site || a.customer}</div>
         <div class="pump-meta">${a.customer} · ${date} · ${pumpCount} pump${pumpCount!==1?'s':''}</div>
       </div>
+      <button class="dup-btn" onclick="event.stopPropagation();openNewAuditDrawer('${a.id}')" title="Edit client details">&#9998;</button>
       <div style="color:var(--text-muted);font-size:18px">›</div>
     </div>`;
   }).join('');
@@ -1216,15 +1224,38 @@ function openAudit(id) {
 }
 
 // ── AUDIT FORM ────────────────────────────────────────────────────────────────
-function openNewAuditDrawer() {
-  editingPumpId = null;
-  document.getElementById('auditDrawerTitle').textContent = 'New Site Audit';
-  ['customer','site','region','country','date','contactName','contactPosition','notes'].forEach(f => {
+function openNewAuditDrawer(id) {
+  editingAuditId = id || null;
+  document.getElementById('auditDrawerTitle').textContent = id ? 'Edit Client Details' : 'New Site Audit';
+  // Reset all fields
+  ['customer','site','region','country','date','contactName','contactEmail','contactPhone','notes'].forEach(f => {
     const el = document.getElementById('af_'+f);
     if (el) el.value = '';
   });
+  const cpEl = document.getElementById('af_contactPosition');
+  if (cpEl) cpEl.value = '';
   document.getElementById('af_purpose').value = '';
-  document.getElementById('af_date').value = new Date().toISOString().split('T')[0];
+  if (!id) {
+    document.getElementById('af_date').value = new Date().toISOString().split('T')[0];
+  }
+  // Pre-fill if editing
+  if (id) {
+    const a = db.audits.find(x => x.id === id);
+    if (a) {
+      const g = (f, v) => { const el = document.getElementById('af_'+f); if (el && v !== undefined) el.value = v || ''; };
+      g('customer', a.customer);
+      g('site', a.site);
+      g('region', a.region);
+      g('country', a.country);
+      g('date', a.date);
+      g('contactName', a.contactName);
+      g('contactEmail', a.contactEmail);
+      g('contactPhone', a.contactPhone);
+      g('notes', a.notes);
+      if (cpEl) cpEl.value = a.contactPosition || '';
+      document.getElementById('af_purpose').value = a.purpose || '';
+    }
+  }
   openDrawer('newAuditDrawer');
 }
 
@@ -1233,25 +1264,46 @@ function saveAudit() {
   const site = document.getElementById('af_site').value.trim();
   const date = document.getElementById('af_date').value;
   if (!customer || !date) { toast('Customer and date are required', 'error'); return; }
-  const audit = {
-    id: genId(),
-    customer: titleCase(customer),
-    site: titleCase(site),
-    region: titleCase(document.getElementById('af_region').value),
-    country: titleCase(document.getElementById('af_country').value) || 'South Africa',
+
+  const fields = {
+    customer:        titleCase(customer),
+    site:            titleCase(site),
+    region:          titleCase(document.getElementById('af_region').value),
+    country:         titleCase(document.getElementById('af_country').value) || 'South Africa',
     date,
-    rep: (db.userProfile && db.userProfile.name) || '',
-    contactName: titleCase(document.getElementById('af_contactName').value),
-    contactPosition: titleCase(document.getElementById('af_contactPosition').value),
-    purpose: document.getElementById('af_purpose').value,
-    notes: sentenceCase(document.getElementById('af_notes').value),
-    createdAt: Date.now()
+    rep:             (db.userProfile && db.userProfile.name) || '',
+    contactName:     titleCase(document.getElementById('af_contactName').value),
+    contactPosition: document.getElementById('af_contactPosition').value,
+    contactEmail:    document.getElementById('af_contactEmail').value.trim().toLowerCase(),
+    contactPhone:    document.getElementById('af_contactPhone').value.trim(),
+    purpose:         document.getElementById('af_purpose').value,
+    notes:           sentenceCase(document.getElementById('af_notes').value),
   };
-  db.audits.unshift(audit);
-  saveDB();
-  closeDrawer('newAuditDrawer');
-  toast('Audit created — add pumps now', 'success');
-  openAudit(audit.id);
+
+  if (editingAuditId) {
+    // Update existing audit
+    const idx = db.audits.findIndex(x => x.id === editingAuditId);
+    if (idx >= 0) {
+      db.audits[idx] = { ...db.audits[idx], ...fields };
+    }
+    saveDB();
+    closeDrawer('newAuditDrawer');
+    toast('Client details updated ✓', 'success');
+    renderAuditList();
+    // If currently viewing this audit, refresh the header
+    if (currentAuditId === editingAuditId) {
+      try { renderAuditHeader(); } catch(e) {}
+    }
+    editingAuditId = null;
+  } else {
+    // Create new audit
+    const audit = { id: genId(), ...fields, createdAt: Date.now() };
+    db.audits.unshift(audit);
+    saveDB();
+    closeDrawer('newAuditDrawer');
+    toast('Audit created — add pumps now', 'success');
+    openAudit(audit.id);
+  }
 }
 
 // ── PUMP LIST ─────────────────────────────────────────────────────────────────
@@ -1595,6 +1647,8 @@ function generateReport() {
     <div><div class="k">Region</div><div class="v">${fmt(audit.region)}${audit.country ? ', ' + audit.country : ''}</div></div>
     <div><div class="k">Schurco Rep</div><div class="v">${fmt(audit.rep)}</div></div>
     <div><div class="k">Customer Contact</div><div class="v">${fmt(audit.contactName)}${audit.contactPosition ? ' — ' + audit.contactPosition : ''}</div></div>
+    <div><div class="k">Contact Email</div><div class="v">${fmt(audit.contactEmail)}</div></div>
+    <div><div class="k">Contact No.</div><div class="v">${fmt(audit.contactPhone)}</div></div>
   </div>
   <div class="summary">
     <b>${pumps.length}</b> pump${pumps.length !== 1 ? 's' : ''} audited
@@ -1870,6 +1924,8 @@ function buildWorkbook(audit) {
     ['Schurco Representative', audit.rep || (db.userProfile && db.userProfile.name) || ''],
     ['Contact Name', audit.contactName || ''],
     ['Contact Position', audit.contactPosition || ''],
+    ['Contact Email', audit.contactEmail || ''],
+    ['Contact No.', audit.contactPhone || ''],
     [],
     ['Pumps Audited', pumps.length],
     ['Notes / Observations', audit.notes || '']
@@ -2957,6 +3013,7 @@ function auditToRow(a) {
     region: a.region||'', country: a.country||'', date: a.date||'',
     rep_name: a.rep||'', contact_name: a.contactName||'',
     contact_position: a.contactPosition||'',
+    contact_email: a.contactEmail||'', contact_phone: a.contactPhone||'',
     purpose: a.purpose||'', notes: a.notes||'',
     location: a.location||null, status: a.status||'open',
     updated_at: new Date().toISOString()
@@ -2967,7 +3024,9 @@ function rowToAudit(r) {
     id: r.id, customer: r.customer, site: r.site,
     region: r.region, country: r.country, date: r.date,
     rep: r.rep_name, contactName: r.contact_name,
-    contactPosition: r.contact_position, purpose: r.purpose,
+    contactPosition: r.contact_position,
+    contactEmail: r.contact_email||'', contactPhone: r.contact_phone||'',
+    purpose: r.purpose,
     notes: r.notes, location: r.location, status: r.status,
     _userId: r.user_id, _synced: true
   };
