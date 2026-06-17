@@ -1290,6 +1290,7 @@ function saveAudit() {
     closeDrawer('newAuditDrawer');
     toast('Client details updated ✓', 'success');
     renderAuditList();
+    if (navigator.onLine) syncNow(true);
     // If currently viewing this audit, refresh the header
     if (currentAuditId === editingAuditId) {
       try { renderAuditHeader(); } catch(e) {}
@@ -1303,6 +1304,7 @@ function saveAudit() {
     closeDrawer('newAuditDrawer');
     toast('Audit created — add pumps now', 'success');
     openAudit(audit.id);
+    if (navigator.onLine) syncNow(true);
   }
 }
 
@@ -1762,6 +1764,7 @@ function savePump() {
   } catch(e) {
     console.warn('GPS auto-capture failed:', e);
   }
+  if (navigator.onLine) syncNow(true);
   setTimeout(() => { updateLocationIndicator(); updateOppButton(); }, 50);
 }
 
@@ -2785,6 +2788,7 @@ function saveOpportunity() {
   // Close immediately after save — before any other operations that could throw
   closeDrawer('oppDrawer');
   toast(editingOppId?'Opportunity updated':'Opportunity added ✓','success');
+  if (navigator.onLine) syncNow(true);
   try { updateOppButton(); } catch(e) {}
   try { if(currentDashSection==='opportunities') showDashSection('opportunities'); } catch(e) {}
 }
