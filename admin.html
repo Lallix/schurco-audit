@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Schurco Admin Dashboard v3</title>
+<title>Schurco Admin Dashboard v5</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <script src="supabase.bundle.js"></script>
 <style>
@@ -309,9 +309,13 @@ async function doAdminLogin() {
   const btn = document.getElementById('lBtn');
   try {
     // Check admin flag from JWT app_metadata — bypasses RLS entirely
-    const isAdmin = adminUser.app_metadata && adminUser.app_metadata.is_admin === true;
+    const meta = adminUser.app_metadata || {};
+    const isAdmin = meta.is_admin === true;
+
+    // DIAGNOSTIC: show exactly what we received so we can debug
     if (!isAdmin) {
-      showLoginErr('Your account does not have admin access. Contact your administrator.');
+      showLoginErr('Access denied. app_metadata = ' + JSON.stringify(meta) +
+        ' | user_metadata = ' + JSON.stringify(adminUser.user_metadata || {}));
       resetBtn(btn);
       return;
     }
@@ -359,22 +363,48 @@ function hideLoginErr() { document.getElementById('lErr').style.display='none'; 
 // ── DATA LOAD ─────────────────────────────────────────────────────────
 async function refreshAll() {
   document.getElementById('lastRefreshed').textContent = 'Refreshing…';
-  const [aR,pR,oR,prR,orR] = await Promise.all([
-    sb.from('audits').select('*').order('date',{ascending:false}),
-    sb.from('pumps').select('*'),
-    sb.from('opportunities').select('*').order('saved_at',{ascending:false}),
-    sb.from('profiles').select('*,organisations(name,type)'),
-    sb.from('organisations').select('*')
-  ]);
-  allAudits   = aR.data||[];
-  allPumps    = pR.data||[];
-  allOpps     = oR.data||[];
-  allProfiles = prR.data||[];
-  allOrgs     = orR.data||[];
-  document.getElementById('lastRefreshed').textContent =
-    'Last refreshed: ' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-  renderAll();
-  populateOrgDropdowns();
+  try {
+    // Fetch all tables — profiles without join to avoid RLS issues
+    const [aR,pR,oR,prR,orR] = await Promise.all([
+      sb.from('audits').select('*').order('date',{ascending:false}),
+      sb.from('pumps').select('*'),
+      sb.from('opportunities').select('*').order('saved_at',{ascending:false}),
+      sb.from('profiles').select('id,name,role,company,is_admin,org_id,created_at'),
+      sb.from('organisations').select('*')
+    ]);
+
+    // Log any errors to help debug
+    [['audits',aR],['pumps',pR],['opportunities',oR],['profiles',prR],['organisations',orR]]
+      .forEach(([t,r]) => { if(r.error) console.error(t+' error:',r.error.message); });
+
+    allOrgs     = orR.data||[];
+    allProfiles = prR.data||[];
+
+    // Attach org names to profiles manually (avoids join RLS)
+    const orgMap = {};
+    allOrgs.forEach(o => orgMap[o.id] = o);
+    allProfiles = allProfiles.map(p => ({
+      ...p,
+      organisations: p.org_id ? orgMap[p.org_id] : null
+    }));
+
+    allAudits = aR.data||[];
+    allPumps  = pR.data||[];
+    allOpps   = oR.data||[];
+
+    const total = allAudits.length + allPumps.length + allProfiles.length + allOrgs.length;
+    document.getElementById('lastRefreshed').textContent =
+      'Last refreshed: ' + new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) +
+      ' — ' + allProfiles.length + ' user' + (allProfiles.length!==1?'s':'') +
+      ', ' + allAudits.length + ' survey' + (allAudits.length!==1?'s':'') +
+      ', ' + allOrgs.length + ' org' + (allOrgs.length!==1?'s':'');
+
+    renderAll();
+    populateOrgDropdowns();
+  } catch(e) {
+    document.getElementById('lastRefreshed').textContent = 'Refresh error: ' + e.message;
+    console.error('refreshAll error:', e);
+  }
 }
 
 function renderAll() {
