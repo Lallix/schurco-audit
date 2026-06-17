@@ -1296,6 +1296,7 @@ function renderAuditList() {
         <div class="pump-meta">${a.customer} · ${date} · ${pumpCount} pump${pumpCount!==1?'s':''}</div>
       </div>
       <button class="dup-btn" onclick="event.stopPropagation();openNewAuditDrawer('${a.id}')" title="Edit client details">&#9998;</button>
+      <button class="dup-btn" onclick="event.stopPropagation();deleteAudit('${a.id}','${(a.site||a.customer).replace(/'/g,"\\'")}',${pumpCount})" title="Delete survey" style="color:#EF4444;border-color:#FECACA">&#128465;</button>
       <div style="color:var(--text-muted);font-size:18px">›</div>
     </div>`;
   }).join('');
@@ -1428,6 +1429,7 @@ function renderPumpList() {
         <div class="pump-meta">${p.area||'—'} · MOC: ${moc} · Seal: ${seal}${photoCount?' · 📷'+photoCount:''}</div>
       </div>
       <button class="dup-btn" onclick="event.stopPropagation();duplicatePump('${p.id}')" title="Duplicate">⧉</button>
+      <button class="dup-btn" onclick="event.stopPropagation();deletePump('${p.id}','${(p.tag||'pump').replace(/'/g,"\\'")}')" title="Delete pump" style="color:#EF4444;border-color:#FECACA">&#128465;</button>
       <button class="opp-quick-btn" onclick="event.stopPropagation();openOpportunityDrawer(null,'${p.id}')" title="Log Opportunity">&#128161;</button>
       <div class="status-dot ${condColor[cond]||''}"></div>
     </div>`;
@@ -3455,6 +3457,54 @@ async function saveProfile_Setup() {
   } catch(e) {
     msg.textContent = 'Error: ' + e.message;
     msg.style.display = '';
+  }
+}
+
+
+// ── DELETE AUDIT ──────────────────────────────────────────────────────────────
+async function deleteAudit(auditId, siteName, pumpCount) {
+  const msg = pumpCount > 0
+    ? `Delete "${siteName}" and its ${pumpCount} pump${pumpCount!==1?'s':''}?\n\nThis cannot be undone.`
+    : `Delete survey "${siteName}"?\n\nThis cannot be undone.`;
+  if (!confirm(msg)) return;
+
+  // Remove from local storage
+  db.audits = db.audits.filter(a => a.id !== auditId);
+  db.pumps  = db.pumps.filter(p => p.auditId !== auditId);
+  ensureDbExtensions();
+  db.opportunities = db.opportunities.filter(o => o.auditId !== auditId);
+  saveDB();
+  renderAuditList();
+  toast('Survey deleted', 'success');
+
+  // Remove from Supabase if online
+  if (sbClient && navigator.onLine) {
+    try {
+      await sbClient.from('opportunities').delete().eq('audit_id', auditId);
+      await sbClient.from('pumps').delete().eq('audit_id', auditId);
+      await sbClient.from('audits').delete().eq('id', auditId);
+    } catch(e) { console.warn('Supabase delete error:', e.message); }
+  }
+}
+
+// ── DELETE PUMP ───────────────────────────────────────────────────────────────
+async function deletePump(pumpId, tag) {
+  if (!confirm(`Delete pump "${tag}"?\n\nThis cannot be undone.`)) return;
+
+  db.pumps = db.pumps.filter(p => p.id !== pumpId);
+  ensureDbExtensions();
+  db.opportunities = db.opportunities.filter(o => o.pumpId !== pumpId);
+  saveDB();
+  renderPumpList();
+  toast('Pump deleted', 'success');
+  try { updateOppButton(); } catch(e) {}
+
+  // Remove from Supabase if online
+  if (sbClient && navigator.onLine) {
+    try {
+      await sbClient.from('opportunities').delete().eq('pump_id', pumpId);
+      await sbClient.from('pumps').delete().eq('id', pumpId);
+    } catch(e) { console.warn('Supabase delete error:', e.message); }
   }
 }
 
