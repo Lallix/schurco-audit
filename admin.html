@@ -460,8 +460,29 @@ body{font-family:'Poppins',sans-serif;background:#F8FAFC;color:#0F172A;min-heigh
         <thead><tr>
           <th>Title</th><th>Customer</th><th>Value (R)</th><th>Stage</th><th>Owner</th><th>Close Date</th><th>Actions</th>
         </tr></thead>
-        <tbody><tr><td colspan="6" style="color:var(--text-muted)">Loading…</td></tr></tbody>
+        <tbody><tr><td colspan="7" style="color:var(--text-muted)">Loading…</td></tr></tbody>
       </table>
+
+      <!-- DELETED OPPORTUNITIES -->
+      <div class="deleted-section" id="deletedOppsSection" style="display:none;margin-top:24px">
+        <div class="deleted-header" onclick="toggleDeletedOppsSection()">
+          <div class="deleted-title">
+            &#128465; Deleted Opportunities
+            <span id="deletedOppsCount" style="background:#FEE2E2;color:#991B1B;font-size:11px;padding:1px 8px;border-radius:12px;font-weight:700">0</span>
+          </div>
+          <span class="deleted-toggle" id="deletedOppsToggle">&#8964;</span>
+        </div>
+        <div class="deleted-body" id="deletedOppsBody">
+          <p style="font-size:12px;color:#991B1B;margin-bottom:12px">These opportunities have been soft-deleted. Invisible to reps but restorable below.</p>
+          <table class="tbl" id="deletedOppsTable">
+            <thead><tr>
+              <th>Title</th><th>Customer</th><th>Value</th><th>Stage</th><th>Deleted By</th><th>Deleted At</th><th>Actions</th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
 
     <!-- USERS TAB -->
@@ -870,16 +891,14 @@ function renderOpps() {
 }
 
 function renderDeletedOpps() {
-  let wrap = document.getElementById('deletedOppsWrap');
+  const section = document.getElementById('deletedOppsSection');
+  const countEl = document.getElementById('deletedOppsCount');
+  if (!section) return;
   if (!allDeletedOpps || !allDeletedOpps.length) {
-    if (wrap) wrap.style.display='none'; return;
+    section.style.display='none'; return;
   }
-  if (!wrap) {
-    wrap = document.createElement('div');
-    wrap.id = 'deletedOppsWrap';
-    document.getElementById('oppsTable').insertAdjacentElement('afterend', wrap);
-  }
-  wrap.style.display='';
+  section.style.display='';
+  countEl.textContent = allDeletedOpps.length;
   const profileMap = {};
   allProfiles.forEach(p => profileMap[p.id] = p);
   const rows = allDeletedOpps.map(o => {
@@ -899,22 +918,12 @@ function renderDeletedOpps() {
       </td>
     </tr>`;
   }).join('');
-  wrap.innerHTML = `
-    <div class="deleted-section" style="margin-top:16px">
-      <div class="deleted-header" onclick="this.nextElementSibling.classList.toggle('open');this.querySelector('.deleted-toggle').classList.toggle('open')">
-        <div class="deleted-title">
-          &#128465; Deleted Opportunities
-          <span style="background:#FEE2E2;color:#991B1B;font-size:11px;padding:1px 8px;border-radius:12px;font-weight:700">${allDeletedOpps.length}</span>
-        </div>
-        <span class="deleted-toggle">&#8964;</span>
-      </div>
-      <div class="deleted-body">
-        <table class="tbl">
-          <thead><tr><th>Title</th><th>Customer</th><th>Value</th><th>Stage</th><th>Deleted By</th><th>Deleted At</th><th>Actions</th></tr></thead>
-          <tbody>${rows}</tbody>
-        </table>
-      </div>
-    </div>`;
+  document.querySelector('#deletedOppsTable tbody').innerHTML = rows;
+}
+
+function toggleDeletedOppsSection() {
+  document.getElementById('deletedOppsBody').classList.toggle('open');
+  document.getElementById('deletedOppsToggle').classList.toggle('open');
 }
 function stageBg(s){return{'Won':'#DCFCE7','Lost':'#FEE2E2','Quoting':'#FEF3C7','Negotiation':'#EDE9FE'}[s]||'#F1F5F9'}
 function stageFg(s){return{'Won':'#166534','Lost':'#991B1B','Quoting':'#92400E','Negotiation':'#5B21B6'}[s]||'#475569'}
