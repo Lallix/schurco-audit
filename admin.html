@@ -3,9 +3,14 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <title>Schurco Admin Dashboard v8</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="supabase.bundle.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -100,6 +105,135 @@ body{font-family:'Poppins',sans-serif;background:#F8FAFC;color:#0F172A;min-heigh
 
 /* STATUS INDICATOR */
 .status-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px}
+
+/* FILTER BAR */
+.filter-bar{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;
+  background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);
+  padding:16px 20px;margin-bottom:24px;box-shadow:var(--shadow)}
+.filter-group{display:flex;flex-direction:column;gap:5px;min-width:180px}
+.filter-group label{font-size:11px;font-weight:600;text-transform:uppercase;
+  letter-spacing:.5px;color:var(--text-sec)}
+.filter-group select{background:var(--surface);border:1.5px solid var(--border);
+  border-radius:8px;color:var(--text);font-family:var(--font);font-size:13px;
+  padding:7px 10px;outline:none;cursor:pointer}
+.filter-group select:focus{border-color:var(--green)}
+.filter-clear{padding:8px 16px;border-radius:8px;border:1.5px solid var(--border);
+  background:var(--surface);font-family:var(--font);font-size:13px;font-weight:600;
+  color:var(--text-sec);cursor:pointer;align-self:flex-end}
+.filter-clear:hover{background:#F1F5F9}
+.filter-badge{background:var(--green-light);color:var(--green-dark);font-size:11px;
+  font-weight:700;padding:2px 10px;border-radius:12px;align-self:flex-end;margin-left:auto}
+
+/* MAP */
+.map-wrap{background:var(--surface);border:1.5px solid var(--border);
+  border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-bottom:24px}
+.map-header{padding:14px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between}
+.map-title{font-size:13px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.6px;color:var(--text-sec)}
+.map-legend{display:flex;gap:14px;flex-wrap:wrap}
+.map-leg-item{display:flex;align-items:center;gap:5px;font-size:11px;
+  font-weight:600;color:var(--text-sec)}
+.map-leg-dot{width:10px;height:10px;border-radius:50%}
+#adminMap{height:400px;z-index:1}
+
+/* DELETED SECTION */
+.deleted-section{background:#FFF8F8;border:1.5px solid #FECACA;
+  border-radius:var(--radius);padding:20px;margin-top:24px;box-shadow:var(--shadow)}
+.deleted-header{display:flex;align-items:center;justify-content:space-between;
+  cursor:pointer;user-select:none}
+.deleted-title{font-size:13px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.6px;color:#991B1B;display:flex;align-items:center;gap:8px}
+.deleted-toggle{font-size:20px;color:#991B1B;transition:transform .2s}
+.deleted-toggle.open{transform:rotate(180deg)}
+.deleted-body{display:none;margin-top:16px}
+.deleted-body.open{display:block}
+
+/* FILTER BAR */
+.filter-bar{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;
+  background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);
+  padding:16px 20px;margin-bottom:24px;box-shadow:var(--shadow)}
+.filter-group{display:flex;flex-direction:column;gap:5px;min-width:180px}
+.filter-group label{font-size:11px;font-weight:600;text-transform:uppercase;
+  letter-spacing:.5px;color:var(--text-sec)}
+.filter-group select{background:var(--surface);border:1.5px solid var(--border);
+  border-radius:8px;color:var(--text);font-family:var(--font);font-size:13px;
+  padding:7px 10px;outline:none;cursor:pointer}
+.filter-group select:focus{border-color:var(--green)}
+.filter-clear{padding:8px 16px;border-radius:8px;border:1.5px solid var(--border);
+  background:var(--surface);font-family:var(--font);font-size:13px;font-weight:600;
+  color:var(--text-sec);cursor:pointer;align-self:flex-end}
+.filter-clear:hover{background:#F1F5F9}
+.filter-badge{background:var(--green-light);color:var(--green-dark);font-size:11px;
+  font-weight:700;padding:2px 10px;border-radius:12px;align-self:flex-end;margin-left:auto}
+
+/* MAP */
+.map-wrap{background:var(--surface);border:1.5px solid var(--border);
+  border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-bottom:24px}
+.map-header{padding:14px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between}
+.map-title{font-size:13px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.6px;color:var(--text-sec)}
+.map-legend{display:flex;gap:14px;flex-wrap:wrap}
+.map-leg-item{display:flex;align-items:center;gap:5px;font-size:11px;
+  font-weight:600;color:var(--text-sec)}
+.map-leg-dot{width:10px;height:10px;border-radius:50%}
+#adminMap{height:400px;z-index:1}
+
+/* DELETED SECTION */
+.deleted-section{background:#FFF8F8;border:1.5px solid #FECACA;
+  border-radius:var(--radius);padding:20px;margin-top:24px;box-shadow:var(--shadow)}
+.deleted-header{display:flex;align-items:center;justify-content:space-between;
+  cursor:pointer;user-select:none}
+.deleted-title{font-size:13px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.6px;color:#991B1B;display:flex;align-items:center;gap:8px}
+.deleted-toggle{font-size:20px;color:#991B1B;transition:transform .2s}
+.deleted-toggle.open{transform:rotate(180deg)}
+.deleted-body{display:none;margin-top:16px}
+.deleted-body.open{display:block}
+
+/* FILTER BAR */
+.filter-bar{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;
+  background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);
+  padding:16px 20px;margin-bottom:24px;box-shadow:var(--shadow)}
+.filter-group{display:flex;flex-direction:column;gap:5px;min-width:180px}
+.filter-group label{font-size:11px;font-weight:600;text-transform:uppercase;
+  letter-spacing:.5px;color:var(--text-sec)}
+.filter-group select{background:var(--surface);border:1.5px solid var(--border);
+  border-radius:8px;color:var(--text);font-family:var(--font);font-size:13px;
+  padding:7px 10px;outline:none;cursor:pointer}
+.filter-group select:focus{border-color:var(--green)}
+.filter-clear{padding:8px 16px;border-radius:8px;border:1.5px solid var(--border);
+  background:var(--surface);font-family:var(--font);font-size:13px;font-weight:600;
+  color:var(--text-sec);cursor:pointer;align-self:flex-end}
+.filter-clear:hover{background:#F1F5F9}
+.filter-badge{background:var(--green-light);color:var(--green-dark);font-size:11px;
+  font-weight:700;padding:2px 10px;border-radius:12px;align-self:flex-end;margin-left:auto}
+
+/* MAP */
+.map-wrap{background:var(--surface);border:1.5px solid var(--border);
+  border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-bottom:24px}
+.map-header{padding:14px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between}
+.map-title{font-size:13px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.6px;color:var(--text-sec)}
+.map-legend{display:flex;gap:14px;flex-wrap:wrap}
+.map-leg-item{display:flex;align-items:center;gap:5px;font-size:11px;
+  font-weight:600;color:var(--text-sec)}
+.map-leg-dot{width:10px;height:10px;border-radius:50%}
+#adminMap{height:400px;z-index:1}
+
+/* DELETED SECTION */
+.deleted-section{background:#FFF8F8;border:1.5px solid #FECACA;
+  border-radius:var(--radius);padding:20px;margin-top:24px;box-shadow:var(--shadow)}
+.deleted-header{display:flex;align-items:center;justify-content:space-between;
+  cursor:pointer;user-select:none}
+.deleted-title{font-size:13px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.6px;color:#991B1B;display:flex;align-items:center;gap:8px}
+.deleted-toggle{font-size:20px;color:#991B1B;transition:transform .2s}
+.deleted-toggle.open{transform:rotate(180deg)}
+.deleted-body{display:none;margin-top:16px}
+.deleted-body.open{display:block}
 .status-dot.green{background:var(--green)}
 .status-dot.amber{background:var(--warn)}
 
@@ -161,6 +295,78 @@ body{font-family:'Poppins',sans-serif;background:#F8FAFC;color:#0F172A;min-heigh
 
     <!-- OVERVIEW TAB -->
     <div id="tabOverview">
+
+      <!-- FILTER BAR -->
+      <div class="filter-bar">
+        <div class="filter-group">
+          <label>&#127919; Opportunity Stage</label>
+          <select id="filterStage" onchange="applyFilters()">
+            <option value="">All Stages</option>
+            <option>Identified</option>
+            <option>Qualifying</option>
+            <option>Quoting</option>
+            <option>Negotiation</option>
+            <option>Won</option>
+            <option>Lost</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>&#128100; Representative</label>
+          <select id="filterRep" onchange="applyFilters()">
+            <option value="">All Reps</option>
+          </select>
+        </div>
+        <button class="filter-clear" onclick="clearFilters()">&#215; Clear Filters</button>
+        <span class="filter-badge" id="filterBadge" style="display:none"></span>
+      </div>
+
+      <!-- FILTER BAR -->
+      <div class="filter-bar">
+        <div class="filter-group">
+          <label>&#127919; Opportunity Stage</label>
+          <select id="filterStage" onchange="applyFilters()">
+            <option value="">All Stages</option>
+            <option>Identified</option>
+            <option>Qualifying</option>
+            <option>Quoting</option>
+            <option>Negotiation</option>
+            <option>Won</option>
+            <option>Lost</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>&#128100; Representative</label>
+          <select id="filterRep" onchange="applyFilters()">
+            <option value="">All Reps</option>
+          </select>
+        </div>
+        <button class="filter-clear" onclick="clearFilters()">&#215; Clear Filters</button>
+        <span class="filter-badge" id="filterBadge" style="display:none"></span>
+      </div>
+
+      <!-- FILTER BAR -->
+      <div class="filter-bar">
+        <div class="filter-group">
+          <label>&#127919; Opportunity Stage</label>
+          <select id="filterStage" onchange="applyFilters()">
+            <option value="">All Stages</option>
+            <option>Identified</option>
+            <option>Qualifying</option>
+            <option>Quoting</option>
+            <option>Negotiation</option>
+            <option>Won</option>
+            <option>Lost</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>&#128100; Representative</label>
+          <select id="filterRep" onchange="applyFilters()">
+            <option value="">All Reps</option>
+          </select>
+        </div>
+        <button class="filter-clear" onclick="clearFilters()">&#215; Clear Filters</button>
+        <span class="filter-badge" id="filterBadge" style="display:none"></span>
+      </div>
       <div class="kpi-grid" id="kpiGrid">
         <div class="kpi"><div class="kpi-n">—</div><div class="kpi-l">Surveys</div></div>
         <div class="kpi"><div class="kpi-n">—</div><div class="kpi-l">Pumps</div></div>
@@ -177,10 +383,121 @@ body{font-family:'Poppins',sans-serif;background:#F8FAFC;color:#0F172A;min-heigh
       <div class="section-head" style="margin-top:24px">All Surveys</div>
       <table class="tbl" id="surveysTable">
         <thead><tr>
-          <th>Date</th><th>Customer</th><th>Site</th><th>Rep</th><th>Organisation</th><th>Pumps</th><th>Status</th>
+          <th>Date</th><th>Customer</th><th>Site</th><th>Rep</th><th>Organisation</th><th>Pumps</th><th>Status</th><th>Actions</th>
         </tr></thead>
         <tbody><tr><td colspan="7" style="color:var(--text-muted)">Loading…</td></tr></tbody>
       </table>
+
+      <!-- SITE MAP -->
+      <div class="section-head" style="margin-top:24px">Survey Site Map</div>
+      <div class="map-wrap">
+        <div class="map-header">
+          <span class="map-title">&#128205; All Survey Locations</span>
+          <div class="map-legend">
+            <div class="map-leg-item"><div class="map-leg-dot" style="background:#16A34A"></div>Won</div>
+            <div class="map-leg-item"><div class="map-leg-dot" style="background:#8B5CF6"></div>Negotiation</div>
+            <div class="map-leg-item"><div class="map-leg-dot" style="background:#F59E0B"></div>Quoting</div>
+            <div class="map-leg-item"><div class="map-leg-dot" style="background:#3B82F6"></div>Qualifying</div>
+            <div class="map-leg-item"><div class="map-leg-dot" style="background:#94A3B8"></div>No Opp</div>
+          </div>
+        </div>
+        <div id="adminMap"></div>
+      </div>
+
+      <!-- DELETED SURVEYS -->
+      <div class="deleted-section" id="deletedSection" style="display:none">
+        <div class="deleted-header" onclick="toggleDeletedSection()">
+          <div class="deleted-title">
+            &#128465; Deleted Surveys
+            <span id="deletedCount" style="background:#FEE2E2;color:#991B1B;font-size:11px;padding:1px 8px;border-radius:12px;font-weight:700">0</span>
+          </div>
+          <span class="deleted-toggle" id="deletedToggle">&#8964;</span>
+        </div>
+        <div class="deleted-body" id="deletedBody">
+          <p style="font-size:12px;color:#991B1B;margin-bottom:12px">These surveys have been soft-deleted. They are invisible to reps and excluded from all data. You can restore or permanently remove them below.</p>
+          <table class="tbl" id="deletedTable">
+            <thead><tr>
+              <th>Date</th><th>Customer</th><th>Site</th><th>Rep</th><th>Deleted By</th><th>Deleted At</th><th>Actions</th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+
+      <!-- SITE MAP -->
+      <div class="section-head" style="margin-top:24px">Survey Site Map</div>
+      <div class="map-wrap">
+        <div class="map-header">
+          <span class="map-title">&#128205; All Survey Locations</span>
+          <div class="map-legend">
+            <div class="map-leg-item"><div class="map-leg-dot" style="background:#16A34A"></div>Won</div>
+            <div class="map-leg-item"><div class="map-leg-dot" style="background:#8B5CF6"></div>Negotiation</div>
+            <div class="map-leg-item"><div class="map-leg-dot" style="background:#F59E0B"></div>Quoting</div>
+            <div class="map-leg-item"><div class="map-leg-dot" style="background:#3B82F6"></div>Qualifying</div>
+            <div class="map-leg-item"><div class="map-leg-dot" style="background:#94A3B8"></div>No Opp</div>
+          </div>
+        </div>
+        <div id="adminMap"></div>
+      </div>
+
+      <!-- DELETED SURVEYS -->
+      <div class="deleted-section" id="deletedSection" style="display:none">
+        <div class="deleted-header" onclick="toggleDeletedSection()">
+          <div class="deleted-title">
+            &#128465; Deleted Surveys
+            <span id="deletedCount" style="background:#FEE2E2;color:#991B1B;font-size:11px;padding:1px 8px;border-radius:12px;font-weight:700">0</span>
+          </div>
+          <span class="deleted-toggle" id="deletedToggle">&#8964;</span>
+        </div>
+        <div class="deleted-body" id="deletedBody">
+          <p style="font-size:12px;color:#991B1B;margin-bottom:12px">These surveys have been soft-deleted. They are invisible to reps and excluded from all data. You can restore or permanently remove them below.</p>
+          <table class="tbl" id="deletedTable">
+            <thead><tr>
+              <th>Date</th><th>Customer</th><th>Site</th><th>Rep</th><th>Deleted By</th><th>Deleted At</th><th>Actions</th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+
+      <!-- SITE MAP -->
+      <div class="section-head" style="margin-top:24px">Survey Site Map</div>
+      <div class="map-wrap">
+        <div class="map-header">
+          <span class="map-title">&#128205; All Survey Locations</span>
+          <div class="map-legend">
+            <div class="map-leg-item"><div class="map-leg-dot" style="background:#16A34A"></div>Won</div>
+            <div class="map-leg-item"><div class="map-leg-dot" style="background:#8B5CF6"></div>Negotiation</div>
+            <div class="map-leg-item"><div class="map-leg-dot" style="background:#F59E0B"></div>Quoting</div>
+            <div class="map-leg-item"><div class="map-leg-dot" style="background:#3B82F6"></div>Qualifying</div>
+            <div class="map-leg-item"><div class="map-leg-dot" style="background:#94A3B8"></div>No Opp</div>
+          </div>
+        </div>
+        <div id="adminMap"></div>
+      </div>
+
+      <!-- DELETED SURVEYS -->
+      <div class="deleted-section" id="deletedSection" style="display:none">
+        <div class="deleted-header" onclick="toggleDeletedSection()">
+          <div class="deleted-title">
+            &#128465; Deleted Surveys
+            <span id="deletedCount" style="background:#FEE2E2;color:#991B1B;font-size:11px;padding:1px 8px;border-radius:12px;font-weight:700">0</span>
+          </div>
+          <span class="deleted-toggle" id="deletedToggle">&#8964;</span>
+        </div>
+        <div class="deleted-body" id="deletedBody">
+          <p style="font-size:12px;color:#991B1B;margin-bottom:12px">These surveys have been soft-deleted. They are invisible to reps and excluded from all data. You can restore or permanently remove them below.</p>
+          <table class="tbl" id="deletedTable">
+            <thead><tr>
+              <th>Date</th><th>Customer</th><th>Site</th><th>Rep</th><th>Deleted By</th><th>Deleted At</th><th>Actions</th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
 
     <!-- ACTIVITY TAB -->
@@ -256,7 +573,10 @@ const SUPABASE_URL = 'https://gxdyhhdyyobbzfnanoan.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd4ZHloaGR5eW9iYnpmbmFub2FuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MjY3MTMsImV4cCI6MjA5NzIwMjcxM30.fPziJT0H2XcMsZqA_QRIu1z6Ds9hqb5kxWtRJqnQtIs';
 let sb, adminUser, adminProfile;
 let allAudits=[], allPumps=[], allOpps=[], allProfiles=[], allOrgs=[];
+let allDeletedAudits=[];
 let activeTab = 'overview';
+let filterStage='', filterRep='';
+let adminMap=null, mapMarkers=[];
 
 // ── AUTH ─────────────────────────────────────────────────────────────
 function loadSbLib() {
@@ -373,12 +693,13 @@ async function refreshAll() {
   document.getElementById('lastRefreshed').textContent = 'Refreshing…';
   try {
     // Fetch all tables — profiles without join to avoid RLS issues
-    const [aR,pR,oR,prR,orR] = await Promise.all([
-      sb.from('audits').select('*').order('date',{ascending:false}),
+    const [aR,pR,oR,prR,orR,dR] = await Promise.all([
+      sb.from('audits').select('*').is('deleted_at',null).order('date',{ascending:false}),
       sb.from('pumps').select('*'),
-      sb.from('opportunities').select('*').order('saved_at',{ascending:false}),
+      sb.from('opportunities').select('*').is('deleted_at',null).order('saved_at',{ascending:false}),
       sb.from('profiles').select('id,name,role,company,is_admin,org_id,email,created_at'),
-      sb.from('organisations').select('*')
+      sb.from('organisations').select('*'),
+      sb.from('audits').select('id,customer,site,date,rep_name,deleted_at,deleted_by,user_id').not('deleted_at','is',null)
     ]);
 
     // Log any errors to help debug
@@ -396,9 +717,10 @@ async function refreshAll() {
       organisations: p.org_id ? orgMap[p.org_id] : null
     }));
 
-    allAudits = aR.data||[];
-    allPumps  = pR.data||[];
-    allOpps   = oR.data||[];
+    allAudits        = aR.data||[];
+    allPumps         = pR.data||[];
+    allOpps          = oR.data||[];
+    allDeletedAudits = dR.data||[];
 
     const total = allAudits.length + allPumps.length + allProfiles.length + allOrgs.length;
     document.getElementById('lastRefreshed').textContent =
@@ -409,6 +731,8 @@ async function refreshAll() {
 
     renderAll();
     populateOrgDropdowns();
+    populateRepFilter();
+    populateRepFilter();
   } catch(e) {
     document.getElementById('lastRefreshed').textContent = 'Refresh error: ' + e.message;
     console.error('refreshAll error:', e);
@@ -416,9 +740,12 @@ async function refreshAll() {
 }
 
 function renderAll() {
-  renderKPIs();
-  renderPipeline();
-  renderSurveys();
+  const fd = getFilteredData();
+  renderKPIs(fd);
+  renderPipeline(fd);
+  renderSurveys(fd);
+  renderMap(fd.audits, fd.opps);
+  renderDeletedSurveys();
   renderActivity();
   renderOpps();
   renderUsers();
@@ -426,26 +753,27 @@ function renderAll() {
 }
 
 // ── KPIs ──────────────────────────────────────────────────────────────
-function renderKPIs() {
-  const uniqueUsers = new Set(allAudits.map(a=>a.user_id)).size;
+function renderKPIs({audits,pumps,opps}) {
+  const uniqueUsers = new Set(audits.map(a=>a.user_id)).size;
   const grid = document.getElementById('kpiGrid');
   const kpi = (n,l,s='') => `<div class="kpi"><div class="kpi-n">${n}</div><div class="kpi-l">${l}</div>${s?`<div class="kpi-s">${s}</div>`:''}</div>`;
+  const totalLabel = (filterStage||filterRep) ? `<div class="kpi-s" style="color:var(--warn)">filtered</div>` : '';
   grid.innerHTML =
-    kpi(allAudits.length,'Surveys') +
-    kpi(allPumps.length,'Pumps','Assessed') +
-    kpi(allOpps.length,'Opportunities', allOpps.filter(o=>o.stage==='Won').length+' won') +
+    kpi(audits.length,'Surveys') +
+    kpi(pumps.length,'Pumps','Assessed') +
+    kpi(opps.length,'Opportunities', opps.filter(o=>o.stage==='Won').length+' won') +
     kpi(allOrgs.length,'Organisations') +
     kpi(uniqueUsers,'Active Users');
 }
 
 // ── PIPELINE ──────────────────────────────────────────────────────────
-function renderPipeline() {
+function renderPipeline({opps}) {
   const stages=['Identified','Qualifying','Quoting','Negotiation','Won','Lost'];
   const colors={'Identified':'#94A3B8','Qualifying':'#3B82F6','Quoting':'#F59E0B','Negotiation':'#8B5CF6','Won':'#16A34A','Lost':'#EF4444'};
   const counts = {};
-  stages.forEach(s => counts[s] = allOpps.filter(o=>o.stage===s).length);
-  const total = allOpps.reduce((s,o)=>s+(parseFloat(o.value)||0),0);
-  const won   = allOpps.filter(o=>o.stage==='Won').reduce((s,o)=>s+(parseFloat(o.value)||0),0);
+  stages.forEach(s => counts[s] = opps.filter(o=>o.stage===s).length);
+  const total = opps.reduce((s,o)=>s+(parseFloat(o.value)||0),0);
+  const won   = opps.filter(o=>o.stage==='Won').reduce((s,o)=>s+(parseFloat(o.value)||0),0);
   const fmtR = v => v>=1e6?(v/1e6).toFixed(1)+'M':v>=1000?(v/1000).toFixed(0)+'K':v.toFixed(0);
   document.getElementById('pipelineCard').innerHTML = `
     <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;gap:24px">
@@ -456,7 +784,7 @@ function renderPipeline() {
       ${stages.map(s=>`<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
         <span style="width:110px;font-size:12px;color:var(--text-sec)">${s}</span>
         <div style="flex:1;background:#F1F5F9;border-radius:4px;height:24px;overflow:hidden">
-          <div style="width:${allOpps.length?(counts[s]/allOpps.length*100).toFixed(0):0}%;background:${colors[s]};height:100%;border-radius:4px;display:flex;align-items:center;padding:0 8px;min-width:28px">
+          <div style="width:${opps.length?(counts[s]/opps.length*100).toFixed(0):0}%;background:${colors[s]};height:100%;border-radius:4px;display:flex;align-items:center;padding:0 8px;min-width:28px">
             <span style="color:#fff;font-size:12px;font-weight:700">${counts[s]}</span>
           </div>
         </div>
@@ -465,7 +793,7 @@ function renderPipeline() {
 }
 
 // ── SURVEYS TABLE ─────────────────────────────────────────────────────
-function renderSurveys() {
+function renderSurveys({audits}) {
   const orgMap = {};
   allProfiles.forEach(p => {
     if(p.organisations) orgMap[p.id] = p.organisations.name;
@@ -473,7 +801,7 @@ function renderSurveys() {
   const pumpMap = {};
   allPumps.forEach(p => { pumpMap[p.audit_id] = (pumpMap[p.audit_id]||0)+1; });
   const statusColor = {'open':'var(--green)','reviewed':'var(--warn)','closed':'var(--text-muted)'};
-  const rows = allAudits.slice(0,50).map(a => `<tr>
+  const rows = audits.slice(0,50).map(a => `<tr>
     <td>${a.date||'—'}</td>
     <td style="font-weight:600">${a.customer||'—'}</td>
     <td>${a.site||'—'}</td>
@@ -481,7 +809,8 @@ function renderSurveys() {
     <td><span class="badge distributor">${orgMap[a.user_id]||'—'}</span></td>
     <td style="text-align:center">${pumpMap[a.id]||0}</td>
     <td><span style="color:${statusColor[a.status||'open']};font-weight:600;font-size:12px;text-transform:capitalize">${a.status||'open'}</span></td>
-  </tr>`).join('') || '<tr><td colspan="7" style="color:var(--text-muted)">No surveys yet</td></tr>';
+    <td><button onclick="softDeleteAudit('${a.id}','${(a.site||a.customer).replace(/'/g,"\'")}')" class="action-btn danger" style="font-size:11px">&#128465; Delete</button></td>
+  </tr>`).join('') || '<tr><td colspan="8" style="color:var(--text-muted)">No surveys yet</td></tr>';
   document.querySelector('#surveysTable tbody').innerHTML = rows;
 }
 
@@ -801,6 +1130,386 @@ async function sendPasswordReset(email, name, userId) {
   });
   if (error) { adminToast('Error: ' + error.message); return; }
   adminToast('Password reset email sent to ' + email + ' \u2713');
+}
+
+
+// ── FILTERS ───────────────────────────────────────────────────────────────────
+function getFilteredData() {
+  let audits = allAudits;
+  let opps   = allOpps;
+
+  // Tier 1: Opportunity stage filter
+  if (filterStage) {
+    const matchingAuditIds = new Set(opps.filter(o=>o.stage===filterStage).map(o=>o.audit_id));
+    audits = audits.filter(a => matchingAuditIds.has(a.id));
+    opps   = opps.filter(o => matchingAuditIds.has(o.audit_id));
+  }
+
+  // Tier 2: Rep filter (stacks on top)
+  if (filterRep) {
+    audits = audits.filter(a => (a.rep_name||'') === filterRep);
+    const repAuditIds = new Set(audits.map(a=>a.id));
+    opps   = opps.filter(o => repAuditIds.has(o.audit_id));
+  }
+
+  const auditIds = new Set(audits.map(a=>a.id));
+  const pumps    = allPumps.filter(p => auditIds.has(p.audit_id));
+
+  return { audits, pumps, opps };
+}
+
+function applyFilters() {
+  filterStage = document.getElementById('filterStage').value;
+  filterRep   = document.getElementById('filterRep').value;
+  const active = [filterStage,filterRep].filter(Boolean);
+  const badge  = document.getElementById('filterBadge');
+  if (active.length) {
+    badge.textContent = active.length + ' filter' + (active.length>1?'s':'') + ' active';
+    badge.style.display='';
+  } else {
+    badge.style.display='none';
+  }
+  renderAll();
+}
+
+function clearFilters() {
+  filterStage = ''; filterRep = '';
+  document.getElementById('filterStage').value = '';
+  document.getElementById('filterRep').value = '';
+  document.getElementById('filterBadge').style.display='none';
+  renderAll();
+}
+
+function populateRepFilter() {
+  const sel = document.getElementById('filterRep');
+  const current = sel.value;
+  const reps = [...new Set(allAudits.map(a=>a.rep_name).filter(Boolean))].sort();
+  sel.innerHTML = '<option value="">All Reps</option>' +
+    reps.map(r=>`<option value="${r}"${r===current?' selected':''}>${r}</option>`).join('');
+}
+
+// ── MAP ───────────────────────────────────────────────────────────────────────
+function renderMap(audits, opps) {
+  if (typeof L === 'undefined') return;
+  if (!adminMap) {
+    adminMap = L.map('adminMap').setView([-26.5, 28.0], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors', maxZoom: 18
+    }).addTo(adminMap);
+  }
+  // Clear existing markers
+  mapMarkers.forEach(m => adminMap.removeLayer(m));
+  mapMarkers = [];
+
+  const oppMap = {};
+  opps.forEach(o => {
+    if (!oppMap[o.audit_id]) oppMap[o.audit_id] = [];
+    oppMap[o.audit_id].push(o);
+  });
+
+  const stageOrder = ['Won','Negotiation','Quoting','Qualifying','Identified'];
+  const pinColor = {'Won':'#16A34A','Negotiation':'#8B5CF6','Quoting':'#F59E0B','Qualifying':'#3B82F6','Identified':'#94A3B8'};
+
+  const bounds = [];
+  audits.forEach(a => {
+    if (!a.location || !a.location.lat || !a.location.lng) return;
+    const auditOpps = oppMap[a.id]||[];
+    const topStage  = stageOrder.find(s=>auditOpps.some(o=>o.stage===s)) || null;
+    const color     = topStage ? pinColor[topStage] : '#94A3B8';
+    const pumpCount = allPumps.filter(p=>p.audit_id===a.id).length;
+    const topOpp    = auditOpps.find(o=>o.stage===topStage);
+
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="width:14px;height:14px;border-radius:50%;background:${color};
+        border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.3)"></div>`,
+      iconSize: [14,14], iconAnchor: [7,7]
+    });
+
+    const popup = `<div style="font-family:Poppins,sans-serif;min-width:160px">
+      <div style="font-weight:700;font-size:13px;margin-bottom:2px">${a.site||a.customer}</div>
+      <div style="font-size:11px;color:#64748B;margin-bottom:6px">${a.customer} · ${a.date||''}</div>
+      <div style="font-size:11px;color:#0F172A">Rep: <strong>${a.rep_name||'—'}</strong></div>
+      <div style="font-size:11px;color:#0F172A">Pumps: <strong>${pumpCount}</strong></div>
+      ${topOpp?`<div style="font-size:11px;margin-top:4px;padding:2px 6px;background:${color}20;
+        border-radius:4px;color:${color};font-weight:600">${topOpp.stage}: R${parseFloat(topOpp.value||0).toLocaleString()}</div>`:''}
+    </div>`;
+
+    const marker = L.marker([a.location.lat, a.location.lng], { icon })
+      .bindPopup(popup, { maxWidth: 240 })
+      .addTo(adminMap);
+    mapMarkers.push(marker);
+    bounds.push([a.location.lat, a.location.lng]);
+  });
+
+  if (bounds.length === 1) {
+    adminMap.setView(bounds[0], 10);
+  } else if (bounds.length > 1) {
+    try { adminMap.fitBounds(bounds, { padding: [40,40] }); } catch(e) {}
+  }
+}
+
+// ── SOFT DELETE ────────────────────────────────────────────────────────────────
+async function softDeleteAudit(auditId, siteName) {
+  if (!confirm('Delete survey "' + siteName + '"?\n\nThis survey will be hidden from reps and flagged as deleted. You can restore it from the Deleted Surveys section below.')) return;
+  try {
+    const { error } = await sb.from('audits').update({
+      deleted_at: new Date().toISOString(),
+      deleted_by: adminUser.id
+    }).eq('id', auditId);
+    if (error) throw error;
+    adminToast('Survey soft-deleted — visible in Deleted Surveys below ✓');
+    await refreshAll();
+  } catch(e) { adminToast('Error: ' + e.message); }
+}
+
+async function restoreAudit(auditId, siteName) {
+  if (!confirm('Restore "' + siteName + '"? It will become visible to reps again.')) return;
+  try {
+    const { error } = await sb.from('audits').update({
+      deleted_at: null, deleted_by: null
+    }).eq('id', auditId);
+    if (error) throw error;
+    adminToast('Survey restored ✓');
+    await refreshAll();
+  } catch(e) { adminToast('Error: ' + e.message); }
+}
+
+async function hardDeleteAudit(auditId, siteName) {
+  if (!confirm('PERMANENTLY DELETE "' + siteName + '"?\n\nThis will remove ALL pumps and opportunities linked to this survey.\n\nThis CANNOT be undone.')) return;
+  if (!confirm('Are you absolutely sure? This is irreversible.')) return;
+  try {
+    await sb.from('opportunities').delete().eq('audit_id', auditId);
+    await sb.from('pumps').delete().eq('audit_id', auditId);
+    await sb.from('audits').delete().eq('id', auditId);
+    adminToast('Survey permanently deleted');
+    await refreshAll();
+  } catch(e) { adminToast('Error: ' + e.message); }
+}
+
+function toggleDeletedSection() {
+  const body   = document.getElementById('deletedBody');
+  const toggle = document.getElementById('deletedToggle');
+  body.classList.toggle('open');
+  toggle.classList.toggle('open');
+}
+
+function renderDeletedSurveys() {
+  const section = document.getElementById('deletedSection');
+  const count   = document.getElementById('deletedCount');
+  if (!allDeletedAudits.length) { section.style.display='none'; return; }
+  section.style.display='';
+  count.textContent = allDeletedAudits.length;
+  const profileMap = {};
+  allProfiles.forEach(p => profileMap[p.id] = p);
+  const rows = allDeletedAudits.map(a => {
+    const deletedBy = profileMap[a.deleted_by];
+    const deletedByName = deletedBy ? (deletedBy.name||deletedBy.email||'Admin') : 'Admin';
+    const deletedAt = a.deleted_at ? new Date(a.deleted_at).toLocaleDateString('en-ZA',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+    return `<tr style="background:#FFF8F8">
+      <td>${a.date||'—'}</td>
+      <td style="font-weight:600">${a.customer||'—'}</td>
+      <td>${a.site||'—'}</td>
+      <td>${a.rep_name||'—'}</td>
+      <td style="color:#991B1B;font-size:12px">${deletedByName}</td>
+      <td style="color:#991B1B;font-size:12px">${deletedAt}</td>
+      <td style="display:flex;gap:6px">
+        <button onclick="restoreAudit('${a.id}','${(a.site||a.customer).replace(/'/g,"\'")}')" class="action-btn" style="color:#16A34A;border-color:#BBF7D0">&#8635; Restore</button>
+        <button onclick="hardDeleteAudit('${a.id}','${(a.site||a.customer).replace(/'/g,"\'")}')" class="action-btn danger">&#128465; Remove</button>
+      </td>
+    </tr>`;
+  }).join('');
+  document.querySelector('#deletedTable tbody').innerHTML = rows;
+}
+
+
+// ── FILTERS ───────────────────────────────────────────────────────────────────
+function getFilteredData() {
+  let audits = allAudits;
+  let opps   = allOpps;
+
+  // Tier 1: Opportunity stage filter
+  if (filterStage) {
+    const matchingAuditIds = new Set(opps.filter(o=>o.stage===filterStage).map(o=>o.audit_id));
+    audits = audits.filter(a => matchingAuditIds.has(a.id));
+    opps   = opps.filter(o => matchingAuditIds.has(o.audit_id));
+  }
+
+  // Tier 2: Rep filter (stacks on top)
+  if (filterRep) {
+    audits = audits.filter(a => (a.rep_name||'') === filterRep);
+    const repAuditIds = new Set(audits.map(a=>a.id));
+    opps   = opps.filter(o => repAuditIds.has(o.audit_id));
+  }
+
+  const auditIds = new Set(audits.map(a=>a.id));
+  const pumps    = allPumps.filter(p => auditIds.has(p.audit_id));
+
+  return { audits, pumps, opps };
+}
+
+function applyFilters() {
+  filterStage = document.getElementById('filterStage').value;
+  filterRep   = document.getElementById('filterRep').value;
+  const active = [filterStage,filterRep].filter(Boolean);
+  const badge  = document.getElementById('filterBadge');
+  if (active.length) {
+    badge.textContent = active.length + ' filter' + (active.length>1?'s':'') + ' active';
+    badge.style.display='';
+  } else {
+    badge.style.display='none';
+  }
+  renderAll();
+}
+
+function clearFilters() {
+  filterStage = ''; filterRep = '';
+  document.getElementById('filterStage').value = '';
+  document.getElementById('filterRep').value = '';
+  document.getElementById('filterBadge').style.display='none';
+  renderAll();
+}
+
+function populateRepFilter() {
+  const sel = document.getElementById('filterRep');
+  const current = sel.value;
+  const reps = [...new Set(allAudits.map(a=>a.rep_name).filter(Boolean))].sort();
+  sel.innerHTML = '<option value="">All Reps</option>' +
+    reps.map(r=>`<option value="${r}"${r===current?' selected':''}>${r}</option>`).join('');
+}
+
+// ── MAP ───────────────────────────────────────────────────────────────────────
+function renderMap(audits, opps) {
+  if (typeof L === 'undefined') return;
+  if (!adminMap) {
+    adminMap = L.map('adminMap').setView([-26.5, 28.0], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors', maxZoom: 18
+    }).addTo(adminMap);
+  }
+  // Clear existing markers
+  mapMarkers.forEach(m => adminMap.removeLayer(m));
+  mapMarkers = [];
+
+  const oppMap = {};
+  opps.forEach(o => {
+    if (!oppMap[o.audit_id]) oppMap[o.audit_id] = [];
+    oppMap[o.audit_id].push(o);
+  });
+
+  const stageOrder = ['Won','Negotiation','Quoting','Qualifying','Identified'];
+  const pinColor = {'Won':'#16A34A','Negotiation':'#8B5CF6','Quoting':'#F59E0B','Qualifying':'#3B82F6','Identified':'#94A3B8'};
+
+  const bounds = [];
+  audits.forEach(a => {
+    if (!a.location || !a.location.lat || !a.location.lng) return;
+    const auditOpps = oppMap[a.id]||[];
+    const topStage  = stageOrder.find(s=>auditOpps.some(o=>o.stage===s)) || null;
+    const color     = topStage ? pinColor[topStage] : '#94A3B8';
+    const pumpCount = allPumps.filter(p=>p.audit_id===a.id).length;
+    const topOpp    = auditOpps.find(o=>o.stage===topStage);
+
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="width:14px;height:14px;border-radius:50%;background:${color};
+        border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.3)"></div>`,
+      iconSize: [14,14], iconAnchor: [7,7]
+    });
+
+    const popup = `<div style="font-family:Poppins,sans-serif;min-width:160px">
+      <div style="font-weight:700;font-size:13px;margin-bottom:2px">${a.site||a.customer}</div>
+      <div style="font-size:11px;color:#64748B;margin-bottom:6px">${a.customer} · ${a.date||''}</div>
+      <div style="font-size:11px;color:#0F172A">Rep: <strong>${a.rep_name||'—'}</strong></div>
+      <div style="font-size:11px;color:#0F172A">Pumps: <strong>${pumpCount}</strong></div>
+      ${topOpp?`<div style="font-size:11px;margin-top:4px;padding:2px 6px;background:${color}20;
+        border-radius:4px;color:${color};font-weight:600">${topOpp.stage}: R${parseFloat(topOpp.value||0).toLocaleString()}</div>`:''}
+    </div>`;
+
+    const marker = L.marker([a.location.lat, a.location.lng], { icon })
+      .bindPopup(popup, { maxWidth: 240 })
+      .addTo(adminMap);
+    mapMarkers.push(marker);
+    bounds.push([a.location.lat, a.location.lng]);
+  });
+
+  if (bounds.length === 1) {
+    adminMap.setView(bounds[0], 10);
+  } else if (bounds.length > 1) {
+    try { adminMap.fitBounds(bounds, { padding: [40,40] }); } catch(e) {}
+  }
+}
+
+// ── SOFT DELETE ────────────────────────────────────────────────────────────────
+async function softDeleteAudit(auditId, siteName) {
+  if (!confirm('Delete survey "' + siteName + '"?\n\nThis survey will be hidden from reps and flagged as deleted. You can restore it from the Deleted Surveys section below.')) return;
+  try {
+    const { error } = await sb.from('audits').update({
+      deleted_at: new Date().toISOString(),
+      deleted_by: adminUser.id
+    }).eq('id', auditId);
+    if (error) throw error;
+    adminToast('Survey soft-deleted — visible in Deleted Surveys below ✓');
+    await refreshAll();
+  } catch(e) { adminToast('Error: ' + e.message); }
+}
+
+async function restoreAudit(auditId, siteName) {
+  if (!confirm('Restore "' + siteName + '"? It will become visible to reps again.')) return;
+  try {
+    const { error } = await sb.from('audits').update({
+      deleted_at: null, deleted_by: null
+    }).eq('id', auditId);
+    if (error) throw error;
+    adminToast('Survey restored ✓');
+    await refreshAll();
+  } catch(e) { adminToast('Error: ' + e.message); }
+}
+
+async function hardDeleteAudit(auditId, siteName) {
+  if (!confirm('PERMANENTLY DELETE "' + siteName + '"?\n\nThis will remove ALL pumps and opportunities linked to this survey.\n\nThis CANNOT be undone.')) return;
+  if (!confirm('Are you absolutely sure? This is irreversible.')) return;
+  try {
+    await sb.from('opportunities').delete().eq('audit_id', auditId);
+    await sb.from('pumps').delete().eq('audit_id', auditId);
+    await sb.from('audits').delete().eq('id', auditId);
+    adminToast('Survey permanently deleted');
+    await refreshAll();
+  } catch(e) { adminToast('Error: ' + e.message); }
+}
+
+function toggleDeletedSection() {
+  const body   = document.getElementById('deletedBody');
+  const toggle = document.getElementById('deletedToggle');
+  body.classList.toggle('open');
+  toggle.classList.toggle('open');
+}
+
+function renderDeletedSurveys() {
+  const section = document.getElementById('deletedSection');
+  const count   = document.getElementById('deletedCount');
+  if (!allDeletedAudits.length) { section.style.display='none'; return; }
+  section.style.display='';
+  count.textContent = allDeletedAudits.length;
+  const profileMap = {};
+  allProfiles.forEach(p => profileMap[p.id] = p);
+  const rows = allDeletedAudits.map(a => {
+    const deletedBy = profileMap[a.deleted_by];
+    const deletedByName = deletedBy ? (deletedBy.name||deletedBy.email||'Admin') : 'Admin';
+    const deletedAt = a.deleted_at ? new Date(a.deleted_at).toLocaleDateString('en-ZA',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+    return `<tr style="background:#FFF8F8">
+      <td>${a.date||'—'}</td>
+      <td style="font-weight:600">${a.customer||'—'}</td>
+      <td>${a.site||'—'}</td>
+      <td>${a.rep_name||'—'}</td>
+      <td style="color:#991B1B;font-size:12px">${deletedByName}</td>
+      <td style="color:#991B1B;font-size:12px">${deletedAt}</td>
+      <td style="display:flex;gap:6px">
+        <button onclick="restoreAudit('${a.id}','${(a.site||a.customer).replace(/'/g,"\'")}')" class="action-btn" style="color:#16A34A;border-color:#BBF7D0">&#8635; Restore</button>
+        <button onclick="hardDeleteAudit('${a.id}','${(a.site||a.customer).replace(/'/g,"\'")}')" class="action-btn danger">&#128465; Remove</button>
+      </td>
+    </tr>`;
+  }).join('');
+  document.querySelector('#deletedTable tbody').innerHTML = rows;
 }
 
 </script>
