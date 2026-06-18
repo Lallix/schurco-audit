@@ -458,7 +458,7 @@ body{font-family:'Poppins',sans-serif;background:#F8FAFC;color:#0F172A;min-heigh
       <div class="section-head" style="margin-top:24px">Opportunities — All Organisations</div>
       <table class="tbl" id="oppsTable">
         <thead><tr>
-          <th>Title</th><th>Customer</th><th>Value (R)</th><th>Stage</th><th>Owner</th><th>Close Date</th>
+          <th>Title</th><th>Customer</th><th>Value (R)</th><th>Stage</th><th>Owner</th><th>Close Date</th><th>Actions</th>
         </tr></thead>
         <tbody><tr><td colspan="6" style="color:var(--text-muted)">Loading…</td></tr></tbody>
       </table>
@@ -521,7 +521,7 @@ const SUPABASE_URL = 'https://gxdyhhdyyobbzfnanoan.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd4ZHloaGR5eW9iYnpmbmFub2FuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MjY3MTMsImV4cCI6MjA5NzIwMjcxM30.fPziJT0H2XcMsZqA_QRIu1z6Ds9hqb5kxWtRJqnQtIs';
 let sb, adminUser, adminProfile;
 let allAudits=[], allPumps=[], allOpps=[], allProfiles=[], allOrgs=[];
-let allDeletedAudits=[];
+let allDeletedAudits=[], allDeletedOpps=[];
 let activeTab = 'overview';
 let filterStage='', filterRep='';
 let adminMap=null, mapMarkers=[];
@@ -641,13 +641,14 @@ async function refreshAll() {
   document.getElementById('lastRefreshed').textContent = 'Refreshing…';
   try {
     // Fetch all tables — profiles without join to avoid RLS issues
-    const [aR,pR,oR,prR,orR,dR] = await Promise.all([
+    const [aR,pR,oR,prR,orR,dR,doR] = await Promise.all([
       sb.from('audits').select('*').is('deleted_at',null).order('date',{ascending:false}),
       sb.from('pumps').select('*'),
       sb.from('opportunities').select('*').is('deleted_at',null).order('saved_at',{ascending:false}),
       sb.from('profiles').select('id,name,role,company,is_admin,org_id,email,created_at'),
       sb.from('organisations').select('*'),
-      sb.from('audits').select('id,customer,site,date,rep_name,deleted_at,deleted_by,user_id').not('deleted_at','is',null)
+      sb.from('audits').select('id,customer,site,date,rep_name,deleted_at,deleted_by,user_id').not('deleted_at','is',null),
+      sb.from('opportunities').select('id,title,type,customer,value,stage,owner,close_date,deleted_at,deleted_by').not('deleted_at','is',null)
     ]);
 
     // Log any errors to help debug
@@ -669,6 +670,7 @@ async function refreshAll() {
     allPumps         = pR.data||[];
     allOpps          = oR.data||[];
     allDeletedAudits = dR.data||[];
+    allDeletedOpps   = doR.data||[];
 
     const total = allAudits.length + allPumps.length + allProfiles.length + allOrgs.length;
     document.getElementById('lastRefreshed').textContent =
@@ -854,16 +856,65 @@ function renderActivity() {
 
 // ── OPPS TABLE ───────────────────────────────────────────────────────
 function renderOpps() {
-  const stageColor={'Won':'won','Lost':'lost','Identified':'','Qualifying':'','Quoting':'','Negotiation':''};
   const rows = allOpps.slice(0,30).map(o=>`<tr>
-    <td style="font-weight:600">${o.title||'—'}</td>
+    <td style="font-weight:600">${o.title||o.type||'—'}</td>
     <td>${o.customer||'—'}</td>
     <td>${o.value?'R '+parseFloat(o.value).toLocaleString():'—'}</td>
-    <td><span class="badge ${stageColor[o.stage]||''}" style="background:${stageBg(o.stage)};color:${stageFg(o.stage)}">${o.stage||'—'}</span></td>
+    <td><span class="badge" style="background:${stageBg(o.stage)};color:${stageFg(o.stage)}">${o.stage||'—'}</span></td>
     <td>${o.owner||'—'}</td>
     <td>${o.close_date||'—'}</td>
-  </tr>`).join('') || '<tr><td colspan="6" style="color:var(--text-muted)">No opportunities yet</td></tr>';
+    <td><button onclick="softDeleteOpp('${o.id}','${(o.title||o.type||'opportunity').replace(/'/g,"\'")}')" class="action-btn danger" style="font-size:11px">&#128465;</button></td>
+  </tr>`).join('') || '<tr><td colspan="7" style="color:var(--text-muted)">No opportunities yet</td></tr>';
   document.querySelector('#oppsTable tbody').innerHTML = rows;
+  renderDeletedOpps();
+}
+
+function renderDeletedOpps() {
+  let wrap = document.getElementById('deletedOppsWrap');
+  if (!allDeletedOpps || !allDeletedOpps.length) {
+    if (wrap) wrap.style.display='none'; return;
+  }
+  if (!wrap) {
+    wrap = document.createElement('div');
+    wrap.id = 'deletedOppsWrap';
+    document.getElementById('oppsTable').insertAdjacentElement('afterend', wrap);
+  }
+  wrap.style.display='';
+  const profileMap = {};
+  allProfiles.forEach(p => profileMap[p.id] = p);
+  const rows = allDeletedOpps.map(o => {
+    const deletedBy = profileMap[o.deleted_by];
+    const deletedByName = deletedBy ? (deletedBy.name||deletedBy.email||'Admin') : 'Admin';
+    const deletedAt = o.deleted_at ? new Date(o.deleted_at).toLocaleDateString('en-ZA',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+    return `<tr style="background:#FFF8F8">
+      <td style="font-weight:600">${o.title||o.type||'—'}</td>
+      <td>${o.customer||'—'}</td>
+      <td>${o.value?'R '+parseFloat(o.value).toLocaleString():'—'}</td>
+      <td><span class="badge" style="background:${stageBg(o.stage)};color:${stageFg(o.stage)}">${o.stage||'—'}</span></td>
+      <td style="color:#991B1B;font-size:12px">${deletedByName}</td>
+      <td style="color:#991B1B;font-size:12px">${deletedAt}</td>
+      <td style="display:flex;gap:6px">
+        <button onclick="restoreOpp('${o.id}','${(o.title||o.type||'opportunity').replace(/'/g,"\'")}')" class="action-btn" style="color:#16A34A;border-color:#BBF7D0">&#8635; Restore</button>
+        <button onclick="hardDeleteOpp('${o.id}','${(o.title||o.type||'opportunity').replace(/'/g,"\'")}')" class="action-btn danger">&#128465; Remove</button>
+      </td>
+    </tr>`;
+  }).join('');
+  wrap.innerHTML = `
+    <div class="deleted-section" style="margin-top:16px">
+      <div class="deleted-header" onclick="this.nextElementSibling.classList.toggle('open');this.querySelector('.deleted-toggle').classList.toggle('open')">
+        <div class="deleted-title">
+          &#128465; Deleted Opportunities
+          <span style="background:#FEE2E2;color:#991B1B;font-size:11px;padding:1px 8px;border-radius:12px;font-weight:700">${allDeletedOpps.length}</span>
+        </div>
+        <span class="deleted-toggle">&#8964;</span>
+      </div>
+      <div class="deleted-body">
+        <table class="tbl">
+          <thead><tr><th>Title</th><th>Customer</th><th>Value</th><th>Stage</th><th>Deleted By</th><th>Deleted At</th><th>Actions</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`;
 }
 function stageBg(s){return{'Won':'#DCFCE7','Lost':'#FEE2E2','Quoting':'#FEF3C7','Negotiation':'#EDE9FE'}[s]||'#F1F5F9'}
 function stageFg(s){return{'Won':'#166534','Lost':'#991B1B','Quoting':'#92400E','Negotiation':'#5B21B6'}[s]||'#475569'}
@@ -1525,6 +1576,44 @@ function renderDeletedSurveys() {
     </tr>`;
   }).join('');
   document.querySelector('#deletedTable tbody').innerHTML = rows;
+}
+
+
+// ── SOFT DELETE OPPORTUNITIES ─────────────────────────────────────────────────
+async function softDeleteOpp(oppId, title) {
+  if (!confirm('Delete opportunity "' + title + '"?\n\nIt will be hidden from reps but visible in Deleted Opportunities below. You can restore it at any time.')) return;
+  try {
+    const { error } = await sb.from('opportunities').update({
+      deleted_at: new Date().toISOString(),
+      deleted_by: adminUser.id
+    }).eq('id', oppId);
+    if (error) throw error;
+    adminToast('Opportunity soft-deleted ✓');
+    await refreshAll();
+  } catch(e) { adminToast('Error: ' + e.message); }
+}
+
+async function restoreOpp(oppId, title) {
+  if (!confirm('Restore "' + title + '"? It will become visible to reps again.')) return;
+  try {
+    const { error } = await sb.from('opportunities').update({
+      deleted_at: null, deleted_by: null
+    }).eq('id', oppId);
+    if (error) throw error;
+    adminToast('Opportunity restored ✓');
+    await refreshAll();
+  } catch(e) { adminToast('Error: ' + e.message); }
+}
+
+async function hardDeleteOpp(oppId, title) {
+  if (!confirm('PERMANENTLY DELETE "' + title + '"?\n\nThis cannot be undone.')) return;
+  if (!confirm('Are you absolutely sure?')) return;
+  try {
+    const { error } = await sb.from('opportunities').delete().eq('id', oppId);
+    if (error) throw error;
+    adminToast('Opportunity permanently deleted');
+    await refreshAll();
+  } catch(e) { adminToast('Error: ' + e.message); }
 }
 
 </script>
