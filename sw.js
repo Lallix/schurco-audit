@@ -1,4 +1,4 @@
-const CACHE = 'schurco-audit-v27';
+const CACHE = 'schurco-audit-v29';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './xlsx.bundle.js', './supabase.bundle.js', './admin.html'];
 
 self.addEventListener('install', e => {
