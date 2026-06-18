@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Schurco Admin Dashboard v8</title>
+<title>Schurco Admin Dashboard v9</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -145,6 +145,28 @@ body{font-family:'Poppins',sans-serif;background:#F8FAFC;color:#0F172A;min-heigh
 .deleted-title{font-size:13px;font-weight:700;text-transform:uppercase;
   letter-spacing:.6px;color:#991B1B;display:flex;align-items:center;gap:8px}
 .deleted-toggle{font-size:20px;color:#991B1B;transition:transform .2s}
+
+/* EXPANDABLE SURVEY ROWS */
+.survey-expand-btn{background:none;border:none;cursor:pointer;font-size:13px;
+  color:var(--text-muted);padding:2px 4px;transition:transform .2s;display:inline-block}
+.survey-expand-btn.open{transform:rotate(90deg)}
+.survey-detail-row{display:none;background:#F8FAFC}
+.survey-detail-row.open{display:table-row}
+.survey-detail-inner{padding:16px 20px;border-top:1px solid var(--border)}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.detail-section-title{font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.5px;color:var(--text-sec);margin-bottom:10px;
+  display:flex;align-items:center;gap:6px}
+.detail-pump-row{display:flex;align-items:center;gap:10px;padding:7px 0;
+  border-bottom:1px solid var(--border);font-size:13px}
+.detail-pump-row:last-child{border-bottom:none}
+.detail-pump-tag{font-weight:700;min-width:80px;color:var(--text)}
+.detail-pump-meta{color:var(--text-sec);font-size:12px;flex:1}
+.detail-opp-row{display:flex;align-items:center;justify-content:space-between;
+  padding:7px 0;border-bottom:1px solid var(--border);font-size:13px}
+.detail-opp-row:last-child{border-bottom:none}
+.detail-contact{background:#fff;border:1px solid var(--border);border-radius:10px;
+  padding:12px;font-size:13px;line-height:1.8;margin-top:8px}
 .deleted-toggle.open{transform:rotate(180deg)}
 .deleted-body{display:none;margin-top:16px}
 .deleted-body.open{display:block}
@@ -188,6 +210,28 @@ body{font-family:'Poppins',sans-serif;background:#F8FAFC;color:#0F172A;min-heigh
 .deleted-title{font-size:13px;font-weight:700;text-transform:uppercase;
   letter-spacing:.6px;color:#991B1B;display:flex;align-items:center;gap:8px}
 .deleted-toggle{font-size:20px;color:#991B1B;transition:transform .2s}
+
+/* EXPANDABLE SURVEY ROWS */
+.survey-expand-btn{background:none;border:none;cursor:pointer;font-size:13px;
+  color:var(--text-muted);padding:2px 4px;transition:transform .2s;display:inline-block}
+.survey-expand-btn.open{transform:rotate(90deg)}
+.survey-detail-row{display:none;background:#F8FAFC}
+.survey-detail-row.open{display:table-row}
+.survey-detail-inner{padding:16px 20px;border-top:1px solid var(--border)}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.detail-section-title{font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.5px;color:var(--text-sec);margin-bottom:10px;
+  display:flex;align-items:center;gap:6px}
+.detail-pump-row{display:flex;align-items:center;gap:10px;padding:7px 0;
+  border-bottom:1px solid var(--border);font-size:13px}
+.detail-pump-row:last-child{border-bottom:none}
+.detail-pump-tag{font-weight:700;min-width:80px;color:var(--text)}
+.detail-pump-meta{color:var(--text-sec);font-size:12px;flex:1}
+.detail-opp-row{display:flex;align-items:center;justify-content:space-between;
+  padding:7px 0;border-bottom:1px solid var(--border);font-size:13px}
+.detail-opp-row:last-child{border-bottom:none}
+.detail-contact{background:#fff;border:1px solid var(--border);border-radius:10px;
+  padding:12px;font-size:13px;line-height:1.8;margin-top:8px}
 .deleted-toggle.open{transform:rotate(180deg)}
 .deleted-body{display:none;margin-top:16px}
 .deleted-body.open{display:block}
@@ -231,6 +275,28 @@ body{font-family:'Poppins',sans-serif;background:#F8FAFC;color:#0F172A;min-heigh
 .deleted-title{font-size:13px;font-weight:700;text-transform:uppercase;
   letter-spacing:.6px;color:#991B1B;display:flex;align-items:center;gap:8px}
 .deleted-toggle{font-size:20px;color:#991B1B;transition:transform .2s}
+
+/* EXPANDABLE SURVEY ROWS */
+.survey-expand-btn{background:none;border:none;cursor:pointer;font-size:13px;
+  color:var(--text-muted);padding:2px 4px;transition:transform .2s;display:inline-block}
+.survey-expand-btn.open{transform:rotate(90deg)}
+.survey-detail-row{display:none;background:#F8FAFC}
+.survey-detail-row.open{display:table-row}
+.survey-detail-inner{padding:16px 20px;border-top:1px solid var(--border)}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.detail-section-title{font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.5px;color:var(--text-sec);margin-bottom:10px;
+  display:flex;align-items:center;gap:6px}
+.detail-pump-row{display:flex;align-items:center;gap:10px;padding:7px 0;
+  border-bottom:1px solid var(--border);font-size:13px}
+.detail-pump-row:last-child{border-bottom:none}
+.detail-pump-tag{font-weight:700;min-width:80px;color:var(--text)}
+.detail-pump-meta{color:var(--text-sec);font-size:12px;flex:1}
+.detail-opp-row{display:flex;align-items:center;justify-content:space-between;
+  padding:7px 0;border-bottom:1px solid var(--border);font-size:13px}
+.detail-opp-row:last-child{border-bottom:none}
+.detail-contact{background:#fff;border:1px solid var(--border);border-radius:10px;
+  padding:12px;font-size:13px;line-height:1.8;margin-top:8px}
 .deleted-toggle.open{transform:rotate(180deg)}
 .deleted-body{display:none;margin-top:16px}
 .deleted-body.open{display:block}
@@ -320,53 +386,7 @@ body{font-family:'Poppins',sans-serif;background:#F8FAFC;color:#0F172A;min-heigh
         <span class="filter-badge" id="filterBadge" style="display:none"></span>
       </div>
 
-      <!-- FILTER BAR -->
-      <div class="filter-bar">
-        <div class="filter-group">
-          <label>&#127919; Opportunity Stage</label>
-          <select id="filterStage" onchange="applyFilters()">
-            <option value="">All Stages</option>
-            <option>Identified</option>
-            <option>Qualifying</option>
-            <option>Quoting</option>
-            <option>Negotiation</option>
-            <option>Won</option>
-            <option>Lost</option>
-          </select>
-        </div>
-        <div class="filter-group">
-          <label>&#128100; Representative</label>
-          <select id="filterRep" onchange="applyFilters()">
-            <option value="">All Reps</option>
-          </select>
-        </div>
-        <button class="filter-clear" onclick="clearFilters()">&#215; Clear Filters</button>
-        <span class="filter-badge" id="filterBadge" style="display:none"></span>
-      </div>
-
-      <!-- FILTER BAR -->
-      <div class="filter-bar">
-        <div class="filter-group">
-          <label>&#127919; Opportunity Stage</label>
-          <select id="filterStage" onchange="applyFilters()">
-            <option value="">All Stages</option>
-            <option>Identified</option>
-            <option>Qualifying</option>
-            <option>Quoting</option>
-            <option>Negotiation</option>
-            <option>Won</option>
-            <option>Lost</option>
-          </select>
-        </div>
-        <div class="filter-group">
-          <label>&#128100; Representative</label>
-          <select id="filterRep" onchange="applyFilters()">
-            <option value="">All Reps</option>
-          </select>
-        </div>
-        <button class="filter-clear" onclick="clearFilters()">&#215; Clear Filters</button>
-        <span class="filter-badge" id="filterBadge" style="display:none"></span>
-      </div>
+      <!-- KPIs -->
       <div class="kpi-grid" id="kpiGrid">
         <div class="kpi"><div class="kpi-n">—</div><div class="kpi-l">Surveys</div></div>
         <div class="kpi"><div class="kpi-n">—</div><div class="kpi-l">Pumps</div></div>
@@ -375,92 +395,20 @@ body{font-family:'Poppins',sans-serif;background:#F8FAFC;color:#0F172A;min-heigh
         <div class="kpi"><div class="kpi-n">—</div><div class="kpi-l">Active Users</div></div>
       </div>
 
+      <!-- PIPELINE -->
       <div class="section-head">Opportunities Pipeline</div>
       <div class="card" id="pipelineCard" style="padding:0;overflow:hidden">
         <div style="padding:20px;color:var(--text-muted);font-size:14px">Loading…</div>
       </div>
 
+      <!-- SURVEYS TABLE -->
       <div class="section-head" style="margin-top:24px">All Surveys</div>
       <table class="tbl" id="surveysTable">
         <thead><tr>
-          <th>Date</th><th>Customer</th><th>Site</th><th>Rep</th><th>Organisation</th><th>Pumps</th><th>Status</th><th>Actions</th>
+          <th></th><th>Date</th><th>Customer</th><th>Site</th><th>Rep</th><th>Organisation</th><th>Pumps</th><th>Status</th><th>Actions</th>
         </tr></thead>
-        <tbody><tr><td colspan="7" style="color:var(--text-muted)">Loading…</td></tr></tbody>
+        <tbody><tr><td colspan="9" style="color:var(--text-muted)">Loading…</td></tr></tbody>
       </table>
-
-      <!-- SITE MAP -->
-      <div class="section-head" style="margin-top:24px">Survey Site Map</div>
-      <div class="map-wrap">
-        <div class="map-header">
-          <span class="map-title">&#128205; All Survey Locations</span>
-          <div class="map-legend">
-            <div class="map-leg-item"><div class="map-leg-dot" style="background:#16A34A"></div>Won</div>
-            <div class="map-leg-item"><div class="map-leg-dot" style="background:#8B5CF6"></div>Negotiation</div>
-            <div class="map-leg-item"><div class="map-leg-dot" style="background:#F59E0B"></div>Quoting</div>
-            <div class="map-leg-item"><div class="map-leg-dot" style="background:#3B82F6"></div>Qualifying</div>
-            <div class="map-leg-item"><div class="map-leg-dot" style="background:#94A3B8"></div>No Opp</div>
-          </div>
-        </div>
-        <div id="adminMap"></div>
-      </div>
-
-      <!-- DELETED SURVEYS -->
-      <div class="deleted-section" id="deletedSection" style="display:none">
-        <div class="deleted-header" onclick="toggleDeletedSection()">
-          <div class="deleted-title">
-            &#128465; Deleted Surveys
-            <span id="deletedCount" style="background:#FEE2E2;color:#991B1B;font-size:11px;padding:1px 8px;border-radius:12px;font-weight:700">0</span>
-          </div>
-          <span class="deleted-toggle" id="deletedToggle">&#8964;</span>
-        </div>
-        <div class="deleted-body" id="deletedBody">
-          <p style="font-size:12px;color:#991B1B;margin-bottom:12px">These surveys have been soft-deleted. They are invisible to reps and excluded from all data. You can restore or permanently remove them below.</p>
-          <table class="tbl" id="deletedTable">
-            <thead><tr>
-              <th>Date</th><th>Customer</th><th>Site</th><th>Rep</th><th>Deleted By</th><th>Deleted At</th><th>Actions</th>
-            </tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-
-
-      <!-- SITE MAP -->
-      <div class="section-head" style="margin-top:24px">Survey Site Map</div>
-      <div class="map-wrap">
-        <div class="map-header">
-          <span class="map-title">&#128205; All Survey Locations</span>
-          <div class="map-legend">
-            <div class="map-leg-item"><div class="map-leg-dot" style="background:#16A34A"></div>Won</div>
-            <div class="map-leg-item"><div class="map-leg-dot" style="background:#8B5CF6"></div>Negotiation</div>
-            <div class="map-leg-item"><div class="map-leg-dot" style="background:#F59E0B"></div>Quoting</div>
-            <div class="map-leg-item"><div class="map-leg-dot" style="background:#3B82F6"></div>Qualifying</div>
-            <div class="map-leg-item"><div class="map-leg-dot" style="background:#94A3B8"></div>No Opp</div>
-          </div>
-        </div>
-        <div id="adminMap"></div>
-      </div>
-
-      <!-- DELETED SURVEYS -->
-      <div class="deleted-section" id="deletedSection" style="display:none">
-        <div class="deleted-header" onclick="toggleDeletedSection()">
-          <div class="deleted-title">
-            &#128465; Deleted Surveys
-            <span id="deletedCount" style="background:#FEE2E2;color:#991B1B;font-size:11px;padding:1px 8px;border-radius:12px;font-weight:700">0</span>
-          </div>
-          <span class="deleted-toggle" id="deletedToggle">&#8964;</span>
-        </div>
-        <div class="deleted-body" id="deletedBody">
-          <p style="font-size:12px;color:#991B1B;margin-bottom:12px">These surveys have been soft-deleted. They are invisible to reps and excluded from all data. You can restore or permanently remove them below.</p>
-          <table class="tbl" id="deletedTable">
-            <thead><tr>
-              <th>Date</th><th>Customer</th><th>Site</th><th>Rep</th><th>Deleted By</th><th>Deleted At</th><th>Actions</th>
-            </tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-
 
       <!-- SITE MAP -->
       <div class="section-head" style="margin-top:24px">Survey Site Map</div>
@@ -500,7 +448,7 @@ body{font-family:'Poppins',sans-serif;background:#F8FAFC;color:#0F172A;min-heigh
 
     </div>
 
-    <!-- ACTIVITY TAB -->
+        <!-- ACTIVITY TAB -->
     <div id="tabActivity" style="display:none">
       <div class="section-head">Recent Survey Activity — All Organisations</div>
       <div class="card" id="activityFeed" style="padding:0 20px">
@@ -801,17 +749,84 @@ function renderSurveys({audits}) {
   const pumpMap = {};
   allPumps.forEach(p => { pumpMap[p.audit_id] = (pumpMap[p.audit_id]||0)+1; });
   const statusColor = {'open':'var(--green)','reviewed':'var(--warn)','closed':'var(--text-muted)'};
-  const rows = audits.slice(0,50).map(a => `<tr>
-    <td>${a.date||'—'}</td>
-    <td style="font-weight:600">${a.customer||'—'}</td>
-    <td>${a.site||'—'}</td>
-    <td>${a.rep_name||'—'}</td>
-    <td><span class="badge distributor">${orgMap[a.user_id]||'—'}</span></td>
-    <td style="text-align:center">${pumpMap[a.id]||0}</td>
-    <td><span style="color:${statusColor[a.status||'open']};font-weight:600;font-size:12px;text-transform:capitalize">${a.status||'open'}</span></td>
-    <td><button onclick="softDeleteAudit('${a.id}','${(a.site||a.customer).replace(/'/g,"\'")}')" class="action-btn danger" style="font-size:11px">&#128465; Delete</button></td>
-  </tr>`).join('') || '<tr><td colspan="8" style="color:var(--text-muted)">No surveys yet</td></tr>';
+  const rows = audits.slice(0,50).flatMap(a => {
+    const auditPumps = allPumps.filter(p => p.audit_id === a.id);
+    const auditOpps  = allOpps.filter(o => o.audit_id === a.id);
+    const safeId = a.id.replace(/-/g,'_');
+
+    // Pumps detail
+    const pumpsHtml = auditPumps.length
+      ? auditPumps.map(p => `<div class="detail-pump-row">
+          <span class="detail-pump-tag">${p.tag||'No tag'}</span>
+          <span class="detail-pump-meta">${[p.model||p.series,p.area,p.condition].filter(Boolean).join(' · ')}</span>
+          <span style="font-size:11px;background:${condColor(p.condition)};color:#fff;border-radius:4px;padding:1px 7px;font-weight:600">${p.condition||'—'}</span>
+        </div>`).join('')
+      : '<div style="font-size:13px;color:var(--text-muted);padding:8px 0">No pumps recorded</div>';
+
+    // Opportunities detail
+    const oppsHtml = auditOpps.length
+      ? auditOpps.map(o => `<div class="detail-opp-row">
+          <span>${o.title||o.type||'Opportunity'}</span>
+          <span style="font-size:12px;color:var(--text-sec)">${o.value?'R '+parseFloat(o.value).toLocaleString():'—'}</span>
+          <span class="badge" style="background:${stageBg(o.stage)};color:${stageFg(o.stage)}">${o.stage||'—'}</span>
+        </div>`).join('')
+      : '<div style="font-size:13px;color:var(--text-muted);padding:8px 0">No opportunities logged</div>';
+
+    // Contact detail
+    const contactHtml = (a.contact_name||a.contact_email||a.contact_phone)
+      ? `<div class="detail-contact">
+          ${a.contact_name?`<div><strong>${a.contact_name}</strong>${a.contact_position?' · '+a.contact_position:''}</div>`:''}
+          ${a.contact_email?`<div style="color:var(--text-sec)">${a.contact_email}</div>`:''}
+          ${a.contact_phone?`<div style="color:var(--text-sec)">${a.contact_phone}</div>`:''}
+        </div>` : '<div style="font-size:13px;color:var(--text-muted)">No contact info</div>';
+
+    const mainRow = `<tr style="cursor:pointer" onclick="toggleSurveyDetail('${safeId}')">
+      <td><button class="survey-expand-btn" id="expBtn_${safeId}">&#9658;</button></td>
+      <td>${a.date||'—'}</td>
+      <td style="font-weight:600">${a.customer||'—'}</td>
+      <td>${a.site||'—'}</td>
+      <td>${a.rep_name||'—'}</td>
+      <td><span class="badge distributor">${orgMap[a.user_id]||'—'}</span></td>
+      <td style="text-align:center">${pumpMap[a.id]||0}</td>
+      <td><span style="color:${statusColor[a.status||'open']};font-weight:600;font-size:12px;text-transform:capitalize">${a.status||'open'}</span></td>
+      <td onclick="event.stopPropagation()"><button onclick="softDeleteAudit('${a.id}','${(a.site||a.customer).replace(/'/g,"\'")}')" class="action-btn danger" style="font-size:11px">&#128465;</button></td>
+    </tr>`;
+
+    const detailRow = `<tr class="survey-detail-row" id="det_${safeId}">
+      <td colspan="9" style="padding:0">
+        <div class="survey-detail-inner">
+          <div class="detail-grid">
+            <div>
+              <div class="detail-section-title">&#9881; Pumps (${auditPumps.length})</div>
+              ${pumpsHtml}
+            </div>
+            <div>
+              <div class="detail-section-title">&#128161; Opportunities (${auditOpps.length})</div>
+              ${oppsHtml}
+              <div class="detail-section-title" style="margin-top:16px">&#128222; Site Contact</div>
+              ${contactHtml}
+            </div>
+          </div>
+          ${a.notes?`<div style="margin-top:14px;padding:10px 14px;background:#fff;border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--text-sec)"><strong style="color:var(--text)">Notes:</strong> ${a.notes}</div>`:''}
+        </div>
+      </td>
+    </tr>`;
+
+    return [mainRow, detailRow];
+  }).join('') || '<tr><td colspan="9" style="color:var(--text-muted)">No surveys yet</td></tr>';
   document.querySelector('#surveysTable tbody').innerHTML = rows;
+}
+
+function toggleSurveyDetail(safeId) {
+  const row = document.getElementById('det_' + safeId);
+  const btn = document.getElementById('expBtn_' + safeId);
+  if (!row) return;
+  row.classList.toggle('open');
+  btn.classList.toggle('open');
+}
+
+function condColor(c) {
+  return {'Good':'#16A34A','Serviceable':'#3B82F6','Worn':'#F59E0B','Critical':'#EF4444'}[c]||'#94A3B8';
 }
 
 // ── ACTIVITY ──────────────────────────────────────────────────────────
