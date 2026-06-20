@@ -1,0 +1,1357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Schurco Site Audit — Evolution v1 → v29</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --g50:#F0FDF4;--g100:#DCFCE7;--g400:#4ADE80;--g500:#22C55E;--g600:#16A34A;--g700:#166534;
+  --slate50:#F8FAFC;--slate100:#F1F5F9;--slate200:#E2E8F0;--slate400:#94A3B8;
+  --slate600:#475569;--slate700:#334155;--slate900:#0F172A;
+  --amber:#F59E0B;--red:#EF4444;--blue:#3B82F6;
+  --font:'Poppins',sans-serif; --mono:'JetBrains Mono',monospace;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:#05080F;color:#fff;overflow-x:hidden;min-height:100vh}
+
+/* ── HERO ─────────────────────────────────────────────────────────────── */
+.hero{
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:60px 24px 80px;text-align:center;
+  background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(22,163,74,.18) 0%,transparent 70%);
+  position:relative;overflow:hidden;
+}
+.hero::before{
+  content:'';position:absolute;inset:0;
+  background-image:radial-gradient(rgba(22,163,74,.06) 1px,transparent 1px);
+  background-size:32px 32px;
+}
+.hero-eyebrow{
+  font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;
+  color:var(--g500);margin-bottom:20px;
+  border:1px solid rgba(34,197,94,.3);border-radius:20px;padding:5px 16px;
+  display:inline-block;
+}
+.hero-title{
+  font-size:clamp(42px,6vw,80px);font-weight:900;line-height:1.0;
+  letter-spacing:-.04em;margin-bottom:16px;
+  background:linear-gradient(135deg,#fff 30%,var(--g400));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hero-title span{display:block;font-size:.55em;letter-spacing:-.02em;
+  -webkit-text-fill-color:var(--g500);color:var(--g500)}
+.hero-sub{font-size:16px;color:var(--slate400);max-width:560px;line-height:1.7;margin-bottom:48px}
+.hero-stats{display:flex;gap:40px;justify-content:center;flex-wrap:wrap}
+.hero-stat{text-align:center}
+.hero-stat-n{font-size:40px;font-weight:900;color:var(--g400);line-height:1;letter-spacing:-.03em}
+.hero-stat-l{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--slate400);margin-top:4px}
+
+/* ── SECTION ──────────────────────────────────────────────────────────── */
+.section{max-width:1100px;margin:0 auto;padding:80px 24px}
+.section-eyebrow{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;
+  color:var(--g500);margin-bottom:10px}
+.section-title{font-size:clamp(28px,3.5vw,42px);font-weight:800;letter-spacing:-.03em;
+  color:#fff;margin-bottom:8px}
+.section-sub{font-size:15px;color:var(--slate400);line-height:1.7;max-width:600px}
+.divider{height:1px;background:linear-gradient(90deg,transparent,rgba(34,197,94,.2),transparent);
+  margin:0 24px}
+
+/* ── PHASE TRACK ──────────────────────────────────────────────────────── */
+.phase-track{position:relative;padding-left:32px}
+.phase-track::before{
+  content:'';position:absolute;left:0;top:8px;bottom:8px;width:2px;
+  background:linear-gradient(to bottom,var(--g600),var(--g500),var(--g400));
+}
+.phase{margin-bottom:56px;position:relative}
+.phase-dot{
+  position:absolute;left:-38px;top:4px;
+  width:14px;height:14px;border-radius:50%;background:var(--g500);
+  border:2px solid #05080F;box-shadow:0 0 0 3px rgba(34,197,94,.3);
+}
+.phase-ver{
+  font-family:var(--mono);font-size:11px;font-weight:600;color:var(--g500);
+  background:rgba(22,163,74,.1);border:1px solid rgba(34,197,94,.2);
+  border-radius:4px;padding:2px 8px;display:inline-block;margin-bottom:8px;
+}
+.phase-title{font-size:22px;font-weight:800;color:#fff;letter-spacing:-.02em;margin-bottom:6px}
+.phase-desc{font-size:14px;color:var(--slate400);line-height:1.7;margin-bottom:16px;max-width:520px}
+.tags{display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:var(--slate400)}
+.tag.green{background:rgba(22,163,74,.1);border-color:rgba(34,197,94,.2);color:var(--g400)}
+.tag.amber{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.2);color:var(--amber)}
+.tag.blue{background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.2);color:var(--blue)}
+.tag.red{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.2);color:var(--red)}
+
+/* ── COMPARISON GRID ──────────────────────────────────────────────────── */
+.cmp-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:32px}
+@media(max-width:640px){.cmp-grid{grid-template-columns:1fr}}
+.cmp-card{
+  background:rgba(255,255,255,.03);border:1.5px solid rgba(255,255,255,.08);
+  border-radius:16px;padding:20px;
+}
+.cmp-card.now{border-color:rgba(34,197,94,.3);background:rgba(22,163,74,.05)}
+.cmp-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;
+  margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.cmp-label.then{color:var(--slate600)}
+.cmp-label.now{color:var(--g500)}
+.dot-then{width:8px;height:8px;border-radius:50%;background:var(--slate600);flex-shrink:0}
+.dot-now{width:8px;height:8px;border-radius:50%;background:var(--g500);flex-shrink:0}
+.cmp-items{display:flex;flex-direction:column;gap:8px}
+.cmp-item{font-size:13px;color:var(--slate400);padding-left:14px;position:relative;line-height:1.5}
+.cmp-item::before{content:'·';position:absolute;left:0;color:var(--slate600)}
+.cmp-item.highlight{color:#fff}
+.cmp-item.highlight::before{content:'✓';color:var(--g500);font-weight:700}
+
+/* ── SCREEN MOCKUP ────────────────────────────────────────────────────── */
+.mockups{display:flex;gap:20px;flex-wrap:wrap;margin-top:32px;align-items:flex-start}
+.mockup{flex-shrink:0}
+.mockup-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;
+  color:var(--slate400);margin-bottom:10px;text-align:center}
+.phone{
+  width:200px;background:#0d1117;border-radius:28px;padding:8px;
+  box-shadow:0 20px 60px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.1);
+}
+.screen{
+  background:#F8FAFC;border-radius:22px;overflow:hidden;
+  min-height:360px;display:flex;flex-direction:column;
+}
+.screen.dark{background:#0a1628}
+/* Screen components */
+.s-top{
+  background:#fff;border-bottom:1px solid #E2E8F0;
+  padding:8px 10px;display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;
+}
+.s-top.dark{background:#0d1b2a;border-bottom-color:#1e3a5f}
+.s-brand{font-size:9px;font-weight:800;color:#0F172A;letter-spacing:-.01em}
+.s-brand span{color:#16A34A}
+.s-brand.white{color:#fff}
+.s-badge{font-size:7px;font-weight:700;background:#DCFCE7;color:#166534;
+  border-radius:10px;padding:1px 6px}
+.s-badge.dark{background:rgba(34,197,94,.15);color:#4ADE80;border:1px solid rgba(34,197,94,.2)}
+.s-content{flex:1;padding:10px}
+.s-bnav{
+  background:#fff;border-top:1px solid #E2E8F0;
+  display:flex;height:40px;flex-shrink:0;
+}
+.s-bnav.dark{background:#0d1b2a;border-top-color:#1e3a5f}
+.s-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:1px;font-family:var(--font);font-size:6px;font-weight:700;color:#94A3B8;text-transform:uppercase}
+.s-btn.active{color:#16A34A}
+.s-btn-icon{font-size:12px;line-height:1}
+
+/* Audit list items */
+.s-audit{
+  background:#fff;border-radius:10px;padding:8px 10px;margin-bottom:6px;
+  display:flex;align-items:center;gap:8px;box-shadow:0 1px 3px rgba(0,0,0,.06);
+}
+.s-abadge{
+  width:30px;height:30px;border-radius:8px;background:#16A34A;
+  color:#fff;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.s-ainfo{flex:1;min-width:0}
+.s-atitle{font-size:9px;font-weight:700;color:#0F172A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s-ameta{font-size:7px;color:#94A3B8;margin-top:1px}
+.s-achev{color:#CBD5E1;font-size:10px}
+.s-aedit{font-size:9px;background:none;border:1px solid #E2E8F0;border-radius:4px;padding:2px 5px;color:#64748B;cursor:pointer}
+.s-adel{font-size:9px;background:none;border:1px solid #FECACA;border-radius:4px;padding:2px 5px;color:#EF4444;cursor:pointer}
+
+/* KPI grid */
+.s-kpis{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+.s-kpi{background:#fff;border-radius:8px;padding:7px;text-align:center;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.s-kn{font-size:16px;font-weight:800;color:#0F172A;line-height:1}
+.s-kl{font-size:6px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:#94A3B8;margin-top:1px}
+
+/* Pipeline */
+.s-pipe{background:#fff;border-radius:8px;padding:8px;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.s-pipe-title{font-size:7px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:#94A3B8;margin-bottom:6px}
+.s-bar-row{display:flex;align-items:center;gap:5px;margin-bottom:4px}
+.s-bar-label{font-size:7px;color:#64748B;width:60px;flex-shrink:0}
+.s-bar-track{flex:1;height:8px;background:#F1F5F9;border-radius:4px;overflow:hidden}
+.s-bar-fill{height:100%;border-radius:4px}
+
+/* Login screen */
+.s-login{padding:16px}
+.s-login-title{font-size:14px;font-weight:800;color:#fff;text-align:center;letter-spacing:-.02em;margin-bottom:2px}
+.s-login-sub{font-size:7px;color:#64748B;text-align:center;margin-bottom:14px}
+.s-login-box{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px}
+.s-field{margin-bottom:8px}
+.s-field label{display:block;font-size:7px;font-weight:600;color:#94A3B8;margin-bottom:3px}
+.s-input{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);
+  border-radius:6px;padding:5px 8px;font-size:8px;color:#fff;font-family:var(--font)}
+.s-btn-login{width:100%;background:#16A34A;border:none;border-radius:6px;padding:7px;
+  font-family:var(--font);font-size:8px;font-weight:700;color:#fff;cursor:pointer;margin-top:4px}
+
+/* Setup screen */
+.s-setup{padding:14px}
+.s-progress{display:flex;gap:4px;margin-bottom:14px}
+.s-prog-dot{height:4px;border-radius:2px;flex:1}
+.s-setup-icon{font-size:20px;text-align:center;margin-bottom:6px}
+.s-setup-title{font-size:11px;font-weight:800;color:#fff;text-align:center;margin-bottom:2px}
+.s-setup-sub{font-size:7px;color:#64748B;text-align:center;margin-bottom:10px}
+
+/* Admin dashboard mockup */
+.admin-screen{background:#F8FAFC;border-radius:22px;overflow:hidden;min-height:300px}
+.admin-top{background:#fff;border-bottom:1px solid #E2E8F0;padding:8px 12px;
+  display:flex;align-items:center;justify-content:space-between}
+.admin-brand{font-size:10px;font-weight:800;color:#0F172A;letter-spacing:-.01em}
+.admin-brand span{color:#16A34A}
+.admin-badge{font-size:7px;font-weight:700;background:#FEF3C7;color:#92400E;border-radius:10px;padding:1px 6px}
+.admin-tabs{display:flex;border-bottom:2px solid #E2E8F0;padding:0 12px}
+.admin-tab{font-size:8px;font-weight:600;color:#94A3B8;padding:6px 8px;border-bottom:2px solid transparent;margin-bottom:-2px}
+.admin-tab.active{color:#16A34A;border-bottom-color:#16A34A}
+.admin-content{padding:10px 12px}
+.admin-kpis{display:flex;gap:6px;margin-bottom:10px}
+.admin-kpi{flex:1;background:#fff;border:1px solid #E2E8F0;border-radius:8px;padding:7px;text-align:center}
+.admin-kn{font-size:14px;font-weight:800;color:#0F172A;line-height:1}
+.admin-kl{font-size:6px;font-weight:700;text-transform:uppercase;color:#94A3B8;margin-top:1px}
+.admin-row{display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid #F1F5F9}
+.admin-avatar{width:22px;height:22px;border-radius:50%;background:#DCFCE7;
+  display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:#166534;flex-shrink:0}
+.admin-info{flex:1}
+.admin-name{font-size:8px;font-weight:700;color:#0F172A}
+.admin-sub{font-size:7px;color:#94A3B8}
+.admin-actions{display:flex;gap:3px}
+.admin-act{font-size:7px;border:1px solid #E2E8F0;border-radius:4px;padding:2px 5px;color:#64748B;background:none}
+.admin-act.red{border-color:#FECACA;color:#EF4444}
+
+/* Blueprint slot mockup */
+.blueprint-wrap{
+  background:#0d1b2a;border-radius:10px;padding:10px;
+  display:flex;gap:6px;flex-wrap:wrap;justify-content:center;
+}
+.bp-slot{
+  width:44px;height:44px;border-radius:8px;background:#0a1525;
+  border:1px solid rgba(34,197,94,.2);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+}
+.bp-svg{width:28px;height:28px}
+.bp-label{font-size:5px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;color:#16A34A;text-align:center}
+
+/* ── STATS COMPARISON ─────────────────────────────────────────────────── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:32px}
+.stat-card{
+  background:rgba(255,255,255,.03);border:1.5px solid rgba(255,255,255,.08);
+  border-radius:14px;padding:20px;
+}
+.stat-compare{display:flex;align-items:flex-end;gap:12px;margin-bottom:6px}
+.stat-old{font-size:24px;font-weight:700;color:var(--slate600)}
+.stat-arrow{font-size:16px;color:var(--g500);margin-bottom:4px}
+.stat-new{font-size:32px;font-weight:900;color:var(--g400);letter-spacing:-.02em}
+.stat-label{font-size:12px;color:var(--slate400);line-height:1.5}
+
+/* ── FEATURE MATRIX ───────────────────────────────────────────────────── */
+.matrix{margin-top:32px;border-radius:16px;overflow:hidden;border:1.5px solid rgba(255,255,255,.08)}
+.matrix-header{
+  display:grid;grid-template-columns:1fr 80px 80px 80px 80px;
+  background:rgba(255,255,255,.05);padding:10px 16px;gap:8px;
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--slate400);
+}
+.matrix-row{
+  display:grid;grid-template-columns:1fr 80px 80px 80px 80px;
+  padding:10px 16px;gap:8px;border-top:1px solid rgba(255,255,255,.05);
+  align-items:center;transition:background .1s;
+}
+.matrix-row:hover{background:rgba(255,255,255,.02)}
+.matrix-feature{font-size:13px;color:#fff;font-weight:500}
+.matrix-cell{text-align:center;font-size:14px}
+.tick{color:var(--g500)}
+.cross{color:rgba(255,255,255,.15);font-size:10px}
+
+/* ── TOMORROW ─────────────────────────────────────────────────────────── */
+.roadmap{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:32px}
+.road-card{
+  background:rgba(255,255,255,.03);border:1.5px solid rgba(255,255,255,.08);
+  border-radius:14px;padding:20px;position:relative;overflow:hidden;
+}
+.road-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--g600),var(--g400));
+}
+.road-icon{font-size:24px;margin-bottom:10px}
+.road-title{font-size:15px;font-weight:700;color:#fff;margin-bottom:6px}
+.road-desc{font-size:13px;color:var(--slate400);line-height:1.6}
+
+/* ── FOOTER ───────────────────────────────────────────────────────────── */
+.footer{text-align:center;padding:60px 24px;color:var(--slate600);font-size:13px;
+  border-top:1px solid rgba(255,255,255,.05);margin-top:40px}
+.footer strong{color:var(--g500)}
+</style>
+</head>
+<body>
+
+<!-- ══ HERO ══════════════════════════════════════════════════════════════ -->
+<div class="hero">
+  <div class="hero-eyebrow">Schurco Slurry South Africa</div>
+  <h1 class="hero-title">
+    Site Audit App
+    <span>v1 → v29</span>
+  </h1>
+  <p class="hero-sub">From a single-user digital checklist to a multi-user field intelligence platform with cloud sync, admin portal, and enterprise user management — built in two sessions.</p>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="hero-stat-n">29</div><div class="hero-stat-l">Versions</div></div>
+    <div class="hero-stat"><div class="hero-stat-n">4</div><div class="hero-stat-l">Files</div></div>
+    <div class="hero-stat"><div class="hero-stat-n">∞</div><div class="hero-stat-l">Users</div></div>
+    <div class="hero-stat"><div class="hero-stat-n">210<span style="font-size:.5em">KB</span></div><div class="hero-stat-l">Main App</div></div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══ THEN VS NOW ════════════════════════════════════════════════════════ -->
+<div class="section" style="padding-bottom:40px">
+  <div class="section-eyebrow">The Transformation</div>
+  <h2 class="section-title">Where it started vs where it is now</h2>
+  <p class="section-sub">v1 was a single dark-themed HTML file with no auth, no dashboard, and no sync. v29 is a multi-user cloud platform.</p>
+
+  <div style="display:flex;gap:32px;margin-top:40px;flex-wrap:wrap;align-items:flex-start">
+
+    <!-- ── V1 COLUMN ──────────────────────────────────────────────────── -->
+    <div style="flex:1;min-width:280px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+        <div style="font-family:var(--mono);font-size:12px;font-weight:600;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:4px 12px;color:var(--slate400)">v1 · Jun 2025</div>
+        <div style="font-size:13px;color:var(--slate600)">Single-user · Offline only · Dark theme</div>
+      </div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap">
+
+        <!-- V1 Audit List -->
+        <div>
+          <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--slate600);margin-bottom:8px;text-align:center">Audit List</div>
+          <div class="phone" style="width:176px">
+            <div style="background:#0d1710;border-radius:20px;overflow:hidden;min-height:340px;display:flex;flex-direction:column">
+              <div style="background:#121f14;border-bottom:1px solid #2d4a31;padding:8px 10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+                <div style="font-size:12px;font-weight:800;color:#e8f0e9;letter-spacing:.5px">SCHURCO <span style="color:#2aa050">AUDIT</span></div>
+                <div style="font-size:7px;font-weight:600;background:#1a3320;color:#5dde82;border:1px solid #218240;border-radius:10px;padding:1px 6px">● ONLINE</div>
+              </div>
+              <div style="flex:1;padding:10px">
+                <div style="font-size:14px;font-weight:700;color:#e8f0e9;letter-spacing:.5px;margin-bottom:2px">Site Audits</div>
+                <div style="font-size:7px;color:#7a9e7e;margin-bottom:10px">2 audits saved locally</div>
+                <div style="background:#218240;border-radius:7px;padding:7px;margin-bottom:10px;text-align:center;font-size:9px;font-weight:700;color:#fff;letter-spacing:.5px">＋ New Site Audit</div>
+                <div style="background:#1c2e1f;border:1px solid #2d4a31;border-radius:9px;padding:9px;margin-bottom:6px;display:flex;align-items:center;gap:7px">
+                  <div style="width:32px;height:32px;border-radius:7px;background:#1a3320;border:1px solid #218240;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:#5dde82;flex-shrink:0;text-align:center;line-height:1.2">ANGL</div>
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:10px;font-weight:700;color:#e8f0e9">Mogalakwena</div>
+                    <div style="font-size:7px;color:#7a9e7e;margin-top:1px">Anglo · 12 Jun · 8 pumps</div>
+                  </div>
+                  <div style="color:#4a6b4e;font-size:11px">›</div>
+                </div>
+                <div style="background:#1c2e1f;border:1px solid #2d4a31;border-radius:9px;padding:9px;display:flex;align-items:center;gap:7px">
+                  <div style="width:32px;height:32px;border-radius:7px;background:#1a3320;border:1px solid #218240;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:#5dde82;flex-shrink:0;text-align:center;line-height:1.2">IMPL</div>
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:10px;font-weight:700;color:#e8f0e9">Rustenburg</div>
+                    <div style="font-size:7px;color:#7a9e7e;margin-top:1px">Implats · 8 Jun · 5 pumps</div>
+                  </div>
+                  <div style="color:#4a6b4e;font-size:11px">›</div>
+                </div>
+              </div>
+              <div style="background:#121f14;border-top:1px solid #2d4a31;display:flex;height:42px;flex-shrink:0">
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-size:7px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;color:#5dde82;position:relative">
+                  <div style="position:absolute;top:0;left:20%;right:20%;height:2px;background:#5dde82;border-radius:0 0 2px 2px"></div>
+                  <span style="font-size:12px">🏠</span>Audits
+                </div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-size:7px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;color:#4a6b4e">
+                  <span style="font-size:12px">☁</span>Sync
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- V1 Pump Form -->
+        <div>
+          <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--slate600);margin-bottom:8px;text-align:center">Pump Form</div>
+          <div class="phone" style="width:176px">
+            <div style="background:#0d1710;border-radius:20px;overflow:hidden;min-height:340px;display:flex;flex-direction:column">
+              <div style="background:#121f14;border-bottom:1px solid #2d4a31;padding:8px 10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+                <div style="font-size:12px;font-weight:800;color:#e8f0e9">SCHURCO <span style="color:#2aa050">AUDIT</span></div>
+                <div style="font-size:7px;font-weight:600;background:#1a3320;color:#5dde82;border:1px solid #218240;border-radius:10px;padding:1px 6px">● ONLINE</div>
+              </div>
+              <!-- Pump drawer slides up over a dimmed BG -->
+              <div style="flex:1;position:relative;overflow:hidden;background:#121f14">
+                <div style="position:absolute;inset:0;background:rgba(0,0,0,.55)"></div>
+                <div style="position:absolute;bottom:0;left:0;right:0;background:#121f14;border-radius:14px 14px 0 0;border-top:1px solid #2d4a31">
+                  <div style="width:28px;height:3px;background:#2d4a31;border-radius:2px;margin:7px auto 0"></div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 10px;border-bottom:1px solid #2d4a31">
+                    <div style="font-size:12px;font-weight:800;color:#e8f0e9">Add Pump</div>
+                    <div style="width:18px;height:18px;border-radius:50%;background:#1c2e1f;display:flex;align-items:center;justify-content:center;font-size:8px;color:#7a9e7e">✕</div>
+                  </div>
+                  <div style="padding:8px 10px">
+                    <div style="font-size:7px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#7a9e7e;margin-bottom:6px;display:flex;align-items:center;gap:4px"><div style="width:5px;height:5px;border-radius:50%;background:#218240"></div>Identification</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:7px">
+                      <div><div style="font-size:6px;font-weight:600;color:#7a9e7e;text-transform:uppercase;margin-bottom:2px">Tag No. *</div><div style="background:#182b1b;border:1px solid #218240;border-radius:4px;padding:3px 6px;font-size:8px;color:#5dde82">P-101A</div></div>
+                      <div><div style="font-size:6px;font-weight:600;color:#7a9e7e;text-transform:uppercase;margin-bottom:2px">Area</div><div style="background:#182b1b;border:1px solid #2d4a31;border-radius:4px;padding:3px 6px;font-size:8px;color:#e8f0e9">Feed Sump</div></div>
+                    </div>
+                    <div style="height:1px;background:#2d4a31;margin-bottom:7px"></div>
+                    <div style="font-size:7px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#2aa050;margin-bottom:5px">MOC — Wet-End Components</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:7px">
+                      <div><div style="font-size:6px;color:#7a9e7e;margin-bottom:2px">Liners</div><div style="background:#182b1b;border:1px solid #2d4a31;border-radius:4px;padding:2px 4px;font-size:6px;color:#e8f0e9">Nat. Rubber</div></div>
+                      <div><div style="font-size:6px;color:#7a9e7e;margin-bottom:2px">Impeller</div><div style="background:#182b1b;border:1px solid #2d4a31;border-radius:4px;padding:2px 4px;font-size:6px;color:#e8f0e9">White Iron</div></div>
+                      <div><div style="font-size:6px;color:#7a9e7e;margin-bottom:2px">Throat</div><div style="background:#182b1b;border:1px solid #2d4a31;border-radius:4px;padding:2px 4px;font-size:6px;color:#e8f0e9">Nat. Rubber</div></div>
+                    </div>
+                    <div style="height:1px;background:#2d4a31;margin-bottom:7px"></div>
+                    <div style="font-size:7px;font-weight:600;color:#7a9e7e;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Shaft Sealing</div>
+                    <div style="display:flex;gap:3px;flex-wrap:wrap">
+                      <div style="padding:2px 7px;border-radius:12px;border:1px solid #218240;background:#1a3320;color:#5dde82;font-size:7px;font-weight:600">Expeller</div>
+                      <div style="padding:2px 7px;border-radius:12px;border:1px solid #2d4a31;background:#182b1b;color:#4a6b4e;font-size:7px">LF SB</div>
+                      <div style="padding:2px 7px;border-radius:12px;border:1px solid #2d4a31;background:#182b1b;color:#4a6b4e;font-size:7px">FF SB</div>
+                      <div style="padding:2px 7px;border-radius:12px;border:1px solid #2d4a31;background:#182b1b;color:#4a6b4e;font-size:7px">Mech.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- end v1 phones -->
+
+      <!-- V1 limitations list -->
+      <div style="margin-top:20px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:16px">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--slate600);margin-bottom:10px">What v1 could NOT do</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="font-size:12px;color:var(--slate600);padding-left:14px;position:relative">No login — anyone with the URL had full access<div style="position:absolute;left:0;top:1px;color:var(--red)">✗</div></div>
+          <div style="font-size:12px;color:var(--slate600);padding-left:14px;position:relative">No cloud sync — data lived only on the device that entered it<div style="position:absolute;left:0;top:1px;color:var(--red)">✗</div></div>
+          <div style="font-size:12px;color:var(--slate600);padding-left:14px;position:relative">No dashboard — no pipeline, no KPIs, no map<div style="position:absolute;left:0;top:1px;color:var(--red)">✗</div></div>
+          <div style="font-size:12px;color:var(--slate600);padding-left:14px;position:relative">No photo blueprints — plain file upload only<div style="position:absolute;left:0;top:1px;color:var(--red)">✗</div></div>
+          <div style="font-size:12px;color:var(--slate600);padding-left:14px;position:relative">No opportunities module — commercial data captured separately<div style="position:absolute;left:0;top:1px;color:var(--red)">✗</div></div>
+          <div style="font-size:12px;color:var(--slate600);padding-left:14px;position:relative">No admin portal — no way to manage users or distributors<div style="position:absolute;left:0;top:1px;color:var(--red)">✗</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ARROW ──────────────────────────────────────────────────────── -->
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 0;flex-shrink:0">
+      <div style="font-size:36px;color:var(--g500)">→</div>
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--slate600);margin-top:6px;text-align:center;white-space:nowrap">26 versions</div>
+    </div>
+
+    <!-- ── V26 COLUMN ─────────────────────────────────────────────────── -->
+    <div style="flex:1;min-width:280px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+        <div style="font-family:var(--mono);font-size:12px;font-weight:600;background:rgba(22,163,74,.1);border:1px solid rgba(34,197,94,.25);border-radius:6px;padding:4px 12px;color:var(--g400)">v29 · Jun 2026</div>
+        <div style="font-size:13px;color:var(--slate600)">Multi-user · Cloud sync · Admin portal</div>
+      </div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap">
+
+        <!-- V26 Audit List -->
+        <div>
+          <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--g500);margin-bottom:8px;text-align:center">Audit List</div>
+          <div class="phone" style="width:176px">
+            <div class="screen">
+              <div class="s-top">
+                <div class="s-brand">SITE <span>AUDIT</span></div>
+                <div style="display:flex;gap:3px;align-items:center">
+                  <div class="s-badge">⬤ ONLINE</div>
+                  <div style="font-size:7px;border:1px solid #E2E8F0;border-radius:3px;padding:1px 4px;color:#64748B">⇅</div>
+                  <div style="font-size:7px;border:1px solid #E2E8F0;border-radius:3px;padding:1px 4px;color:#64748B">✕</div>
+                </div>
+              </div>
+              <div class="s-content">
+                <div class="s-audit">
+                  <div class="s-abadge">GV</div>
+                  <div class="s-ainfo"><div class="s-atitle">Mogalakwena</div><div class="s-ameta">Anglo · 15 Jun · 12 pumps</div></div>
+                  <div class="s-aedit">✎</div><div class="s-adel">🗑</div><div class="s-achev">›</div>
+                </div>
+                <div class="s-audit">
+                  <div class="s-abadge" style="background:#3B82F6">MS</div>
+                  <div class="s-ainfo"><div class="s-atitle">Marikana Plant</div><div class="s-ameta">Sibanye · 14 Jun · 8 pumps</div></div>
+                  <div class="s-aedit">✎</div><div class="s-adel">🗑</div><div class="s-achev">›</div>
+                </div>
+                <div class="s-audit">
+                  <div class="s-abadge" style="background:#F59E0B">KvN</div>
+                  <div class="s-ainfo"><div class="s-atitle">Kroondal</div><div class="s-ameta">Sibanye JV · 12 Jun · 6 pumps</div></div>
+                  <div class="s-aedit">✎</div><div class="s-adel">🗑</div><div class="s-achev">›</div>
+                </div>
+              </div>
+              <div class="s-bnav">
+                <div class="s-btn active"><div class="s-btn-icon">🏠</div>Audits</div>
+                <div class="s-btn"><div class="s-btn-icon">📊</div>Dashboard</div>
+                <div class="s-btn"><div class="s-btn-icon">☁</div>Sync</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- V26 Pump Form -->
+        <div>
+          <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--g500);margin-bottom:8px;text-align:center">Pump Form</div>
+          <div class="phone" style="width:176px">
+            <div class="screen">
+              <div class="s-top">
+                <div style="font-size:8px;font-weight:700;color:#0F172A">← P-101A · Mogalakwena</div>
+                <div style="font-size:7px;color:#94A3B8">Worn</div>
+              </div>
+              <div style="flex:1;background:#F8FAFC;position:relative;overflow:hidden">
+                <div style="position:absolute;bottom:0;left:0;right:0;background:#fff;border-radius:14px 14px 0 0;border-top:1px solid #E2E8F0">
+                  <div style="width:28px;height:3px;background:#E2E8F0;border-radius:2px;margin:7px auto 0"></div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 10px;border-bottom:1px solid #F1F5F9">
+                    <div style="font-size:11px;font-weight:700;color:#0F172A">Add Pump</div>
+                    <div style="width:18px;height:18px;border-radius:50%;background:#F1F5F9;display:flex;align-items:center;justify-content:center;font-size:8px;color:#64748B">✕</div>
+                  </div>
+                  <div style="padding:8px 10px">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:6px">
+                      <div><div style="font-size:6px;font-weight:600;color:#94A3B8;text-transform:uppercase;margin-bottom:2px">Tag *</div><div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:4px;padding:3px 6px;font-size:8px;color:#0F172A">P-101A</div></div>
+                      <div><div style="font-size:6px;font-weight:600;color:#94A3B8;text-transform:uppercase;margin-bottom:2px">Area</div><div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:4px;padding:3px 6px;font-size:8px;color:#0F172A">Feed Sump</div></div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:6px">
+                      <div><div style="font-size:6px;font-weight:600;color:#94A3B8;text-transform:uppercase;margin-bottom:2px">Bearing Frame</div><div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:4px;padding:3px 6px;font-size:8px;color:#0F172A">E Frame</div></div>
+                      <div><div style="font-size:6px;font-weight:600;color:#94A3B8;text-transform:uppercase;margin-bottom:2px">Motor kW</div><div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:4px;padding:3px 6px;font-size:8px;color:#0F172A">132 kW</div></div>
+                    </div>
+                    <div style="height:1px;background:#F1F5F9;margin-bottom:6px"></div>
+                    <div style="font-size:7px;font-weight:700;color:#16A34A;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">MOC</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;margin-bottom:6px">
+                      <div style="background:#DCFCE7;border-radius:4px;padding:2px 4px;font-size:6px;color:#166534;text-align:center">A05 Liner</div>
+                      <div style="background:#F1F5F9;border-radius:4px;padding:2px 4px;font-size:6px;color:#64748B;text-align:center">WI Imp.</div>
+                      <div style="background:#DCFCE7;border-radius:4px;padding:2px 4px;font-size:6px;color:#166534;text-align:center">A05 Throat</div>
+                    </div>
+                    <div style="display:flex;gap:3px;flex-wrap:wrap">
+                      <div style="padding:2px 7px;border-radius:12px;border:1.5px solid #16A34A;background:#DCFCE7;color:#166534;font-size:7px;font-weight:600">Mechanical</div>
+                      <div style="padding:2px 7px;border-radius:12px;border:1px solid #E2E8F0;background:#F8FAFC;color:#94A3B8;font-size:7px">Expeller</div>
+                      <div style="padding:2px 7px;border-radius:12px;border:1px solid #E2E8F0;background:#F8FAFC;color:#94A3B8;font-size:7px">LF SB</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- end v29 phones -->
+
+      <!-- V26 gains list -->
+      <div style="margin-top:20px;background:rgba(22,163,74,.05);border:1px solid rgba(34,197,94,.15);border-radius:12px;padding:16px">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--g500);margin-bottom:10px">What v29 gained</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="font-size:12px;color:#9EF0B8;padding-left:14px;position:relative">Login with persistent session — your account follows any device<div style="position:absolute;left:0;top:1px;color:var(--g500)">✓</div></div>
+          <div style="font-size:12px;color:#9EF0B8;padding-left:14px;position:relative">Supabase cloud sync — all data backed up and shareable in real time<div style="position:absolute;left:0;top:1px;color:var(--g500)">✓</div></div>
+          <div style="font-size:12px;color:#9EF0B8;padding-left:14px;position:relative">Full dashboard — KPIs, pipeline funnel, competitor tracking, sites map<div style="position:absolute;left:0;top:1px;color:var(--g500)">✓</div></div>
+          <div style="font-size:12px;color:#9EF0B8;padding-left:14px;position:relative">Blueprint SVG photo slots — guided capture for 5 positions<div style="position:absolute;left:0;top:1px;color:var(--g500)">✓</div></div>
+          <div style="font-size:12px;color:#9EF0B8;padding-left:14px;position:relative">Opportunities module with full pipeline — value, stage, owner<div style="position:absolute;left:0;top:1px;color:var(--g500)">✓</div></div>
+          <div style="font-size:12px;color:#9EF0B8;padding-left:14px;position:relative">Admin portal — user creation, distributor orgs, password management<div style="position:absolute;left:0;top:1px;color:var(--g500)">✓</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end flex row -->
+</div>
+
+<div class="divider"></div>
+
+<!-- ══ PHASE 1 ════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-eyebrow">Phase One</div>
+  <h2 class="section-title">Field Capture Tool</h2>
+  <p class="section-sub">Started as a replacement for the Excel checklist. One device, one user, everything offline.</p>
+
+  <div class="phase-track" style="margin-top:40px">
+
+    <div class="phase">
+      <div class="phase-dot"></div>
+      <div class="phase-ver">v1</div>
+      <div class="phase-title">The Foundation</div>
+      <div class="phase-desc">Single HTML file. Site audit form, pump data capture, localStorage, no auth. Dark theme. Replaced the Excel spreadsheet the team had been using.</div>
+      <div class="tags">
+        <span class="tag">Audit form</span><span class="tag">Pump capture</span>
+        <span class="tag">localStorage</span><span class="tag">Dark theme</span>
+        <span class="tag">1 user · 1 device</span>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-dot"></div>
+      <div class="phase-ver">v2–v4</div>
+      <div class="phase-title">Data Quality & Export</div>
+      <div class="phase-desc">MOC grouped headers in Excel, shaft sealing chips, particle size fields (d50 + max), proper Excel workbook with coloured headers, PDF report generation, SharePoint upload.</div>
+      <div class="tags">
+        <span class="tag green">Excel export</span><span class="tag green">PDF report</span>
+        <span class="tag">MOC fields</span><span class="tag">Photo capture</span>
+        <span class="tag">SharePoint</span>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-dot"></div>
+      <div class="phase-ver">v5–v8</div>
+      <div class="phase-title">Intelligence Dashboard + Full Redesign</div>
+      <div class="phase-desc">Complete visual rebrand from dark to light theme. Full dashboard platform: KPI cards, pipeline funnel, competitor intelligence, opportunities module, quality scoring, GPS capture, live OSM map of all survey sites.</div>
+      <div class="tags">
+        <span class="tag green">Dashboard</span><span class="tag green">Light theme</span>
+        <span class="tag amber">Pipeline</span><span class="tag amber">Opportunities</span>
+        <span class="tag blue">GPS + Map</span><span class="tag">Quality score</span>
+        <span class="tag">Competitor tracking</span>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-dot"></div>
+      <div class="phase-ver">v9–v11</div>
+      <div class="phase-title">Pump Form Completeness + Photo Blueprints</div>
+      <div class="phase-desc">Bearing Frame dropdown (15 sizes + OTHER), Motor kW dropdown (IEC standard sizes), DW series detection hiding irrelevant fields automatically. Guided photo slots redesigned as precise blueprint-style SVG silhouettes — wet end as true circle with mathematically even bolt spacing, sealing arrangement as side cross-section with horizontal shaft. Drawer-close bug fixed.</div>
+      <div class="tags">
+        <span class="tag green">Bearing Frame</span><span class="tag green">Motor kW</span>
+        <span class="tag">DW Series</span><span class="tag green">Blueprint SVGs</span>
+        <span class="tag">Bug fixes</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- V1 vs V8 mockup comparison -->
+  <div style="margin-top:40px">
+    <div style="font-size:13px;font-weight:700;color:var(--slate400);text-transform:uppercase;letter-spacing:.6px;margin-bottom:16px">Screen comparison</div>
+    <div class="mockups">
+
+      <!-- V1 — Authentic recreation from actual source code -->
+      <div class="mockup">
+        <div class="mockup-label" style="color:var(--slate600)">v1 — Audit list (Barlow + dark green)</div>
+        <div class="phone">
+          <div style="background:#0d1710;border-radius:22px;overflow:hidden;min-height:360px;display:flex;flex-direction:column">
+            <div style="background:#121f14;border-bottom:1px solid #2d4a31;padding:8px 10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+              <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;color:#e8f0e9;letter-spacing:.5px">SCHURCO <span style="color:#2aa050">AUDIT</span></div>
+              <div style="font-size:7px;font-weight:600;background:#1a3320;color:#5dde82;border:1px solid #218240;border-radius:10px;padding:1px 6px">● ONLINE</div>
+            </div>
+            <div style="flex:1;padding:10px;overflow:hidden">
+              <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;color:#e8f0e9;letter-spacing:.5px;margin-bottom:2px">Site Audits</div>
+              <div style="font-size:8px;color:#7a9e7e;margin-bottom:10px">2 audits saved locally</div>
+              <div style="background:#218240;border-radius:8px;padding:7px 10px;margin-bottom:10px;text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px">＋ New Site Audit</div>
+              <div style="background:#1c2e1f;border:1px solid #2d4a31;border-radius:10px;padding:10px;margin-bottom:6px;display:flex;align-items:center;gap:8px">
+                <div style="width:36px;height:36px;border-radius:8px;background:#1a3320;border:1px solid #218240;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:800;color:#5dde82;flex-shrink:0;text-align:center;line-height:1.2">ANGL</div>
+                <div style="flex:1;min-width:0">
+                  <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:#e8f0e9">Mogalakwena</div>
+                  <div style="font-size:7px;color:#7a9e7e;margin-top:1px">Anglo Platinum · 12 Jun · 8 pumps</div>
+                </div>
+                <div style="color:#4a6b4e;font-size:12px">›</div>
+              </div>
+              <div style="background:#1c2e1f;border:1px solid #2d4a31;border-radius:10px;padding:10px;display:flex;align-items:center;gap:8px">
+                <div style="width:36px;height:36px;border-radius:8px;background:#1a3320;border:1px solid #218240;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:800;color:#5dde82;flex-shrink:0;text-align:center;line-height:1.2">IMPL</div>
+                <div style="flex:1;min-width:0">
+                  <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:#e8f0e9">Rustenburg</div>
+                  <div style="font-size:7px;color:#7a9e7e;margin-top:1px">Implats · 8 Jun · 5 pumps</div>
+                </div>
+                <div style="color:#4a6b4e;font-size:12px">›</div>
+              </div>
+            </div>
+            <div style="background:#121f14;border-top:1px solid #2d4a31;display:flex;height:44px;flex-shrink:0">
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-family:'Barlow',sans-serif;font-size:7px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;color:#5dde82;position:relative">
+                <div style="position:absolute;top:0;left:20%;right:20%;height:2px;background:#5dde82;border-radius:0 0 2px 2px"></div>
+                <span style="font-size:14px">🏠</span>Audits
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-family:'Barlow',sans-serif;font-size:7px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;color:#4a6b4e">
+                <span style="font-size:14px">☁</span>Sync
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- V1 Pump form drawer — authentic recreation -->
+      <div class="mockup">
+        <div class="mockup-label" style="color:var(--slate600)">v1 — Pump capture drawer</div>
+        <div class="phone">
+          <div style="background:#0d1710;border-radius:22px;overflow:hidden;min-height:360px;display:flex;flex-direction:column;position:relative">
+            <div style="background:#121f14;border-bottom:1px solid #2d4a31;padding:8px 10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+              <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;color:#e8f0e9">SCHURCO <span style="color:#2aa050">AUDIT</span></div>
+              <div style="font-size:7px;font-weight:600;background:#1a3320;color:#5dde82;border:1px solid #218240;border-radius:10px;padding:1px 6px">● ONLINE</div>
+            </div>
+            <div style="flex:1;position:relative;overflow:hidden">
+              <div style="position:absolute;inset:0;background:rgba(0,0,0,.55)"></div>
+              <div style="position:absolute;bottom:0;left:0;right:0;background:#121f14;border-radius:16px 16px 0 0">
+                <div style="width:32px;height:3px;background:#2d4a31;border-radius:2px;margin:8px auto 0"></div>
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 12px;border-bottom:1px solid #2d4a31">
+                  <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;color:#e8f0e9">Add Pump</div>
+                  <div style="background:#1c2e1f;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#7a9e7e">✕</div>
+                </div>
+                <div style="padding:10px 12px">
+                  <div style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#7a9e7e;margin-bottom:8px;display:flex;align-items:center;gap:5px"><div style="width:6px;height:6px;border-radius:50%;background:#218240"></div>Identification</div>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
+                    <div>
+                      <div style="font-size:7px;font-weight:600;color:#7a9e7e;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Tag No. *</div>
+                      <div style="background:#182b1b;border:1px solid #218240;border-radius:5px;padding:4px 7px;font-size:9px;color:#5dde82;font-family:'Barlow',sans-serif">P-101A</div>
+                    </div>
+                    <div>
+                      <div style="font-size:7px;font-weight:600;color:#7a9e7e;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Area</div>
+                      <div style="background:#182b1b;border:1px solid #2d4a31;border-radius:5px;padding:4px 7px;font-size:9px;color:#e8f0e9;font-family:'Barlow',sans-serif">Feed Sump</div>
+                    </div>
+                  </div>
+                  <div style="height:1px;background:#2d4a31;margin-bottom:8px"></div>
+                  <div style="font-size:7px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#2aa050;margin-bottom:5px;padding-bottom:3px;border-bottom:1px solid #1a3320">MOC — Wet-End Components</div>
+                  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:8px">
+                    <div><div style="font-size:6px;color:#7a9e7e;margin-bottom:2px">Liners</div><div style="background:#182b1b;border:1px solid #2d4a31;border-radius:4px;padding:3px 5px;font-size:7px;color:#e8f0e9">Nat. Rubber</div></div>
+                    <div><div style="font-size:6px;color:#7a9e7e;margin-bottom:2px">Impeller</div><div style="background:#182b1b;border:1px solid #2d4a31;border-radius:4px;padding:3px 5px;font-size:7px;color:#e8f0e9">White Iron</div></div>
+                    <div><div style="font-size:6px;color:#7a9e7e;margin-bottom:2px">Throat</div><div style="background:#182b1b;border:1px solid #2d4a31;border-radius:4px;padding:3px 5px;font-size:7px;color:#e8f0e9">Nat. Rubber</div></div>
+                  </div>
+                  <div style="height:1px;background:#2d4a31;margin-bottom:8px"></div>
+                  <div style="font-size:7px;font-weight:600;color:#7a9e7e;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Shaft Sealing</div>
+                  <div style="display:flex;gap:4px;flex-wrap:wrap">
+                    <div style="padding:3px 8px;border-radius:14px;border:1px solid #218240;background:#1a3320;color:#5dde82;font-size:7px;font-weight:600">Expeller</div>
+                    <div style="padding:3px 8px;border-radius:14px;border:1px solid #2d4a31;background:#182b1b;color:#4a6b4e;font-size:7px">LF SB</div>
+                    <div style="padding:3px 8px;border-radius:14px;border:1px solid #2d4a31;background:#182b1b;color:#4a6b4e;font-size:7px">FF SB</div>
+                    <div style="padding:3px 8px;border-radius:14px;border:1px solid #2d4a31;background:#182b1b;color:#4a6b4e;font-size:7px">Mech.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- V8 Dashboard -->
+      <div class="mockup">
+        <div class="mockup-label" style="color:var(--g400)">v8 — Light theme, full dashboard</div>
+        <div class="phone">
+          <div class="screen">
+            <div class="s-top">
+              <div class="s-brand">SITE <span>AUDIT</span></div>
+              <div class="s-badge">⬤ ONLINE</div>
+            </div>
+            <!-- Subnav -->
+            <div style="background:#fff;border-bottom:1px solid #E2E8F0;padding:4px 8px;display:flex;gap:4px;overflow:hidden">
+              <span style="font-size:7px;font-weight:600;background:#16A34A;color:#fff;border-radius:10px;padding:2px 7px">Overview</span>
+              <span style="font-size:7px;font-weight:600;background:#F1F5F9;color:#94A3B8;border-radius:10px;padding:2px 7px">Pipeline</span>
+              <span style="font-size:7px;font-weight:600;background:#F1F5F9;color:#94A3B8;border-radius:10px;padding:2px 7px">Sites</span>
+            </div>
+            <div class="s-content">
+              <div class="s-kpis">
+                <div class="s-kpi"><div class="s-kn">24</div><div class="s-kl">Surveys</div></div>
+                <div class="s-kpi"><div class="s-kn">147</div><div class="s-kl">Pumps</div></div>
+                <div class="s-kpi"><div class="s-kn">R2.4M</div><div class="s-kl">Pipeline</div></div>
+                <div class="s-kpi"><div class="s-kn">18</div><div class="s-kl">Opps</div></div>
+              </div>
+              <div class="s-pipe">
+                <div class="s-pipe-title">Pipeline</div>
+                <div class="s-bar-row"><span class="s-bar-label">Identified</span><div class="s-bar-track"><div class="s-bar-fill" style="width:80%;background:#94A3B8"></div></div></div>
+                <div class="s-bar-row"><span class="s-bar-label">Qualifying</span><div class="s-bar-track"><div class="s-bar-fill" style="width:60%;background:#3B82F6"></div></div></div>
+                <div class="s-bar-row"><span class="s-bar-label">Quoting</span><div class="s-bar-track"><div class="s-bar-fill" style="width:40%;background:#F59E0B"></div></div></div>
+                <div class="s-bar-row"><span class="s-bar-label">Won</span><div class="s-bar-track"><div class="s-bar-fill" style="width:25%;background:#16A34A"></div></div></div>
+              </div>
+            </div>
+            <div class="s-bnav">
+              <div class="s-btn"><div class="s-btn-icon">🏠</div>Audits</div>
+              <div class="s-btn active"><div class="s-btn-icon">📊</div>Dashboard</div>
+              <div class="s-btn"><div class="s-btn-icon">☁</div>Sync</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Blueprint slots -->
+      <div class="mockup">
+        <div class="mockup-label" style="color:var(--g400)">v11 — Blueprint photo slots</div>
+        <div class="phone">
+          <div class="screen">
+            <div class="s-top">
+              <div style="font-size:8px;font-weight:700;color:#0F172A">← P-101A Wet End</div>
+            </div>
+            <div class="s-content" style="padding:8px">
+              <div class="blueprint-wrap">
+                <!-- Wet End -->
+                <div class="bp-slot">
+                  <svg class="bp-svg" viewBox="0 0 100 100" fill="none">
+                    <circle cx="50" cy="52" r="38" stroke="#22C55E" stroke-width="3"/>
+                    <rect x="44" y="3" width="12" height="14" rx="2" stroke="#22C55E" stroke-width="2.5"/>
+                    <line x1="41" y1="3" x2="59" y2="3" stroke="#22C55E" stroke-width="3" stroke-linecap="round"/>
+                    <circle cx="50.0" cy="22.0" r="3" stroke="#4ADE80" stroke-width="2"/>
+                    <circle cx="67.6" cy="27.7" r="3" stroke="#4ADE80" stroke-width="2"/>
+                    <circle cx="78.5" cy="42.7" r="3" stroke="#4ADE80" stroke-width="2"/>
+                    <circle cx="78.5" cy="61.3" r="3" stroke="#4ADE80" stroke-width="2"/>
+                    <circle cx="50" cy="54" r="21" stroke="#22C55E" stroke-width="3"/>
+                    <circle cx="50" cy="54" r="12" stroke="#4ADE80" stroke-width="1.5" stroke-dasharray="4 2"/>
+                    <circle cx="50" cy="54" r="5" stroke="#22C55E" stroke-width="2"/>
+                  </svg>
+                  <div class="bp-label">Wet End</div>
+                </div>
+                <!-- Bearing -->
+                <div class="bp-slot">
+                  <svg class="bp-svg" viewBox="0 0 100 100" fill="none">
+                    <rect x="18" y="32" width="64" height="36" rx="4" stroke="#22C55E" stroke-width="3"/>
+                    <line x1="2" y1="50" x2="18" y2="50" stroke="#4ADE80" stroke-width="3" stroke-linecap="round"/>
+                    <line x1="82" y1="50" x2="98" y2="50" stroke="#4ADE80" stroke-width="3" stroke-linecap="round"/>
+                    <circle cx="35" cy="50" r="9" stroke="#16A34A" stroke-width="2" stroke-dasharray="3 2"/>
+                    <circle cx="65" cy="50" r="9" stroke="#16A34A" stroke-width="2" stroke-dasharray="3 2"/>
+                    <rect x="25" y="68" width="50" height="7" rx="2" stroke="#22C55E" stroke-width="2"/>
+                  </svg>
+                  <div class="bp-label">Bearing</div>
+                </div>
+                <!-- Sealing -->
+                <div class="bp-slot">
+                  <svg class="bp-svg" viewBox="0 0 100 100" fill="none">
+                    <rect x="8" y="36" width="14" height="28" rx="3" stroke="#22C55E" stroke-width="2.5"/>
+                    <rect x="20" y="32" width="44" height="36" rx="3" stroke="#22C55E" stroke-width="3"/>
+                    <line x1="30" y1="32" x2="30" y2="68" stroke="#16A34A" stroke-width="2"/>
+                    <line x1="38" y1="32" x2="38" y2="68" stroke="#16A34A" stroke-width="2"/>
+                    <line x1="48" y1="32" x2="48" y2="68" stroke="#16A34A" stroke-width="2"/>
+                    <rect x="62" y="38" width="12" height="24" rx="2" stroke="#22C55E" stroke-width="2.5"/>
+                    <line x1="2" y1="50" x2="98" y2="50" stroke="#4ADE80" stroke-width="6" stroke-linecap="round"/>
+                    <rect x="32" y="18" width="10" height="14" rx="2" stroke="#22C55E" stroke-width="2.5"/>
+                    <line x1="29" y1="18" x2="45" y2="18" stroke="#22C55E" stroke-width="3" stroke-linecap="round"/>
+                  </svg>
+                  <div class="bp-label">Sealing</div>
+                </div>
+                <!-- Tag -->
+                <div class="bp-slot">
+                  <svg class="bp-svg" viewBox="0 0 100 100" fill="none">
+                    <rect x="10" y="15" width="80" height="70" rx="6" stroke="#22C55E" stroke-width="3"/>
+                    <circle cx="20" cy="25" r="4" stroke="#4ADE80" stroke-width="2"/>
+                    <circle cx="80" cy="25" r="4" stroke="#4ADE80" stroke-width="2"/>
+                    <line x1="22" y1="42" x2="44" y2="42" stroke="#4ADE80" stroke-width="2" stroke-linecap="round"/>
+                    <rect x="48" y="37" width="28" height="9" rx="2" stroke="#22C55E" stroke-width="2"/>
+                    <line x1="22" y1="56" x2="44" y2="56" stroke="#4ADE80" stroke-width="2" stroke-linecap="round"/>
+                    <rect x="48" y="51" width="28" height="9" rx="2" stroke="#22C55E" stroke-width="2"/>
+                  </svg>
+                  <div class="bp-label">Pump Tag</div>
+                </div>
+              </div>
+              <div style="margin-top:8px;background:#fff;border-radius:8px;padding:7px;font-size:8px;color:#0F172A">
+                <div style="font-weight:700;margin-bottom:3px">P-101A · Mogalakwena</div>
+                <div style="color:#94A3B8">6/4D · A05 Liner · Mechanical</div>
+                <div style="color:#94A3B8;margin-top:1px">SG 1.35 · 320m³/h · 📷 4</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══ PHASE 2 ════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-eyebrow">Phase Two</div>
+  <h2 class="section-title">Multi-User Cloud Platform</h2>
+  <p class="section-sub">Supabase backend, full authentication, organisation isolation, and an admin management portal.</p>
+
+  <div class="phase-track" style="margin-top:40px">
+
+    <div class="phase">
+      <div class="phase-dot"></div>
+      <div class="phase-ver">v12–v15</div>
+      <div class="phase-title">Supabase Integration</div>
+      <div class="phase-desc">Full multi-user database with organisations, profiles, audits, pumps, and opportunities. Login screen with email/password and Remember Me. Supabase JS bundled locally for offline auth. Organisation-level data isolation — distributors see only their own data. Admin flag in JWT app_metadata.</div>
+      <div class="tags">
+        <span class="tag blue">Supabase backend</span><span class="tag green">Login screen</span>
+        <span class="tag green">Session persistence</span><span class="tag blue">Org isolation</span>
+        <span class="tag green">Background sync</span><span class="tag">JWT admin flag</span>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-dot"></div>
+      <div class="phase-ver">v16–v18</div>
+      <div class="phase-title">Form Improvements & Bug Fixes</div>
+      <div class="phase-desc">Contact Position changed to dropdown (12 roles). Contact Email and Contact No. added to audit form. Rep and Owner fields removed — pulled automatically from profile. CSS fix for email/tel inputs. Sync retries profile load before failing. Multiple drawer-close bugs fixed.</div>
+      <div class="tags">
+        <span class="tag green">Contact Email + No.</span><span class="tag">Position dropdown</span>
+        <span class="tag">Profile auto-fill</span><span class="tag red">Bug fixes</span>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-dot"></div>
+      <div class="phase-ver">v19–v21</div>
+      <div class="phase-title">Admin Dashboard</div>
+      <div class="phase-desc">Separate admin.html portal. Overview with KPIs and pipeline, Activity feed showing all rep submissions, Users tab with account creation, Organisations tab for distributor management. GRANT SQL fix resolved all permission issues — root cause of the earlier RLS problems.</div>
+      <div class="tags">
+        <span class="tag green">admin.html portal</span><span class="tag blue">KPI overview</span>
+        <span class="tag amber">Activity feed</span><span class="tag green">User creation</span>
+        <span class="tag green">Org management</span><span class="tag red">GRANT fix</span>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-dot"></div>
+      <div class="phase-ver">v22–v26</div>
+      <div class="phase-title">Polish, Onboarding & Data Management</div>
+      <div class="phase-desc">Auto-sync fires after every save when online. First-login setup screen — forced password change then profile completion before app access. Photo compression (max 1024px JPEG 0.8) fixed the save-with-photos bug. Edit/delete for users and orgs in admin. Password reset button sends email. Rep initials in audit list (KvN particle handling). Delete buttons on audits and pumps.</div>
+      <div class="tags">
+        <span class="tag green">Auto-sync</span><span class="tag green">First-login setup</span>
+        <span class="tag amber">Photo compression</span><span class="tag green">Edit/delete users</span>
+        <span class="tag green">Password reset</span><span class="tag">Rep initials</span>
+        <span class="tag red">Delete audits/pumps</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Phase 2 screen mockups -->
+  <div style="margin-top:40px">
+    <div style="font-size:13px;font-weight:700;color:var(--slate400);text-transform:uppercase;letter-spacing:.6px;margin-bottom:16px">New screens in Phase 2</div>
+    <div class="mockups">
+
+      <!-- Login -->
+      <div class="mockup">
+        <div class="mockup-label" style="color:var(--g400)">Login screen</div>
+        <div class="phone">
+          <div class="screen dark">
+            <div class="s-login" style="padding-top:30px">
+              <div style="font-size:10px;font-weight:700;color:var(--g500);text-align:center;margin-bottom:6px;letter-spacing:.5px">SCHURCO SLURRY</div>
+              <div class="s-login-title">SITE <span style="color:#22C55E">AUDIT</span></div>
+              <div class="s-login-sub">Field Intelligence Platform</div>
+              <div class="s-login-box">
+                <div class="s-field">
+                  <label>Email</label>
+                  <div class="s-input">gvisagie@schurco.com</div>
+                </div>
+                <div class="s-field">
+                  <label>Password</label>
+                  <div class="s-input">••••••••</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:4px;margin-bottom:6px">
+                  <div style="width:10px;height:10px;background:#16A34A;border-radius:2px;flex-shrink:0"></div>
+                  <span style="font-size:7px;color:#64748B">Remember me on this device</span>
+                </div>
+                <div class="s-btn-login">Sign In</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- First login setup -->
+      <div class="mockup">
+        <div class="mockup-label" style="color:var(--g400)">First-login setup</div>
+        <div class="phone">
+          <div class="screen dark">
+            <div class="s-setup">
+              <div class="s-progress">
+                <div class="s-prog-dot" style="background:#16A34A"></div>
+                <div class="s-prog-dot" style="background:#22C55E"></div>
+              </div>
+              <div class="s-setup-icon">👤</div>
+              <div class="s-setup-title">Complete Your Profile</div>
+              <div class="s-setup-sub">Your details appear on every survey you submit</div>
+              <div class="s-login-box">
+                <div class="s-field">
+                  <label>Full Name <span style="color:#EF4444">*</span></label>
+                  <div class="s-input">Marc Smith</div>
+                </div>
+                <div class="s-field">
+                  <label>Role / Title <span style="color:#EF4444">*</span></label>
+                  <div class="s-input">Sales Representative</div>
+                </div>
+                <div class="s-field">
+                  <label>Region</label>
+                  <div class="s-input">North West</div>
+                </div>
+                <div class="s-btn-login">Save &amp; Enter App</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Audit list v29 -->
+      <div class="mockup">
+        <div class="mockup-label" style="color:var(--g400)">Audit list v29 — archive &amp; sync</div>
+        <div class="phone">
+          <div class="screen">
+            <div class="s-top">
+              <div class="s-brand">SITE <span>AUDIT</span></div>
+              <div style="display:flex;gap:4px;align-items:center">
+                <div class="s-badge">⬤ ONLINE</div>
+                <div style="font-size:8px;background:none;border:1px solid #E2E8F0;border-radius:4px;padding:1px 5px;color:#64748B">⇅</div>
+                <div style="font-size:8px;background:none;border:1px solid #E2E8F0;border-radius:4px;padding:1px 5px;color:#64748B">✕</div>
+              </div>
+            </div>
+            <div class="s-content">
+              <div class="s-audit">
+                <div class="s-abadge">GV</div>
+                <div class="s-ainfo">
+                  <div class="s-atitle">Mogalakwena</div>
+                  <div class="s-ameta">Anglo Platinum · 15 Jun · 12 pumps</div>
+                </div>
+                <div class="s-aedit">✎</div>
+                <div class="s-adel">🗑</div>
+                <div class="s-achev">›</div>
+              </div>
+              <div class="s-audit">
+                <div class="s-abadge" style="background:#3B82F6">MS</div>
+                <div class="s-ainfo">
+                  <div class="s-atitle">Marikana Plant</div>
+                  <div class="s-ameta">Sibanye · 14 Jun · 8 pumps</div>
+                </div>
+                <div class="s-aedit">✎</div>
+                <div class="s-adel">🗑</div>
+                <div class="s-achev">›</div>
+              </div>
+              <div class="s-audit">
+                <div class="s-abadge" style="background:#F59E0B">KvN</div>
+                <div class="s-ainfo">
+                  <div class="s-atitle">Kroondal</div>
+                  <div class="s-ameta">Sibanye JV · 12 Jun · 6 pumps</div>
+                </div>
+                <div class="s-aedit">✎</div>
+                <div class="s-adel">🗑</div>
+                <div class="s-achev">›</div>
+              </div>
+            </div>
+            <div class="s-bnav">
+              <div class="s-btn active"><div class="s-btn-icon">🏠</div>Audits</div>
+              <div class="s-btn"><div class="s-btn-icon">📊</div>Dashboard</div>
+              <div class="s-btn"><div class="s-btn-icon">☁</div>Sync</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Admin dashboard -->
+      <div class="mockup" style="width:280px">
+        <div class="mockup-label" style="color:var(--g400)">Admin dashboard</div>
+        <div style="background:#1a1a2e;border-radius:20px;padding:6px;box-shadow:0 20px 60px rgba(0,0,0,.5)">
+          <div class="admin-screen" style="min-height:280px">
+            <div class="admin-top">
+              <div><span class="admin-brand">SCHURCO <span>ADMIN</span></span></div>
+              <div style="display:flex;align-items:center;gap:6px">
+                <div class="admin-badge">⚡ Management View</div>
+                <div style="font-size:8px;color:#64748B">Gideon</div>
+              </div>
+            </div>
+            <div class="admin-tabs">
+              <div class="admin-tab">Overview</div>
+              <div class="admin-tab active">Users</div>
+              <div class="admin-tab">Orgs</div>
+            </div>
+            <div class="admin-content">
+              <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#94A3B8;margin-bottom:8px">All Users</div>
+              <div class="admin-row">
+                <div class="admin-avatar">GV</div>
+                <div class="admin-info">
+                  <div class="admin-name">Gideon — Project Manager</div>
+                  <div class="admin-sub">Schurco SA · Admin</div>
+                </div>
+                <div class="admin-actions">
+                  <div class="admin-act">✎</div>
+                  <div class="admin-act">🔑</div>
+                  <div class="admin-act red">✕</div>
+                </div>
+              </div>
+              <div class="admin-row">
+                <div class="admin-avatar" style="background:#DBEAFE;color:#1E40AF">MS</div>
+                <div class="admin-info">
+                  <div class="admin-name">Marc Smith</div>
+                  <div class="admin-sub">Schurco SA · Rep</div>
+                </div>
+                <div class="admin-actions">
+                  <div class="admin-act">✎</div>
+                  <div class="admin-act">🔑</div>
+                  <div class="admin-act red">✕</div>
+                </div>
+              </div>
+              <div class="admin-row">
+                <div class="admin-avatar" style="background:#FEF9C3;color:#854D0E">KvN</div>
+                <div class="admin-info">
+                  <div class="admin-name">Kevin van Niekerk</div>
+                  <div class="admin-sub">Angola Distributor · Rep</div>
+                </div>
+                <div class="admin-actions">
+                  <div class="admin-act">✎</div>
+                  <div class="admin-act">🔑</div>
+                  <div class="admin-act red">✕</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<div class="divider"></div>
+
+<!-- ══ PHASE 3 ════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-eyebrow">Phase Three</div>
+  <h2 class="section-title">Intelligence, Data Safety & Device Control</h2>
+  <p class="section-sub">Admin map with live filtering, a three-tier data protection model, and rep-controlled device storage — all built while waiting for Microsoft OAuth approval.</p>
+
+  <div class="phase-track" style="margin-top:40px">
+
+    <div class="phase">
+      <div class="phase-dot"></div>
+      <div class="phase-ver">v27</div>
+      <div class="phase-title">Admin Map + Filters + Soft Delete Architecture</div>
+      <div class="phase-desc">Leaflet map added to admin Overview tab showing all GPS-tagged survey sites, colour-coded by best opportunity stage. Dual filter bar — Opportunity Stage (tier 1) then Representative (tier 2) — updates KPIs, pipeline, surveys table, and map simultaneously. Surveys table made expandable — clicking a row reveals all pumps with condition badges, linked opportunities, and site contact details.<br/><br/>Soft delete introduced across audits, pumps, and opportunities. Admin deletes flag records with deleted_at + deleted_by — invisible to reps but fully restorable. Deleted Surveys and Deleted Opportunities sections in admin show who deleted what and when, with Restore and Permanently Remove controls. RLS policies updated — only admins can delete from Supabase.</div>
+      <div class="tags">
+        <span class="tag green">Admin map</span><span class="tag green">Dual filters</span>
+        <span class="tag green">Expandable rows</span><span class="tag red">Soft delete</span>
+        <span class="tag green">Restore capability</span><span class="tag blue">RLS hardened</span>
+        <span class="tag">Deleted audit trail</span>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-dot"></div>
+      <div class="phase-ver">v27–v28</div>
+      <div class="phase-title">☁/✓ Manifest Sync Model + Clear from Device</div>
+      <div class="phase-desc">Supabase becomes the source of truth. Sync now pulls a lightweight manifest of all survey headers first — every survey is visible in the list whether locally cached (✓) or cloud-only (☁). Tapping a ☁ survey downloads the full record on demand. The 🗑 delete buttons in the field app are replaced with ☁ "Clear from device" — removes only the local cache, data stays permanently in Supabase. Admin is the only party who can truly delete records.</div>
+      <div class="tags">
+        <span class="tag green">Manifest sync</span><span class="tag">☁/✓ indicators</span>
+        <span class="tag green">Download on demand</span><span class="tag amber">Clear from device</span>
+        <span class="tag blue">Supabase = source of truth</span>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-dot"></div>
+      <div class="phase-ver">v29</div>
+      <div class="phase-title">Archive / Hide Function</div>
+      <div class="phase-desc">Reps can archive surveys and opportunities to declutter their view without deleting anything. Archived records are hidden by default — a collapsible "▸ Archived (n)" toggle reveals them greyed out below active records. Unarchive with one tap. Local device only — each rep manages their own view. No Supabase changes. Admin still sees all records regardless.</div>
+      <div class="tags">
+        <span class="tag green">Archive surveys</span><span class="tag green">Archive opportunities</span>
+        <span class="tag">Local-only preference</span><span class="tag">Toggle to reveal</span>
+        <span class="tag">No data loss</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Phase 3 mockups -->
+  <div style="margin-top:40px">
+    <div style="font-size:13px;font-weight:700;color:var(--slate400);text-transform:uppercase;letter-spacing:.6px;margin-bottom:16px">New in Phase 3</div>
+    <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start">
+
+      <!-- Audit list with ☁/✓ -->
+      <div>
+        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--g400);margin-bottom:8px;text-align:center">☁/✓ Sync model</div>
+        <div class="phone" style="width:200px">
+          <div class="screen">
+            <div class="s-top">
+              <div class="s-brand">SITE <span>AUDIT</span></div>
+              <div class="s-badge">⬤ ONLINE</div>
+            </div>
+            <div class="s-content" style="padding:8px">
+              <div style="font-size:9px;color:#94A3B8;margin-bottom:6px">3 on device · 9 in cloud ☁</div>
+              <!-- Local survey -->
+              <div class="s-audit" style="margin-bottom:5px">
+                <div class="s-abadge">GV</div>
+                <div class="s-ainfo">
+                  <div class="s-atitle">Mogalakwena <span style="color:#16A34A;font-size:9px">✓</span></div>
+                  <div class="s-ameta">Anglo · 15 Jun · 12 pumps</div>
+                </div>
+                <div style="font-size:9px;border:1px solid #E2E8F0;border-radius:4px;padding:1px 4px;color:#94A3B8">☁</div>
+                <div style="font-size:9px;border:1px solid #E2E8F0;border-radius:4px;padding:1px 4px;color:#94A3B8">🗂</div>
+              </div>
+              <!-- Cloud only survey -->
+              <div class="s-audit" style="opacity:.75;margin-bottom:5px">
+                <div class="s-abadge" style="background:#94A3B8">MS</div>
+                <div class="s-ainfo">
+                  <div class="s-atitle">Rustenburg <span style="color:#94A3B8;font-size:9px">☁</span></div>
+                  <div class="s-ameta">Implats · tap to download</div>
+                </div>
+                <div style="font-size:9px;border:1px solid #E2E8F0;border-radius:4px;padding:1px 4px;color:#94A3B8">↓</div>
+              </div>
+              <!-- Archived survey -->
+              <div style="font-size:9px;font-weight:600;color:#94A3B8;padding:4px 0;border-top:1px solid #F1F5F9;margin-top:4px">▸ Archived (2)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Admin map mockup -->
+      <div>
+        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--g400);margin-bottom:8px;text-align:center">Admin map + filters</div>
+        <div style="width:320px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,.15);border:1px solid rgba(0,0,0,.08)">
+          <!-- Filter bar -->
+          <div style="padding:10px 14px;border-bottom:1px solid #E2E8F0;display:flex;gap:8px;align-items:center">
+            <div style="flex:1">
+              <div style="font-size:7px;font-weight:700;text-transform:uppercase;color:#94A3B8;margin-bottom:2px">Opportunity Stage</div>
+              <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:5px;padding:3px 7px;font-size:8px;color:#0F172A">Quoting</div>
+            </div>
+            <div style="flex:1">
+              <div style="font-size:7px;font-weight:700;text-transform:uppercase;color:#94A3B8;margin-bottom:2px">Representative</div>
+              <div style="background:#F8FAFC;border:1px solid #16A34A;border-radius:5px;padding:3px 7px;font-size:8px;color:#0F172A">GV — Gideon</div>
+            </div>
+            <div style="font-size:9px;background:#DCFCE7;color:#166534;border-radius:8px;padding:2px 6px;font-weight:700;align-self:flex-end">2 filters</div>
+          </div>
+          <!-- Mock map -->
+          <div style="background:#E8F4F0;height:140px;position:relative;overflow:hidden">
+            <div style="position:absolute;inset:0;background:linear-gradient(180deg,#d4eae3 0%,#c8e3da 100%)"></div>
+            <!-- Roads -->
+            <div style="position:absolute;top:55%;left:0;right:0;height:2px;background:rgba(255,255,255,.6)"></div>
+            <div style="position:absolute;top:0;bottom:0;left:40%;width:2px;background:rgba(255,255,255,.6)"></div>
+            <!-- Pins -->
+            <div style="position:absolute;top:30%;left:25%;width:12px;height:12px;border-radius:50%;background:#F59E0B;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.3)"></div>
+            <div style="position:absolute;top:60%;left:55%;width:12px;height:12px;border-radius:50%;background:#F59E0B;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.3)"></div>
+            <div style="position:absolute;top:40%;left:70%;width:12px;height:12px;border-radius:50%;background:#16A34A;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.3)"></div>
+            <!-- Legend -->
+            <div style="position:absolute;bottom:6px;right:6px;background:rgba(255,255,255,.9);border-radius:5px;padding:3px 6px;font-size:7px;display:flex;gap:6px">
+              <span style="display:flex;align-items:center;gap:2px"><span style="width:7px;height:7px;border-radius:50%;background:#16A34A;display:inline-block"></span>Won</span>
+              <span style="display:flex;align-items:center;gap:2px"><span style="width:7px;height:7px;border-radius:50%;background:#F59E0B;display:inline-block"></span>Quoting</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Soft delete admin mockup -->
+      <div>
+        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--g400);margin-bottom:8px;text-align:center">Deleted Surveys (admin)</div>
+        <div style="width:280px;background:#FFF8F8;border:1.5px solid #FECACA;border-radius:14px;padding:14px">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#991B1B;margin-bottom:10px;display:flex;align-items:center;gap:6px">
+            🗑 Deleted Surveys
+            <span style="background:#FEE2E2;color:#991B1B;font-size:9px;padding:1px 7px;border-radius:10px;font-weight:700">2</span>
+          </div>
+          <div style="font-size:11px;color:#991B1B;margin-bottom:10px">Invisible to reps · Restorable below</div>
+          <div style="background:#fff;border-radius:8px;padding:8px;margin-bottom:6px;border:1px solid #FECACA">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px">
+              <span style="font-size:9px;font-weight:700;color:#0F172A">Marikana Plant</span>
+              <span style="font-size:8px;color:#991B1B">Deleted by: GV</span>
+            </div>
+            <div style="font-size:8px;color:#94A3B8;margin-bottom:5px">Sibanye · 14 Jun · 18 Jun 2026</div>
+            <div style="display:flex;gap:4px">
+              <div style="font-size:8px;font-weight:600;padding:2px 7px;border:1px solid #BBF7D0;border-radius:4px;color:#16A34A;background:#F0FDF4">↩ Restore</div>
+              <div style="font-size:8px;font-weight:600;padding:2px 7px;border:1px solid #FECACA;border-radius:4px;color:#EF4444;background:#FFF8F8">🗑 Remove</div>
+            </div>
+          </div>
+          <div style="background:#fff;border-radius:8px;padding:8px;border:1px solid #FECACA">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px">
+              <span style="font-size:9px;font-weight:700;color:#0F172A">Kroondal Test</span>
+              <span style="font-size:8px;color:#991B1B">Deleted by: GV</span>
+            </div>
+            <div style="font-size:8px;color:#94A3B8;margin-bottom:5px">Sibanye JV · 12 Jun · 18 Jun 2026</div>
+            <div style="display:flex;gap:4px">
+              <div style="font-size:8px;font-weight:600;padding:2px 7px;border:1px solid #BBF7D0;border-radius:4px;color:#16A34A;background:#F0FDF4">↩ Restore</div>
+              <div style="font-size:8px;font-weight:600;padding:2px 7px;border:1px solid #FECACA;border-radius:4px;color:#EF4444;background:#FFF8F8">🗑 Remove</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══ STATS COMPARISON ════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-eyebrow">By the Numbers</div>
+  <h2 class="section-title">Then vs Now</h2>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-compare"><span class="stat-old">1</span><span class="stat-arrow">→</span><span class="stat-new">∞</span></div>
+      <div class="stat-label">Users — from single-user localStorage to unlimited multi-user cloud accounts</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-compare"><span class="stat-old">1</span><span class="stat-arrow">→</span><span class="stat-new">3</span></div>
+      <div class="stat-label">Files — index.html grew into app + admin dashboard + Supabase bundle</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-compare"><span class="stat-old">2</span><span class="stat-arrow">→</span><span class="stat-new">3</span></div>
+      <div class="stat-label">Nav tabs — Audits, Sync became Audits, Dashboard, Sync</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-compare"><span class="stat-old">0</span><span class="stat-arrow">→</span><span class="stat-new">5</span></div>
+      <div class="stat-label">Dashboard sections — Overview, Pipeline, Competitors, Opportunities, Sites</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-compare"><span class="stat-old">0</span><span class="stat-arrow">→</span><span class="stat-new">5</span></div>
+      <div class="stat-label">Supabase tables — organisations, profiles, audits, pumps, opportunities</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-compare"><span class="stat-old">~20<span style="font-size:.6em">KB</span></span><span class="stat-arrow">→</span><span class="stat-new">204<span style="font-size:.5em">KB</span></span></div>
+      <div class="stat-label">App size — most of the growth is the bundled Supabase JS library</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══ FEATURE MATRIX ══════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-eyebrow">Capability Matrix</div>
+  <h2 class="section-title">What changed</h2>
+  <div class="matrix">
+    <div class="matrix-header">
+      <div>Feature</div>
+      <div style="text-align:center">v1</div>
+      <div style="text-align:center">v5</div>
+      <div style="text-align:center">v11</div>
+      <div style="text-align:center">v29</div>
+    </div>
+    <div class="matrix-row"><div class="matrix-feature">Pump capture form</div><div class="matrix-cell"><span class="tick">✓</span></div><div class="matrix-cell"><span class="tick">✓</span></div><div class="matrix-cell"><span class="tick">✓</span></div><div class="matrix-cell"><span class="tick">✓</span></div></div>
+    <div class="matrix-row"><div class="matrix-feature">Photo capture</div><div class="matrix-cell"><span class="tick">✓</span></div><div class="matrix-cell"><span class="tick">✓</span></div><div class="matrix-cell"><span class="tick">✓</span></div><div class="matrix-cell"><span class="tick">✓</span></div></div>
+    <div class="matrix-row"><div class="matrix-feature">Excel export</div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="tick">✓</span></div><div class="matrix-cell"><span class="tick">✓</span></div><div class="matrix-cell"><span class="tick">✓</span></div></div>
+    <div class="matrix-row"><div class="matrix-feature">PDF report</div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="tick">✓</span></div><div class="matrix-cell"><span class="tick">✓</span></div><div class="matrix-cell"><span class="tick">✓</span></div></div>
+    <div class="matrix-row"><div class="matrix-feature">Dashboard analytics</div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="tick">✓</span></div><div class="matrix-cell"><span class="tick">✓</span></div><div class="matrix-cell"><span class="tick">✓</span></div></div>
+    <div class="matrix-row"><div class="matrix-feature">GPS + Sites map</div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="tick">✓</span></div><div class="matrix-cell"><span class="tick">✓</span></div></div>
+    <div class="matrix-row"><div class="matrix-feature">Blueprint photo slots</div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="tick">✓</span></div><div class="matrix-cell"><span class="tick">✓</span></div></div>
+    <div class="matrix-row"><div class="matrix-feature">Login / Authentication</div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="tick">✓</span></div></div>
+    <div class="matrix-row"><div class="matrix-feature">Cloud sync (Supabase)</div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="tick">✓</span></div></div>
+    <div class="matrix-row"><div class="matrix-feature">Multi-user support</div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="tick">✓</span></div></div>
+    <div class="matrix-row"><div class="matrix-feature">Org isolation</div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="tick">✓</span></div></div>
+    <div class="matrix-row"><div class="matrix-feature">Admin dashboard</div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="tick">✓</span></div></div>
+    <div class="matrix-row"><div class="matrix-feature">First-login onboarding</div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="tick">✓</span></div></div>
+    <div class="matrix-row"><div class="matrix-feature">Delete audits &amp; pumps</div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="tick">✓</span></div></div>
+    <div class="matrix-row"><div class="matrix-feature">Auto-sync on save</div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="tick">✓</span></div></div>
+    <div class="matrix-row"><div class="matrix-feature">Admin map + rep/opp filters</div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="tick">✓</span></div></div>
+    <div class="matrix-row"><div class="matrix-feature">Soft delete with restore</div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="tick">✓</span></div></div>
+    <div class="matrix-row"><div class="matrix-feature">☁/✓ manifest sync model</div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="tick">✓</span></div></div>
+    <div class="matrix-row"><div class="matrix-feature">Archive / hide records</div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="tick">✓</span></div></div>
+    <div class="matrix-row"><div class="matrix-feature">Expandable survey rows (admin)</div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="tick">✓</span></div></div>
+    <div class="matrix-row"><div class="matrix-feature">Install page + QR code</div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="tick">✓</span></div></div>
+    <div class="matrix-row"><div class="matrix-feature">Photo compression</div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="cross">—</span></div><div class="matrix-cell"><span class="tick">✓</span></div></div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══ ROADMAP ════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-eyebrow">What's next</div>
+  <h2 class="section-title">On the horizon</h2>
+  <div class="roadmap">
+    <div class="road-card" style="border-color:rgba(245,158,11,.3)">
+      <div class="road-card" style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#F59E0B,#FCD34D)"></div>
+      <div class="road-icon">📸</div>
+      <div class="road-title">SharePoint Photo Upload</div>
+      <div class="road-desc">Azure AD app registered. Awaiting Global Admin consent from Marc (US HQ). Once approved: photos upload via Supabase Edge Function to SharePoint. Thumbnails stored in Supabase for admin preview.</div>
+      <div style="margin-top:10px;font-size:11px;font-weight:700;color:#F59E0B;background:#FEF3C7;border-radius:6px;padding:4px 10px;display:inline-block">⏳ Awaiting Marc's approval</div>
+    </div>
+
+    <div class="road-card" style="border-color:rgba(59,130,246,.3)">
+      <div class="road-icon">🗄️</div>
+      <div class="road-title">Photo Storage — Supabase vs SharePoint</div>
+      <div class="road-desc">SharePoint requires Azure AD admin consent (pending Marc). Alternative: Supabase Storage — already in the stack, no Microsoft dependency, works for all users including international distributors. Under discussion.</div>
+      <div style="margin-top:10px;font-size:11px;font-weight:700;color:#3B82F6;background:#DBEAFE;border-radius:6px;padding:4px 10px;display:inline-block">💬 Under discussion</div>
+    </div>
+    <div class="road-card">
+      <div class="road-icon">🔗</div>
+      <div class="road-title">Microsoft OAuth</div>
+      <div class="road-desc">Proper Azure AD sign-in — users click "Connect to Microsoft", authorize once, and SharePoint uploads work forever without tokens or expiry.</div>
+    </div>
+    <div class="road-card" style="border-color:rgba(22,163,74,.3);background:rgba(22,163,74,.03)">
+      <div class="road-icon">📱</div>
+      <div class="road-title">Install Page + QR Code</div>
+      <div class="road-desc">Branded install.html with Schurco-green QR code, one-tap Android install prompt, step-by-step iOS guide, WhatsApp and email share buttons, and first-login instructions. Live at /install.html</div>
+      <div style="margin-top:10px;font-size:11px;font-weight:700;color:#16A34A;background:#DCFCE7;border-radius:6px;padding:4px 10px;display:inline-block">✓ Completed</div>
+    </div>
+    <div class="road-card" style="border-color:rgba(22,163,74,.3);background:rgba(22,163,74,.03)">
+      <div class="road-icon">📖</div>
+      <div class="road-title">README Documents</div>
+      <div class="road-desc">Three Schurco-branded Word documents produced: Rep Quick Start, Distributor Quick Start, and Admin Guide — covering install, login, sync, and full admin controls.</div>
+      <div style="margin-top:10px;font-size:11px;font-weight:700;color:#16A34A;background:#DCFCE7;border-radius:6px;padding:4px 10px;display:inline-block">✓ Completed</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ FOOTER ════════════════════════════════════════════════════════════ -->
+<div class="footer">
+  Built for <strong>Schurco Slurry South Africa</strong> · v29 · June 2026<br/>
+  <span style="font-size:11px;color:rgba(255,255,255,.2);margin-top:4px;display:block">
+    Progressive Web App · Supabase · GitHub Pages · Offline-first
+  </span>
+</div>
+
+</body>
+</html>
