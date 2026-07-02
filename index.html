@@ -624,7 +624,7 @@ input[type=file]{display:none}
       </div>
       <div class="btn-row" style="margin-bottom:16px">
         <button class="btn btn-secondary btn-sm" onclick="shareExcel()">&#128228; Share</button>
-        <button class="btn btn-secondary btn-sm" onclick="uploadSharePoint()">&#9729; SharePoint</button>
+        <button class="btn btn-secondary btn-sm" onclick="saveToSharePoint()">&#128228; SharePoint</button>
       </div>
       <div id="pumpList"></div>
     </div>
@@ -656,15 +656,10 @@ input[type=file]{display:none}
         <div class="stat-box"><div class="stat-num" id="statPhotos">0</div><div class="stat-lbl">Photos</div></div>
       </div>
       <div class="sync-card">
-        <div class="sync-title">&#9729; SharePoint / OneDrive</div>
-        <div class="sync-desc">Upload formatted Excel workbooks named <b>Client_Site_Date</b> directly to your SharePoint library. Configure once below.</div>
-        <div class="field"><label>SharePoint Site URL</label>
-          <input type="text" id="spUrl" placeholder="https://schurco.sharepoint.com/sites/Sales" oninput="saveCreds()" value="https://schurcojax.sharepoint.com"/></div>
-        <div class="field"><label>Library Path</label>
-          <input type="text" id="spLib" placeholder="/Shared Documents/Site Audits" oninput="saveCreds()" value="/Shared Documents/Schurco Site Data Capture"/></div>
-        <div class="field"><label>Access Token (Bearer)</label>
-          <input type="text" id="spToken" placeholder="eyJ0eXAi&#8230;" oninput="saveCreds()"/></div>
-        <div style="font-size:12px;color:var(--text-muted);line-height:1.5">Open an audit &rarr; tap <b>&#9729; SharePoint</b> to upload that site&rsquo;s workbook.</div>
+        <div class="sync-title">&#128228; Save to SharePoint</div>
+        <div class="sync-desc">Saves an Excel workbook and all pump photos directly to <b>Schurco Site Data Capture</b> on SharePoint. Open a survey first, then tap below.</div>
+        <button class="btn btn-primary" onclick="saveToSharePoint()" id="spShareBtn" style="width:100%;margin-top:8px">&#128228; Save to SharePoint</button>
+        <div id="spProgress" style="display:none;margin-top:10px;font-size:12px;color:var(--green);font-weight:600;text-align:center"></div>
       </div>
       <div class="sync-card">
         <div class="sync-title">&#128228; Export &amp; Share</div>
@@ -2261,64 +2256,107 @@ async function shareExcel() {
   toast('Saved to device — attach it in WhatsApp or email', '');
 }
 
-// ── UPLOAD CURRENT AUDIT TO SHAREPOINT ────────────────────────────────────────
-async function uploadSharePoint() {
-  const audit = db.audits.find(x => x.id === currentAuditId);
-  if (!audit) { toast('No audit open', 'error'); return; }
-  const spUrl = (localStorage.getItem('schurco_creds') ? JSON.parse(localStorage.getItem('schurco_creds')).spUrl : '') || '';
-  const creds = JSON.parse(localStorage.getItem('schurco_creds') || '{}');
-  if (!creds.spUrl || !creds.spLib || !creds.spToken) {
-    toast('Set up SharePoint in the Sync tab first', 'error');
-    showTab('Sync'); return;
-  }
+// ── SAVE TO SHAREPOINT ────────────────────────────────────────────────────────
+const SP_EDGE_URL = 'https://gxdyhhdyyobbzfnanoan.supabase.co/functions/v1/sharepoint-upload';
+const SP_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd4ZHloaGR5eW9iYnpmbmFub2FuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MjY3MTMsImV4cCI6MjA5NzIwMjcxM30.fPziJT0H2XcMsZqA_QRIu1z6Ds9hqb5kxWtRJqnQtIs';
+
+async function spCall(payload) {
+  const res = await fetch(SP_EDGE_URL, {
+    method:  'POST',
+    headers: {
+      'Content-Type':  'application/json',
+      'Authorization': `Bearer ${SP_ANON_KEY}`,
+      'apikey':         SP_ANON_KEY,
+    },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json();
+  if (!data.success) throw new Error(data.error || 'Upload failed');
+  return data;
+}
+
+async function saveToSharePoint() {
+  const audit = db.audits.find(a => a.id === currentAuditId);
+  if (!audit) { toast('Open a survey first', 'error'); return; }
   if (!navigator.onLine) { toast('No internet connection', 'error'); return; }
 
-  toast('Uploading to SharePoint…');
-  const blob = workbookBlob(buildWorkbook(audit));
-  const fileName = auditFileName(audit);
-  const siteBase = creds.spUrl.replace(/\/$/, '');
-  const libPath = creds.spLib.replace(/\/$/, '');
-  const uploadUrl = `${siteBase}/_api/web/GetFolderByServerRelativeUrl('${libPath}')/Files/add(url='${fileName}',overwrite=true)`;
+  const pumps  = db.pumps.filter(p => p.auditId === currentAuditId);
+  const btn    = document.getElementById('spShareBtn');
+  const prog   = document.getElementById('spProgress');
+
+  // Count total photos
+  const photos = [];
+  const slotNames = { tag:'Tag', bearing:'Bearing', sealing:'Sealing', wetend:'WetEnd', assembly:'Assembly' };
+  pumps.forEach(p => {
+    if (p.photos) Object.entries(p.photos).forEach(([slot, b64]) => {
+      if (b64) photos.push({ pump_tag: p.tag||'Pump', slot_name: slotNames[slot]||slot, photo_base64: b64 });
+    });
+    if (p.extraPhotos) p.extraPhotos.forEach((b64, i) => {
+      if (b64) photos.push({ pump_tag: p.tag||'Pump', slot_name: `Extra_${i+1}`, photo_base64: b64 });
+    });
+  });
+
+  const total = 1 + photos.length; // 1 for Excel
+  let done = 0;
+
+  const setProgress = (msg) => {
+    if (prog) { prog.style.display=''; prog.textContent = msg; }
+  };
+
+  if (btn) { btn.disabled = true; btn.textContent = 'Uploading…'; }
+  setProgress('Generating Excel…');
 
   try {
-    const buf = await blob.arrayBuffer();
-    const res = await fetch(uploadUrl, {
-      method: 'POST',
-      headers: {
-        'Authorization': 'Bearer ' + creds.spToken,
-        'Accept': 'application/json;odata=verbose'
-      },
-      body: buf
+    // Generate Excel as base64
+    const excelB64 = await generateExcelBase64(audit, pumps);
+
+    setProgress('Creating SharePoint folder…');
+    const createRes = await spCall({
+      mode:         'create',
+      survey:       { site: audit.site, customer: audit.customer, date: audit.date },
+      excel_base64: excelB64,
     });
-    if (res.ok) toast(`Uploaded ${fileName} ✓`, 'success');
-    else { console.error(await res.text()); toast('Upload failed — check token/URL', 'error'); }
-  } catch (e) {
-    toast('Upload error: ' + e.message, 'error');
+    done++;
+    setProgress(`Uploaded Excel ✓  |  Uploading photos 0/${photos.length}…`);
+
+    const folderName = createRes.folder_name;
+
+    // Upload photos one by one
+    let photosDone = 0;
+    for (const photo of photos) {
+      await spCall({ mode: 'photo', folder_name: folderName, ...photo });
+      photosDone++;
+      done++;
+      setProgress(`Uploading photos ${photosDone}/${photos.length}…`);
+    }
+
+    setProgress(`✓ Saved to SharePoint — ${total} file${total!==1?'s':''} uploaded`);
+    toast('Saved to SharePoint ✓', 'success');
+    setTimeout(() => { if (prog) prog.style.display='none'; }, 5000);
+
+  } catch(e) {
+    console.error('SharePoint upload error:', e);
+    toast('SharePoint error: ' + e.message, 'error');
+    setProgress('');
+  } finally {
+    if (btn) { btn.disabled=false; btn.textContent='📨 Save to SharePoint'; }
   }
+}
+
+// Generate Excel workbook as base64 string (for SharePoint upload)
+function generateExcelBase64(audit, pumps) {
+  const wb   = buildWorkbook(audit);   // reuse existing workbook builder
+  const blob = workbookBlob(wb);       // get Blob
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload  = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = () => reject(new Error('Failed to read workbook'));
+    reader.readAsDataURL(blob);
+  });
 }
 
 // ── CREDENTIALS PERSIST ───────────────────────────────────────────────────────
-function saveCreds() {
-  localStorage.setItem('schurco_creds', JSON.stringify({
-    spUrl: document.getElementById('spUrl').value,
-    spLib: document.getElementById('spLib').value,
-    spToken: document.getElementById('spToken').value
-  }));
-}
-function loadCreds() {
-  const defaults = {
-    spUrl: 'https://schurcojax.sharepoint.com',
-    spLib: '/Shared Documents/Schurco Site Data Capture'
-  };
-  try {
-    const c = JSON.parse(localStorage.getItem('schurco_creds') || '{}');
-    if (c.spUrl) document.getElementById('spUrl').value = c.spUrl;
-    else document.getElementById('spUrl').value = defaults.spUrl;
-    if (c.spLib) document.getElementById('spLib').value = c.spLib;
-    else document.getElementById('spLib').value = defaults.spLib;
-    if (c.spToken) document.getElementById('spToken').value = c.spToken;
-  } catch(e) {}
-}
+// SharePoint credentials managed server-side via Supabase secrets
 
 // ── CLEAR DATA ────────────────────────────────────────────────────────────────
 function clearAllData() {
