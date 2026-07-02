@@ -434,6 +434,23 @@ input[type=file]{display:none}
 .leaflet-popup-content{margin:0!important;width:195px!important}
 .leaflet-popup-tip-container{display:none}
 
+
+/* ── SWIPE TO DELETE ─────────────────────────────────────────────── */
+.swipe-wrap{position:relative;overflow:hidden;margin-bottom:8px;border-radius:12px}
+.swipe-action{
+  position:absolute;right:0;top:0;bottom:0;width:80px;
+  background:#EF4444;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;color:#fff;
+  border-radius:0 12px 12px 0;cursor:pointer;user-select:none;
+}
+.swipe-action:active{background:#DC2626}
+.swipe-item{
+  position:relative;transform:translateX(0);
+  transition:transform .25s cubic-bezier(.25,.8,.25,1);
+  background:#fff;border-radius:12px;
+  will-change:transform;
+}
+.swipe-item.dragging{transition:none}
 </style>
 </head>
 <body>
@@ -1090,8 +1107,7 @@ let editingAuditId = null;
 let slotPhotos = {};       // { tag, bearing, sealing, wetend, assembly } base64
 let extraPhotos = [];      // additional base64 photos
 let activeSlot = null;     // which guided slot is currently capturing
-let showArchivedAudits = false;
-let showArchivedOpps   = false;
+
 
 // ── GUIDED PHOTO SLOTS (key, label, silhouette SVG) ───────────────────────────
 const PHOTO_SLOTS = [
@@ -1292,55 +1308,35 @@ function renderAuditList() {
   const localCount = db.audits.length;
   const totalCount = source.length;
 
-  // Split active vs archived
-  const activeAudits   = source.filter(a => !a.archived);
-  const archivedAudits = source.filter(a => a.archived);
-  const archivedCount  = archivedAudits.length;
-
-  // Count label
-  const onDeviceCount = db.audits.filter(a=>!a.archived).length;
-  const cloudCount    = source.filter(a=>!a.archived && a.isLocal===false).length;
+  const onDeviceCount = db.audits.length;
+  const cloudCount    = source.filter(a => a.isLocal===false).length;
   count.textContent = cloudCount > 0
     ? `${onDeviceCount} on device · ${cloudCount} in cloud ☁`
     : `${onDeviceCount} survey${onDeviceCount!==1?'s':''}`;
 
-  // Archive toggle button (only show if archived records exist)
-  const archiveToggleHtml = archivedCount > 0
-    ? `<button onclick="toggleArchivedAudits()" style="font-size:11px;font-weight:600;
-        border:1px solid var(--border);background:${showArchivedAudits?'#F1F5F9':'none'};
-        border-radius:6px;padding:3px 10px;color:var(--text-dim);cursor:pointer;
-        margin-left:auto;display:block;margin-bottom:8px">
-        ${showArchivedAudits?'▾':'▸'} Archived (${archivedCount})
-       </button>` : '';
-
-  const displayAudits = showArchivedAudits ? source : activeAudits;
-
-  list.innerHTML = archiveToggleHtml + displayAudits.map(a => {
-    const isArchived = !!a.archived;
+  list.innerHTML = source.map(a => {
     const pumpCount = db.pumps.filter(p => p.auditId === a.id).length;
     const date = a.date ? new Date(a.date).toLocaleDateString('en-ZA') : 'No date';
     const isLocal = a.isLocal !== false;
     const repName = a.rep || a.rep_name || '?';
-    const itemStyle = isArchived ? 'opacity:.5;' : isLocal ? '' : 'opacity:.8;';
-    return `<div class="pump-item" onclick="${isLocal && !isArchived ? `openAudit('${a.id}')` : isArchived ? '' : `downloadAudit('${a.id}')`}" style="${itemStyle}${isArchived?'cursor:default;':''}">
-      <div class="pump-badge" style="${isArchived?'background:#94A3B8;':isLocal?'':'background:#94A3B8;'}">${initials(repName)}</div>
-      <div class="pump-info">
-        <div class="pump-tag">
-          ${a.site || a.customer}
-          ${isArchived
-            ? '<span style="font-size:10px;font-weight:600;margin-left:4px;color:#94A3B8;background:#F1F5F9;padding:1px 6px;border-radius:10px">Archived</span>'
-            : `<span style="font-size:10px;font-weight:700;margin-left:4px;${isLocal?'color:#16A34A':'color:#94A3B8'}">${isLocal ? '✓' : '☁'}</span>`
-          }
-        </div>
-        <div class="pump-meta">${a.customer} · ${date}${isLocal ? ' · '+pumpCount+' pump'+(pumpCount!==1?'s':'') : ' · ☁ tap to download'}</div>
+    const safeId = a.id.replace(/-/g,'_');
+    return `<div class="swipe-wrap" id="sw_${safeId}">
+      <div class="swipe-action" onclick="deleteAudit('${a.id}','${(a.site||a.customer).replace(/'/g,"\'")}',${pumpCount})">
+        <div style="font-size:20px">🗑</div>
+        <div style="font-size:10px;font-weight:700;margin-top:2px">Delete</div>
       </div>
-      <button class="dup-btn" onclick="event.stopPropagation();openNewAuditDrawer('${a.id}')" title="Edit client details">&#9998;</button>
-      <button class="dup-btn" onclick="event.stopPropagation();deleteAudit('${a.id}','${(a.site||a.customer).replace(/'/g,"\\'")}',${pumpCount})" title="Clear from device" style="${isLocal&&!isArchived?'':'display:none'};color:#64748B;border-color:#E2E8F0">☁</button>
-      ${isArchived
-        ? `<button onclick="event.stopPropagation();unarchiveAudit('${a.id}')" title="Unarchive" style="background:none;border:1px solid #E2E8F0;border-radius:6px;padding:2px 7px;font-size:11px;color:#64748B;cursor:pointer">↩</button>`
-        : `<button onclick="event.stopPropagation();archiveAudit('${a.id}','${(a.site||a.customer).replace(/'/g,"\'")}')" title="Archive" style="background:none;border:1px solid #E2E8F0;border-radius:6px;padding:2px 7px;font-size:11px;color:#94A3B8;cursor:pointer">🗂</button>`
-      }
-      <div style="color:var(--text-muted);font-size:18px">›</div>
+      <div class="pump-item swipe-item" onclick="${isLocal ? `openAudit('${a.id}')` : `downloadAudit('${a.id}')`}" style="${isLocal?'':'opacity:.8'}">
+        <div class="pump-badge" style="${isLocal?'':'background:#94A3B8'}">${initials(repName)}</div>
+        <div class="pump-info">
+          <div class="pump-tag">
+            ${a.site || a.customer}
+            <span style="font-size:10px;font-weight:700;margin-left:4px;${isLocal?'color:#16A34A':'color:#94A3B8'}">${isLocal ? '✓' : '☁'}</span>
+          </div>
+          <div class="pump-meta">${a.customer} · ${date}${isLocal ? ' · '+pumpCount+' pump'+(pumpCount!==1?'s':'') : ' · tap to download'}</div>
+        </div>
+        <button class="dup-btn" onclick="event.stopPropagation();openNewAuditDrawer('${a.id}')" title="Edit">&#9998;</button>
+        <div style="color:var(--text-muted);font-size:18px">›</div>
+      </div>
     </div>`;
   }).join('');
 }
@@ -1465,16 +1461,22 @@ function renderPumpList() {
     const seal = p.seal || '—';
     const photoCount = countPhotos(p);
     const cond = p.condition || '';
-    return `<div class="pump-item" onclick="editPump('${p.id}')">
-      <div class="pump-badge">${(p.tag||'??').slice(0,6)}</div>
-      <div class="pump-info">
-        <div class="pump-tag">${p.tag || 'No Tag'} <span style="font-size:12px;color:var(--text-dim);font-weight:400">${p.model || (p.type ? p.type+' Series' : '')}</span></div>
-        <div class="pump-meta">${p.area||'—'} · MOC: ${moc} · Seal: ${seal}${photoCount?' · 📷'+photoCount:''}</div>
+    const safePid = p.id.replace(/-/g,'_');
+    return `<div class="swipe-wrap" id="sw_${safePid}">
+      <div class="swipe-action" onclick="deletePump('${p.id}','${(p.tag||'pump').replace(/'/g,"\'")}')">
+        <div style="font-size:20px">🗑</div>
+        <div style="font-size:10px;font-weight:700;margin-top:2px">Delete</div>
       </div>
-      <button class="dup-btn" onclick="event.stopPropagation();duplicatePump('${p.id}')" title="Duplicate">⧉</button>
-      <button class="dup-btn" onclick="event.stopPropagation();deletePump('${p.id}','${(p.tag||'pump').replace(/'/g,"\\'")}')" title="Clear pump from device" style="color:#64748B;border-color:#E2E8F0">☁</button>
-      <button class="opp-quick-btn" onclick="event.stopPropagation();openOpportunityDrawer(null,'${p.id}')" title="Log Opportunity">&#128161;</button>
-      <div class="status-dot ${condColor[cond]||''}"></div>
+      <div class="pump-item swipe-item" onclick="editPump('${p.id}')">
+        <div class="pump-badge">${(p.tag||'??').slice(0,6)}</div>
+        <div class="pump-info">
+          <div class="pump-tag">${p.tag || 'No Tag'} <span style="font-size:12px;color:var(--text-dim);font-weight:400">${p.model || (p.type ? p.type+' Series' : '')}</span></div>
+          <div class="pump-meta">${p.area||'—'} · MOC: ${moc} · Seal: ${seal}${photoCount?' · 📷'+photoCount:''}</div>
+        </div>
+        <button class="dup-btn" onclick="event.stopPropagation();duplicatePump('${p.id}')" title="Duplicate">⧉</button>
+        <button class="opp-quick-btn" onclick="event.stopPropagation();openOpportunityDrawer(null,'${p.id}')" title="Log Opportunity">&#128161;</button>
+        <div class="status-dot ${condColor[cond]||''}"></div>
+      </div>
     </div>`;
   }).join('');
 }
@@ -2783,15 +2785,7 @@ function renderOpportunitiesSection(kpis) {
   return `
     <div class="dash-section-head">
       Opportunities
-      <div style="display:flex;gap:8px;align-items:center;margin-left:auto">
-        ${(()=>{const archived=(db.opportunities||[]).filter(o=>o.archived);
-          return archived.length?`<button onclick="toggleArchivedOpps()"
-            style="font-size:11px;font-weight:600;border:1px solid var(--border);
-            background:${showArchivedOpps?'#F1F5F9':'none'};border-radius:6px;
-            padding:3px 10px;color:var(--text-dim);cursor:pointer">
-            ${showArchivedOpps?'▾':'▸'} Archived (${archived.length})</button>`:'';})()}
-        <button class="btn btn-primary btn-sm" onclick="openOpportunityDrawer()">&#43; Add</button>
-      </div>
+      <button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="openOpportunityDrawer()">&#43; Add</button>
     </div>
     <div class="value-summary">
       <div class="value-cell">
@@ -2805,16 +2799,17 @@ function renderOpportunitiesSection(kpis) {
     </div>
     ${(()=>{
       ensureDbExtensions();
-      const activeOpps   = opps.filter(o=>!o.archived);
-      const archivedOpps = opps.filter(o=>o.archived);
-      const displayOpps  = showArchivedOpps ? opps : activeOpps;
-      if (!displayOpps.length && !archivedOpps.length) return '<div class="no-data-msg">No opportunities yet &mdash; tap + Add to start tracking.</div>';
-      if (!displayOpps.length) return '<div class="no-data-msg" style="font-size:13px;color:var(--text-dim)">All opportunities archived — tap Archived to view.</div>';
-      return displayOpps.map(o=>{
+      if (!opps.length) return '<div class="no-data-msg">No opportunities yet &mdash; tap + Add to start tracking.</div>';
+      return opps.map(o=>{
       const audit=db.audits.find(a=>a.id===o.auditId)||{};
       const col=stageColors[o.stage]||'#94A3B8';
-      return `<div class="opp-item" style="position:relative;${o.archived?'opacity:.5;':''}">
-        <div onclick="${o.archived?'':'openOpportunityDrawer('+"'"+o.id+"'"+')'}" style="flex:1;${o.archived?'cursor:default':'cursor:pointer'}">
+      const safeOid = o.id.replace(/-/g,'_');
+      return `<div class="swipe-wrap" id="sw_${safeOid}">
+        <div class="swipe-action" onclick="clearOpp('${o.id}','${(o.title||'opportunity').replace(/'/g,"\'")}')">
+          <div style="font-size:20px">🗑</div>
+          <div style="font-size:10px;font-weight:700;margin-top:2px">Delete</div>
+        </div>
+        <div class="opp-item swipe-item" onclick="openOpportunityDrawer('${o.id}')">
           <div class="opp-item-head">
             <span class="opp-name">${o.title}</span>
             <span class="opp-stage-badge" style="background:${col}18;color:${col};border-color:${col}40">${o.stage}</span>
@@ -2826,19 +2821,6 @@ function renderOpportunitiesSection(kpis) {
             )()}${o.value?' &middot; R '+parseFloat(o.value).toLocaleString():''}
           </div>
           ${o.contactName?`<div class="opp-contact">&#128100; ${o.contactName}${o.contactRole?' &middot; '+o.contactRole:''}</div>`:''}
-        </div>
-        <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;margin-left:8px">
-          ${o.archived
-            ? `<button onclick="event.stopPropagation();unarchiveOpp('${o.id}')"
-                style="background:none;border:1px solid #E2E8F0;border-radius:6px;
-                padding:3px 8px;font-size:11px;color:#64748B;cursor:pointer" title="Unarchive">↩</button>`
-            : `<button onclick="event.stopPropagation();archiveOpp('${o.id}','${(o.title||'opportunity').replace(/'/g,"\'")}')"
-                style="background:none;border:1px solid #E2E8F0;border-radius:6px;
-                padding:3px 8px;font-size:11px;color:#94A3B8;cursor:pointer" title="Archive">🗂</button>`
-          }
-          ${!o.archived?`<button onclick="event.stopPropagation();clearOpp('${o.id}','${(o.title||'opportunity').replace(/'/g,"\'")}')"
-            style="background:none;border:1px solid #E2E8F0;border-radius:6px;
-            padding:3px 8px;font-size:11px;color:#94A3B8;cursor:pointer" title="Clear from device">☁</button>`:''}
         </div>
       </div>`;
     }).join('');})()}
@@ -3552,31 +3534,46 @@ async function saveProfile_Setup() {
 }
 
 
-// ── CLEAR AUDIT FROM DEVICE (localStorage only — data stays in Supabase) ──────
-function deleteAudit(auditId, siteName, pumpCount) {
+// ── SOFT DELETE AUDIT (Supabase + local) ──────────────────────────────────────
+async function deleteAudit(auditId, siteName, pumpCount) {
+  if (!sbClient || !navigator.onLine) {
+    toast('Connect to the internet to delete records', 'error'); return;
+  }
   const msg = pumpCount > 0
-    ? `Clear "${siteName}" and its ${pumpCount} pump${pumpCount!==1?'s':''} from this device?\n\nThe survey remains safely stored in the cloud and will return on your next sync.`
-    : `Clear survey "${siteName}" from this device?\n\nIt remains in the cloud and returns on next sync.`;
+    ? `Delete "${siteName}" and its ${pumpCount} pump${pumpCount!==1?'s':''}?\n\nYour administrator can restore this if needed.`
+    : `Delete "${siteName}"?\n\nYour administrator can restore this if needed.`;
   if (!confirm(msg)) return;
 
-  // Remove from localStorage only — never touches Supabase
+  try {
+    const now = new Date().toISOString();
+    await sbClient.from('audits').update({ deleted_at: now, deleted_by: currentUser.id }).eq('id', auditId);
+    await sbClient.from('pumps').update({ deleted_at: now, deleted_by: currentUser.id }).eq('audit_id', auditId);
+    await sbClient.from('opportunities').update({ deleted_at: now, deleted_by: currentUser.id }).eq('audit_id', auditId);
+  } catch(e) { toast('Delete failed — ' + e.message, 'error'); return; }
+
   db.audits = db.audits.filter(a => a.id !== auditId);
   db.pumps  = db.pumps.filter(p => p.auditId !== auditId);
   ensureDbExtensions();
   db.opportunities = db.opportunities.filter(o => o.auditId !== auditId);
-  // Mark as cloud-only in manifest
-  if (db.manifest) {
-    const mi = db.manifest.findIndex(m => m.id === auditId);
-    if (mi >= 0) db.manifest[mi].isLocal = false;
-  }
+  if (db.manifest) db.manifest = db.manifest.filter(m => m.id !== auditId);
   saveDB();
   renderAuditList();
-  toast('Cleared from device — still in cloud ☁', 'success');
+  setTimeout(()=>initSwipeItems('#auditList'),50);
+  toast('Survey deleted', 'success');
 }
 
-// ── CLEAR OPPORTUNITY FROM DEVICE (localStorage only) ────────────────────────
-function clearOpp(oppId, title) {
-  if (!confirm(`Clear opportunity "${title}" from this device?\n\nIt remains in the cloud and returns on next sync.`)) return;
+// ── SOFT DELETE OPPORTUNITY (Supabase + local) ────────────────────────────────
+async function clearOpp(oppId, title) {
+  if (!sbClient || !navigator.onLine) {
+    toast('Connect to the internet to delete records', 'error'); return;
+  }
+  if (!confirm(`Delete opportunity "${title}"?\n\nYour administrator can restore this if needed.`)) return;
+
+  try {
+    const now = new Date().toISOString();
+    await sbClient.from('opportunities').update({ deleted_at: now, deleted_by: currentUser.id }).eq('id', oppId);
+  } catch(e) { toast('Delete failed — ' + e.message, 'error'); return; }
+
   ensureDbExtensions();
   db.opportunities = db.opportunities.filter(o => o.id !== oppId);
   saveDB();
@@ -3584,19 +3581,28 @@ function clearOpp(oppId, title) {
   if (typeof currentDashSection !== 'undefined' && currentDashSection === 'opportunities') {
     showDashSection('opportunities');
   }
-  toast('Cleared from device ☁', 'success');
+  toast('Opportunity deleted', 'success');
 }
 
-// ── CLEAR PUMP FROM DEVICE (localStorage only) ────────────────────────────────
-function deletePump(pumpId, tag) {
-  if (!confirm(`Clear pump "${tag}" from this device?\n\nIt remains in the cloud and returns on next sync.`)) return;
+// ── SOFT DELETE PUMP (Supabase + local) ───────────────────────────────────────
+async function deletePump(pumpId, tag) {
+  if (!sbClient || !navigator.onLine) {
+    toast('Connect to the internet to delete records', 'error'); return;
+  }
+  if (!confirm(`Delete pump "${tag}"?\n\nYour administrator can restore this if needed.`)) return;
+
+  try {
+    const now = new Date().toISOString();
+    await sbClient.from('pumps').update({ deleted_at: now, deleted_by: currentUser.id }).eq('id', pumpId);
+    await sbClient.from('opportunities').update({ deleted_at: now, deleted_by: currentUser.id }).eq('pump_id', pumpId);
+  } catch(e) { toast('Delete failed — ' + e.message, 'error'); return; }
 
   db.pumps = db.pumps.filter(p => p.id !== pumpId);
   ensureDbExtensions();
   db.opportunities = db.opportunities.filter(o => o.pumpId !== pumpId);
   saveDB();
   renderPumpList();
-  toast('Cleared from device ☁', 'success');
+  toast('Pump deleted', 'success');
   try { updateOppButton(); } catch(e) {}
 }
 
@@ -3648,55 +3654,67 @@ async function downloadAudit(auditId) {
 }
 
 
-// ── ARCHIVE / UNARCHIVE ───────────────────────────────────────────────────────
-function archiveAudit(auditId, siteName) {
-  const a = db.audits.find(x => x.id === auditId);
-  if (!a) return;
-  a.archived = true;
-  saveDB();
-  renderAuditList();
-  toast('"' + siteName + '" archived', 'success');
-}
-function unarchiveAudit(auditId) {
-  const a = db.audits.find(x => x.id === auditId);
-  if (!a) return;
-  a.archived = false;
-  saveDB();
-  renderAuditList();
-  toast('Unarchived ✓', 'success');
-}
-function toggleArchivedAudits() {
-  showArchivedAudits = !showArchivedAudits;
-  renderAuditList();
-}
 
-function archiveOpp(oppId, title) {
-  ensureDbExtensions();
-  const o = db.opportunities.find(x => x.id === oppId);
-  if (!o) return;
-  o.archived = true;
-  saveDB();
-  try { updateOppButton(); } catch(e) {}
-  if (typeof currentDashSection !== 'undefined' && currentDashSection === 'opportunities') {
-    showDashSection('opportunities');
-  }
-  toast('"' + title + '" archived', 'success');
-}
-function unarchiveOpp(oppId) {
-  ensureDbExtensions();
-  const o = db.opportunities.find(x => x.id === oppId);
-  if (!o) return;
-  o.archived = false;
-  saveDB();
-  try { updateOppButton(); } catch(e) {}
-  if (typeof currentDashSection !== 'undefined' && currentDashSection === 'opportunities') {
-    showDashSection('opportunities');
-  }
-  toast('Unarchived ✓', 'success');
-}
-function toggleArchivedOpps() {
-  showArchivedOpps = !showArchivedOpps;
-  showDashSection('opportunities');
+// ── SWIPE TO DELETE ───────────────────────────────────────────────────────────
+function initSwipeItems(containerSel) {
+  const container = typeof containerSel === 'string'
+    ? document.querySelector(containerSel) : containerSel;
+  if (!container) return;
+
+  // Close any open swipe when tapping elsewhere
+  document.addEventListener('touchstart', e => {
+    container.querySelectorAll('.swipe-item').forEach(item => {
+      if (!item.closest('.swipe-wrap').contains(e.target)) {
+        item.style.transition = 'transform .25s cubic-bezier(.25,.8,.25,1)';
+        item.style.transform = 'translateX(0)';
+        item.dataset.swiped = '';
+      }
+    });
+  }, { passive: true });
+
+  container.querySelectorAll('.swipe-wrap').forEach(wrap => {
+    const item = wrap.querySelector('.swipe-item');
+    if (!item || item._swipeInit) return;
+    item._swipeInit = true;
+    let startX = 0, startY = 0, dragging = false, dirLocked = false, goingLeft = false;
+
+    item.addEventListener('touchstart', e => {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      dragging = true; dirLocked = false;
+      item.classList.add('dragging');
+    }, { passive: true });
+
+    item.addEventListener('touchmove', e => {
+      if (!dragging) return;
+      const dx = e.touches[0].clientX - startX;
+      const dy = e.touches[0].clientY - startY;
+      if (!dirLocked) {
+        if (Math.abs(dy) > Math.abs(dx) + 4) { dragging = false; item.classList.remove('dragging'); return; }
+        dirLocked = true;
+        goingLeft = dx < 0;
+      }
+      if (!goingLeft && !item.dataset.swiped) return;
+      const base = item.dataset.swiped ? -80 : 0;
+      const translate = Math.min(Math.max(base + dx, -80), 0);
+      item.style.transform = `translateX(${translate}px)`;
+    }, { passive: true });
+
+    item.addEventListener('touchend', e => {
+      if (!dragging) return;
+      dragging = false;
+      item.classList.remove('dragging');
+      const dx = e.changedTouches[0].clientX - startX;
+      item.style.transition = 'transform .25s cubic-bezier(.25,.8,.25,1)';
+      if (item.dataset.swiped ? dx < 0 : dx < -48) {
+        item.style.transform = 'translateX(-80px)';
+        item.dataset.swiped = '1';
+      } else {
+        item.style.transform = 'translateX(0)';
+        item.dataset.swiped = '';
+      }
+    });
+  });
 }
 
 </script>
