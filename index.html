@@ -437,6 +437,8 @@ input[type=file]{display:none}
 
 /* ── SWIPE TO DELETE ─────────────────────────────────────────────── */
 .swipe-wrap{position:relative;overflow:hidden;margin-bottom:8px;border-radius:12px}
+.swipe-wrap .pump-item{margin-bottom:0;border-radius:12px;width:100%;box-shadow:none}
+.swipe-wrap .opp-item{margin-bottom:0;border-radius:12px;width:100%}
 .swipe-action{
   position:absolute;right:0;top:0;bottom:0;width:80px;
   background:#EF4444;display:flex;flex-direction:column;
@@ -1334,6 +1336,7 @@ function renderAuditList() {
       </div>
     </div>`;
   }).join('');
+  setTimeout(() => initSwipeItems('#auditList'), 60);
 }
 
 function openAudit(id) {
@@ -1474,6 +1477,7 @@ function renderPumpList() {
       </div>
     </div>`;
   }).join('');
+  setTimeout(() => initSwipeItems('#pumpList'), 60);
 }
 
 // ── PUMP FORM ─────────────────────────────────────────────────────────────────
@@ -2862,6 +2866,7 @@ function renderOpportunitiesSection(kpis) {
       </div>`;
     }).join('');})()}
   `;
+  setTimeout(() => initSwipeItems(document.querySelector('.opp-list, [id*=opp]')), 60);
 }
 
 function renderQuality(kpis) {
