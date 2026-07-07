@@ -1318,24 +1318,46 @@ function renderAuditList() {
     const isLocal = a.isLocal !== false;
     const repName = a.rep || a.rep_name || '?';
     const safeId = a.id.replace(/-/g,'_');
-    return `<div class="swipe-wrap" id="sw_${safeId}">
-      <div class="swipe-action" onclick="deleteAudit('${a.id}','${(a.site||a.customer).replace(/'/g,"\'")}',${pumpCount})">
-        <div style="font-size:20px">🗑</div>
-        <div style="font-size:10px;font-weight:700;margin-top:2px">Delete</div>
-      </div>
-      <div class="pump-item swipe-item" onclick="${isLocal ? `openAudit('${a.id}')` : `downloadAudit('${a.id}')`}" style="${isLocal?'':'opacity:.8'}">
-        <div class="pump-badge" style="${isLocal?'':'background:#94A3B8'}">${initials(repName)}</div>
-        <div class="pump-info">
-          <div class="pump-tag">
-            ${a.site || a.customer}
-            <span style="font-size:10px;font-weight:700;margin-left:4px;${isLocal?'color:#16A34A':'color:#94A3B8'}">${isLocal ? '✓' : '☁'}</span>
-          </div>
-          <div class="pump-meta">${a.customer} · ${date}${isLocal ? ' · '+pumpCount+' pump'+(pumpCount!==1?'s':'') : ' · tap to download'}</div>
+
+    if (isLocal) {
+      // ── LOCAL: green border, swipe-to-delete, edit button ───────────────────
+      return `<div class="swipe-wrap" id="sw_${safeId}">
+        <div class="swipe-action" onclick="deleteAudit('${a.id}','${(a.site||a.customer).replace(/'/g,"\'")}',${pumpCount})">
+          <div style="font-size:20px">🗑</div>
+          <div style="font-size:10px;font-weight:700;margin-top:2px">Delete</div>
         </div>
-        <button class="dup-btn" onclick="event.stopPropagation();openNewAuditDrawer('${a.id}')" title="Edit">&#9998;</button>
+        <div class="pump-item swipe-item" onclick="openAudit('${a.id}')"
+          style="border-left:3px solid #218240;border-radius:12px">
+          <div class="pump-badge" style="background:#218240">${initials(repName)}</div>
+          <div class="pump-info">
+            <div class="pump-tag">
+              ${a.site || a.customer}
+              <span style="font-size:10px;font-weight:600;margin-left:4px;color:#218240">✓</span>
+            </div>
+            <div class="pump-meta">${a.customer} · ${date} · ${pumpCount} pump${pumpCount!==1?'s':''}</div>
+          </div>
+          <button class="dup-btn" onclick="event.stopPropagation();openNewAuditDrawer('${a.id}')" title="Edit">&#9998;</button>
+          <div style="color:var(--text-muted);font-size:18px">›</div>
+        </div>
+      </div>`;
+    } else {
+      // ── CLOUD ONLY: grey border, download button, no delete ──────────────────
+      return `<div class="pump-item" onclick="downloadAudit('${a.id}')"
+        style="border-left:3px solid var(--border-strong);border-radius:12px;margin-bottom:8px;
+               background:var(--surface);opacity:1">
+        <div class="pump-badge" style="background:var(--text-dim);color:var(--surface)">${initials(repName)}</div>
+        <div class="pump-info">
+          <div class="pump-tag" style="color:var(--text-sec)">
+            ${a.site || a.customer}
+            <span style="font-size:10px;font-weight:600;margin-left:4px;color:var(--text-dim)">☁</span>
+          </div>
+          <div class="pump-meta">${a.customer} · ${date} · tap to download</div>
+        </div>
+        <button class="dup-btn" onclick="event.stopPropagation();downloadAudit('${a.id}')"
+          style="border-color:var(--border);color:var(--text-dim)" title="Download">&#8595;</button>
         <div style="color:var(--text-muted);font-size:18px">›</div>
-      </div>
-    </div>`;
+      </div>`;
+    }
   }).join('');
   setTimeout(() => initSwipeItems('#auditList'), 60);
 }
