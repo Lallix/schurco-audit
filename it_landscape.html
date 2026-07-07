@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>IT Landscape — Schurco Site Audit App</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --green:#218240;--green-l:#22C55E;--green-bg:rgba(33,130,64,.1);
+  --surface:#0d1a10;--surface2:#111f14;--surface3:#162219;
+  --border:rgba(33,130,64,.2);--border2:rgba(255,255,255,.07);
+  --text:#f0f7f1;--text-sec:#7fa882;--text-dim:#4a7050;
+  --font:'Poppins',sans-serif;--mono:'JetBrains Mono',monospace;
+  --amber:#F59E0B;--blue:#3B82F6;--purple:#8B5CF6;--red:#EF4444;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:#050d07;color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* ── HEADER ──────────────────────────────────────────────────────── */
+header{
+  background:var(--green);padding:18px 32px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.h-brand{font-size:16px;font-weight:800;color:#fff;letter-spacing:-.01em}
+.h-brand span{color:#86EFAC}
+.h-meta{font-size:12px;color:rgba(255,255,255,.7)}
+
+/* ── HERO ────────────────────────────────────────────────────────── */
+.hero{
+  padding:64px 32px 56px;text-align:center;position:relative;overflow:hidden;
+  background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(33,130,64,.15),transparent);
+}
+.hero::before{
+  content:'';position:absolute;inset:0;
+  background-image:radial-gradient(rgba(33,130,64,.07) 1px,transparent 1px);
+  background-size:28px 28px;
+}
+.hero-eyebrow{
+  font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;
+  color:var(--green-l);border:1px solid var(--border);border-radius:20px;
+  padding:4px 16px;display:inline-block;margin-bottom:20px;position:relative;
+}
+.hero h1{
+  font-size:clamp(36px,5vw,62px);font-weight:900;letter-spacing:-.04em;
+  line-height:1.0;margin-bottom:14px;position:relative;
+  background:linear-gradient(135deg,#fff 40%,var(--green-l));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hero-sub{
+  font-size:15px;color:var(--text-sec);max-width:560px;margin:0 auto 48px;
+  line-height:1.8;position:relative;
+}
+.hero-stats{display:flex;gap:48px;justify-content:center;flex-wrap:wrap;position:relative}
+.stat-n{font-size:36px;font-weight:900;color:var(--green-l);line-height:1;letter-spacing:-.03em}
+.stat-l{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text-dim);margin-top:3px}
+
+/* ── ARCHITECTURE DIAGRAM ────────────────────────────────────────── */
+.diagram-section{max-width:1000px;margin:0 auto;padding:48px 32px 0}
+.diagram-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--green-l);margin-bottom:24px}
+.diagram{display:grid;grid-template-columns:1fr;gap:0;position:relative}
+
+.layer{display:flex;flex-direction:column;gap:0}
+.layer-label{
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;
+  color:var(--text-dim);padding:10px 20px 6px;
+  border-left:2px solid var(--border);margin-left:20px;
+}
+.layer-row{
+  display:flex;gap:12px;flex-wrap:wrap;padding:12px 20px;
+  border-left:2px solid var(--border);margin-left:20px;margin-bottom:0;
+}
+.layer-connector{
+  margin-left:20px;padding-left:20px;border-left:2px solid var(--border);
+  height:28px;display:flex;align-items:center;
+}
+.layer-connector::before{
+  content:'';display:block;width:2px;height:28px;
+  background:linear-gradient(to bottom,var(--green),transparent);
+}
+.connector-label{
+  font-size:10px;color:var(--text-dim);margin-left:8px;font-family:var(--mono);
+}
+
+/* ── PLATFORM CHIP (in diagram) ──────────────────────────────────── */
+.chip{
+  display:flex;align-items:center;gap:8px;padding:8px 14px;
+  background:var(--surface2);border:1px solid var(--border2);border-radius:10px;
+  font-size:12px;font-weight:600;color:var(--text-sec);
+  transition:border-color .2s;
+}
+.chip:hover{border-color:var(--green)}
+.chip-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+/* ── PLATFORM CARDS ──────────────────────────────────────────────── */
+.cards-section{max-width:1000px;margin:0 auto;padding:48px 32px 64px}
+.section-eyebrow{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--green-l);margin-bottom:8px}
+.section-title{font-size:28px;font-weight:800;color:var(--text);letter-spacing:-.02em;margin-bottom:32px}
+
+.layer-group{margin-bottom:40px}
+.layer-group-title{
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;
+  color:var(--text-dim);margin-bottom:14px;
+  display:flex;align-items:center;gap:8px;
+}
+.layer-group-title::after{content:'';flex:1;height:1px;background:var(--border2)}
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+
+.card{
+  background:var(--surface2);border:1px solid var(--border2);
+  border-radius:14px;padding:20px;position:relative;overflow:hidden;
+  transition:border-color .2s,transform .15s;
+  display:flex;flex-direction:column;
+}
+.card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  border-radius:14px 14px 0 0;
+}
+.card:hover{border-color:rgba(255,255,255,.15);transform:translateY(-2px)}
+.card-icon{font-size:28px;margin-bottom:12px}
+.card-name{font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;letter-spacing:-.01em}
+.card-role{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+.card-desc{font-size:13px;color:var(--text-sec);line-height:1.7;flex:1;margin-bottom:16px}
+.card-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.card-tag{
+  font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;
+  background:rgba(255,255,255,.05);color:var(--text-dim);border:1px solid var(--border2);
+}
+.card-link{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:12px;font-weight:600;color:var(--green-l);text-decoration:none;
+  font-family:var(--mono);
+}
+.card-link:hover{color:#fff}
+.card-link::after{content:'↗';font-size:11px}
+
+/* Layer accent colours */
+.accent-green::before{background:linear-gradient(90deg,var(--green),var(--green-l))}
+.accent-blue::before{background:linear-gradient(90deg,#1D4ED8,#60A5FA)}
+.accent-amber::before{background:linear-gradient(90deg,#92400E,var(--amber))}
+.accent-purple::before{background:linear-gradient(90deg,#5B21B6,var(--purple))}
+.role-green{color:var(--green-l)}
+.role-blue{color:#60A5FA}
+.role-amber{color:var(--amber)}
+.role-purple{color:var(--purple)}
+
+/* ── DATA FLOW LEGEND ────────────────────────────────────────────── */
+.flow-section{max-width:1000px;margin:0 auto;padding:0 32px 64px}
+.flow-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-top:24px}
+.flow-card{
+  background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:16px 18px;
+  display:flex;align-items:flex-start;gap:12px;
+}
+.flow-arrow{font-size:20px;flex-shrink:0;margin-top:2px}
+.flow-text{font-size:13px;color:var(--text-sec);line-height:1.7}
+.flow-text strong{color:var(--text)}
+
+/* ── FOOTER ──────────────────────────────────────────────────────── */
+footer{
+  border-top:1px solid var(--border2);padding:28px 32px;
+  text-align:center;font-size:12px;color:var(--text-dim);
+}
+footer a{color:var(--green-l);text-decoration:none}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="h-brand">SCHURCO <span>SLURRY</span> SOUTH AFRICA</div>
+    <div class="h-meta">Site Audit App — IT Landscape Document</div>
+  </div>
+  <div class="h-meta">v38 · June 2026</div>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">Architecture Overview</div>
+  <h1>IT Landscape<br/>Site Audit App</h1>
+  <p class="hero-sub">A Progressive Web App connecting field reps, cloud infrastructure, and enterprise file storage across an offline-first architecture built for industrial field conditions.</p>
+  <div class="hero-stats">
+    <div><div class="stat-n">6</div><div class="stat-l">Platforms</div></div>
+    <div><div class="stat-n">3</div><div class="stat-l">Cloud Services</div></div>
+    <div><div class="stat-n">∞</div><div class="stat-l">Users Supported</div></div>
+    <div><div class="stat-n">100%</div><div class="stat-l">Offline-capable</div></div>
+  </div>
+</div>
+
+<!-- ARCHITECTURE DIAGRAM -->
+<div class="diagram-section">
+  <div class="diagram-title">System Architecture</div>
+  <div class="diagram">
+
+    <!-- Layer 1: Device -->
+    <div class="layer">
+      <div class="layer-label">📱 Device Layer — runs in the browser, fully offline-capable</div>
+      <div class="layer-row">
+        <div class="chip"><span class="chip-dot" style="background:#22C55E"></span>PWA (index.html)</div>
+        <div class="chip"><span class="chip-dot" style="background:#22C55E"></span>Admin Dashboard (admin.html)</div>
+        <div class="chip"><span class="chip-dot" style="background:#22C55E"></span>Install Page (install.html)</div>
+        <div class="chip"><span class="chip-dot" style="background:#3B82F6"></span>Leaflet / OpenStreetMap</div>
+        <div class="chip"><span class="chip-dot" style="background:#3B82F6"></span>SheetJS (Excel)</div>
+        <div class="chip"><span class="chip-dot" style="background:#64748B"></span>localStorage cache</div>
+      </div>
+    </div>
+
+    <div class="layer-connector">
+      <span class="connector-label">HTTPS · JSON API · JWT auth</span>
+    </div>
+
+    <!-- Layer 2: Hosting -->
+    <div class="layer">
+      <div class="layer-label">☁ Hosting Layer — static files served globally</div>
+      <div class="layer-row">
+        <div class="chip"><span class="chip-dot" style="background:#22C55E"></span>GitHub Pages</div>
+        <div class="chip"><span class="chip-dot" style="background:#64748B"></span>Service Worker (sw.js)</div>
+      </div>
+    </div>
+
+    <div class="layer-connector">
+      <span class="connector-label">REST API · RLS-enforced · Row-level auth</span>
+    </div>
+
+    <!-- Layer 3: Backend -->
+    <div class="layer">
+      <div class="layer-label">🗄 Backend Layer — database, auth, serverless functions</div>
+      <div class="layer-row">
+        <div class="chip"><span class="chip-dot" style="background:#22C55E"></span>Supabase PostgreSQL</div>
+        <div class="chip"><span class="chip-dot" style="background:#22C55E"></span>Supabase Auth (JWT)</div>
+        <div class="chip"><span class="chip-dot" style="background:#22C55E"></span>Row Level Security</div>
+        <div class="chip"><span class="chip-dot" style="background:#F59E0B"></span>Edge Function (Deno)</div>
+      </div>
+    </div>
+
+    <div class="layer-connector">
+      <span class="connector-label">OAuth 2.0 client credentials · Microsoft Graph API</span>
+    </div>
+
+    <!-- Layer 4: Enterprise -->
+    <div class="layer">
+      <div class="layer-label">🏢 Enterprise Layer — Microsoft 365 identity &amp; file storage</div>
+      <div class="layer-row">
+        <div class="chip"><span class="chip-dot" style="background:#0078D4"></span>Microsoft Entra ID</div>
+        <div class="chip"><span class="chip-dot" style="background:#0078D4"></span>SharePoint Online</div>
+        <div class="chip"><span class="chip-dot" style="background:#0078D4"></span>Microsoft Graph API</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PLATFORM CARDS -->
+<div class="cards-section">
+  <div class="section-eyebrow">Platform Details</div>
+  <div class="section-title">Every component explained</div>
+
+  <!-- DEVICE LAYER -->
+  <div class="layer-group">
+    <div class="layer-group-title">Device Layer</div>
+    <div class="cards-grid">
+
+      <div class="card accent-green">
+        <div class="card-icon">📱</div>
+        <div class="card-name">Progressive Web App</div>
+        <div class="card-role role-green">Core Field Application</div>
+        <div class="card-desc">The main field tool used by reps on site. Installable to Android and iOS home screens directly from the browser — no app store required. Runs fully offline using a service worker and localStorage cache. All pump capture, photo slots, GPS, and opportunity tracking live here.</div>
+        <div class="card-tags"><span class="card-tag">Offline-first</span><span class="card-tag">Installable</span><span class="card-tag">Android + iOS</span></div>
+        <a href="https://lallix.github.io/schurco-audit/" class="card-link" target="_blank">lallix.github.io/schurco-audit</a>
+      </div>
+
+      <div class="card accent-green">
+        <div class="card-icon">🖥️</div>
+        <div class="card-name">Admin Dashboard</div>
+        <div class="card-role role-green">Management Intelligence Portal</div>
+        <div class="card-desc">Separate desktop-facing HTML app. Shows KPIs, pipeline funnel, live site map with rep and opportunity filters, all survey data with expandable pump details. Manages users, organisations, and handles soft-delete with full restore capability. Requires admin flag in JWT.</div>
+        <div class="card-tags"><span class="card-tag">Admin-only</span><span class="card-tag">Desktop</span><span class="card-tag">Real-time filters</span></div>
+        <a href="https://lallix.github.io/schurco-audit/admin.html" class="card-link" target="_blank">…/admin.html</a>
+      </div>
+
+      <div class="card accent-blue">
+        <div class="card-icon">🗺️</div>
+        <div class="card-name">Leaflet.js + OpenStreetMap</div>
+        <div class="card-role role-blue">Interactive Mapping</div>
+        <div class="card-desc">Open-source mapping library rendering interactive site maps from GPS coordinates captured automatically on first pump save. Used in both the field app (Sites dashboard) and admin portal (Overview map). Tiles served from OpenStreetMap — no API key required.</div>
+        <div class="card-tags"><span class="card-tag">No API key</span><span class="card-tag">GPS pins</span><span class="card-tag">Open source</span></div>
+        <a href="https://leafletjs.com" class="card-link" target="_blank">leafletjs.com</a>
+      </div>
+
+      <div class="card accent-blue">
+        <div class="card-icon">📊</div>
+        <div class="card-name">SheetJS (XLSX.js)</div>
+        <div class="card-role role-blue">Excel Generation</div>
+        <div class="card-desc">Bundled locally (xlsx.bundle.js) so Excel exports work fully offline. Generates formatted workbooks with site info, all pump data, MOC specifications, process conditions, and photo metadata. The same workbook is uploaded to SharePoint during the Share action.</div>
+        <div class="card-tags"><span class="card-tag">Offline</span><span class="card-tag">Bundled local</span><span class="card-tag">No server needed</span></div>
+        <a href="https://sheetjs.com" class="card-link" target="_blank">sheetjs.com</a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- HOSTING LAYER -->
+  <div class="layer-group">
+    <div class="layer-group-title">Hosting Layer</div>
+    <div class="cards-grid">
+
+      <div class="card accent-green">
+        <div class="card-icon">🐙</div>
+        <div class="card-name">GitHub Pages</div>
+        <div class="card-role role-green">Static File Hosting</div>
+        <div class="card-desc">All app files (index.html, admin.html, install.html, sw.js, and JavaScript bundles) are hosted as static files via GitHub Pages. Zero infrastructure to manage, zero cost. Deployments happen by committing to the main branch. Globally distributed via GitHub's CDN.</div>
+        <div class="card-tags"><span class="card-tag">Free tier</span><span class="card-tag">Auto-deploy</span><span class="card-tag">CDN-distributed</span></div>
+        <a href="https://pages.github.com" class="card-link" target="_blank">pages.github.com</a>
+      </div>
+
+      <div class="card accent-green">
+        <div class="card-icon">⚙️</div>
+        <div class="card-name">Service Worker</div>
+        <div class="card-role role-green">Offline Cache Manager</div>
+        <div class="card-desc">sw.js pre-caches all app assets on first load. Serves the app instantly from cache on subsequent visits — even with no internet. Cache is versioned (currently v38) so updates force a fresh fetch of all files. Critical for field use where connectivity is unreliable.</div>
+        <div class="card-tags"><span class="card-tag">Cache-first</span><span class="card-tag">Versioned</span><span class="card-tag">Auto-update</span></div>
+        <a href="https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API" class="card-link" target="_blank">MDN: Service Worker API</a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- BACKEND LAYER -->
+  <div class="layer-group">
+    <div class="layer-group-title">Backend Layer</div>
+    <div class="cards-grid">
+
+      <div class="card accent-green">
+        <div class="card-icon">🗄️</div>
+        <div class="card-name">Supabase PostgreSQL</div>
+        <div class="card-role role-green">Primary Database</div>
+        <div class="card-desc">Stores all structured survey data: organisations, user profiles, audits, pumps (including photo thumbnails), and opportunities. Five tables with full Row Level Security — distributors see only their organisation's data, Schurco SA reps see all SA data, admins see everything including soft-deleted records.</div>
+        <div class="card-tags"><span class="card-tag">PostgreSQL</span><span class="card-tag">Row Level Security</span><span class="card-tag">5 tables</span></div>
+        <a href="https://supabase.com" class="card-link" target="_blank">supabase.com</a>
+      </div>
+
+      <div class="card accent-green">
+        <div class="card-icon">🔐</div>
+        <div class="card-name">Supabase Auth</div>
+        <div class="card-role role-green">Authentication &amp; User Management</div>
+        <div class="card-desc">Email/password authentication with JWT sessions persisted on device. Admin creates accounts with temporary passwords via the dashboard. First-login flow forces password change and profile completion. JWT app_metadata carries the admin flag. Email confirmations disabled for immediate access.</div>
+        <div class="card-tags"><span class="card-tag">JWT sessions</span><span class="card-tag">Admin flag</span><span class="card-tag">No email confirm</span></div>
+        <a href="https://supabase.com/docs/guides/auth" class="card-link" target="_blank">supabase.com/docs/guides/auth</a>
+      </div>
+
+      <div class="card accent-amber">
+        <div class="card-icon">⚡</div>
+        <div class="card-name">Supabase Edge Functions</div>
+        <div class="card-role role-amber">SharePoint Upload Proxy</div>
+        <div class="card-desc">Deno-based serverless function (sharepoint-upload) acts as a secure middleman for SharePoint uploads. Holds Microsoft client credentials as environment secrets — they never touch the app code or browser. Receives Excel + photos from the app, authenticates with Microsoft Graph, creates the SharePoint folder, and uploads files. Two modes: create (folder + Excel) and photo (single image upload).</div>
+        <div class="card-tags"><span class="card-tag">Deno runtime</span><span class="card-tag">Secrets-based</span><span class="card-tag">Two-mode API</span></div>
+        <a href="https://supabase.com/docs/guides/functions" class="card-link" target="_blank">supabase.com/docs/guides/functions</a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ENTERPRISE LAYER -->
+  <div class="layer-group">
+    <div class="layer-group-title">Enterprise Layer (Microsoft 365)</div>
+    <div class="cards-grid">
+
+      <div class="card accent-purple">
+        <div class="card-icon">🏢</div>
+        <div class="card-name">Microsoft Entra ID</div>
+        <div class="card-role role-purple">Identity &amp; App Registration</div>
+        <div class="card-desc">Azure Active Directory (now Entra ID) hosts the app registration "Schurco Site Audit" (App ID: d2dc7fc6). Uses the OAuth 2.0 client credentials flow — a service account authenticates server-side via the Edge Function. No individual Microsoft login required from reps or distributors. Admin consent granted by US HQ.</div>
+        <div class="card-tags"><span class="card-tag">Service account</span><span class="card-tag">Client credentials</span><span class="card-tag">Admin consented</span></div>
+        <a href="https://entra.microsoft.com" class="card-link" target="_blank">entra.microsoft.com</a>
+      </div>
+
+      <div class="card accent-purple">
+        <div class="card-icon">📁</div>
+        <div class="card-name">SharePoint Online</div>
+        <div class="card-role role-purple">Photo &amp; Excel File Storage</div>
+        <div class="card-desc">Permanent archive for all field survey files. Each survey creates a dedicated folder under /Shared Documents/Schurco Site Data Capture/ named {Site}_{Customer}_{Date}/. Contains the formatted Excel workbook and all pump photos named {PumpTag}_{SlotName}.jpg. SharePoint version history provides rollback on overwritten photos.</div>
+        <div class="card-tags"><span class="card-tag">Per-survey folders</span><span class="card-tag">Version history</span><span class="card-tag">Structured naming</span></div>
+        <a href="https://schurcojax.sharepoint.com" class="card-link" target="_blank">schurcojax.sharepoint.com</a>
+      </div>
+
+      <div class="card accent-purple">
+        <div class="card-icon">🔗</div>
+        <div class="card-name">Microsoft Graph API</div>
+        <div class="card-role role-purple">SharePoint Integration Layer</div>
+        <div class="card-desc">REST API used by the Edge Function to authenticate, locate the SharePoint document library, create folders, and upload files via PUT requests. Requires Files.ReadWrite.All and Sites.ReadWrite.All application permissions. All calls are made server-side from the Edge Function using the bearer token obtained from Entra ID.</div>
+        <div class="card-tags"><span class="card-tag">Server-side only</span><span class="card-tag">PUT uploads</span><span class="card-tag">Graph v1.0</span></div>
+        <a href="https://learn.microsoft.com/en-us/graph/overview" class="card-link" target="_blank">learn.microsoft.com/graph</a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- DATA FLOWS -->
+<div class="flow-section">
+  <div class="section-eyebrow">Data Flow</div>
+  <div class="section-title">How data moves through the system</div>
+  <div class="flow-grid">
+
+    <div class="flow-card">
+      <div class="flow-arrow">📱→☁</div>
+      <div class="flow-text"><strong>Survey captured on site</strong> — Rep saves pump data locally to localStorage. If online, app auto-syncs to Supabase PostgreSQL immediately. Photo thumbnails (240×180px) stored in the pumps table. Full photos stay on device only.</div>
+    </div>
+
+    <div class="flow-card">
+      <div class="flow-arrow">☁→📱</div>
+      <div class="flow-text"><strong>New device or fresh install</strong> — On login, app pulls a lightweight manifest of all surveys from Supabase. Cloud-only surveys show as grey ☁ tiles. Tapping downloads the full record. Thumbnails load from Supabase immediately.</div>
+    </div>
+
+    <div class="flow-card">
+      <div class="flow-arrow">📱→📁</div>
+      <div class="flow-text"><strong>Share to SharePoint</strong> — Rep taps "Save to SharePoint". App generates Excel, sends to Supabase Edge Function. Function authenticates with Entra ID, creates folder in SharePoint, uploads Excel + all photos individually. App marks survey as SharePoint-synced.</div>
+    </div>
+
+    <div class="flow-card">
+      <div class="flow-arrow">🔐→📱</div>
+      <div class="flow-text"><strong>First login</strong> — Admin creates account via dashboard with temp password. Rep logs in, forced to change password via Supabase Auth, completes profile. JWT stored on device with admin flag. Session persists until explicit sign out.</div>
+    </div>
+
+    <div class="flow-card">
+      <div class="flow-arrow">🗑→☁</div>
+      <div class="flow-text"><strong>Soft delete by admin</strong> — Admin deletes a survey from the dashboard. Supabase sets deleted_at + deleted_by. Survey disappears from all rep views on next sync. Remains visible in admin "Deleted Surveys" section with full restore capability.</div>
+    </div>
+
+    <div class="flow-card">
+      <div class="flow-arrow">📸→☁→📁</div>
+      <div class="flow-text"><strong>Photo lifecycle</strong> — Captured at max 1024px JPEG 0.8 (~200KB). Thumbnail generated at 240×180 JPEG 0.6 (~10KB) and synced to Supabase. Full photo stays local until SharePoint share. Other devices see thumbnail with "Retake" prompt.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <strong>Schurco Slurry South Africa</strong> · 47 Malcolm Moodie Crescent, Jet Park, Boksburg, 1459 ·
+  <a href="mailto:sales@schurco.com">sales@schurco.com</a> · +27 0861 005 386 ·
+  <a href="https://www.schurcoslurry.com" target="_blank">schurcoslurry.com</a>
+  <div style="margin-top:8px;color:var(--text-dim)">App v38 · IT Landscape Document · June 2026</div>
+</footer>
+
+</body>
+</html>
