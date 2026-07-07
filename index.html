@@ -1102,6 +1102,7 @@ let currentAuditId = null;
 let editingPumpId = null;
 let editingAuditId = null;
 let slotPhotos = {};       // { tag, bearing, sealing, wetend, assembly } base64
+let slotThumbs = {};        // same keys — 240x180 thumbnails for Supabase sync
 let extraPhotos = [];      // additional base64 photos
 let activeSlot = null;     // which guided slot is currently capturing
 
@@ -1595,7 +1596,7 @@ function onModelChange() {
 
 function openPumpDrawer(id) {
   editingPumpId = id || null;
-  slotPhotos = {}; extraPhotos = [];
+  slotPhotos = {}; slotThumbs = {}; extraPhotos = [];
   // Reset form
   pumpFields.forEach(f => {
     const el = document.getElementById('pf_'+f);
@@ -1659,6 +1660,12 @@ function openPumpDrawer(id) {
         slotPhotos = { ...p.photos };
       } else if (Array.isArray(p.photos)) {
         extraPhotos = [...p.photos]; // legacy flat array → extras
+      }
+      // Load thumbnails for slots where we have no local full photo
+      if (p.photos_thumb && typeof p.photos_thumb === 'object') {
+        Object.entries(p.photos_thumb).forEach(([k, thumb]) => {
+          if (!slotPhotos[k] && thumb) slotThumbs[k] = thumb;
+        });
       }
       extraPhotos = extraPhotos.concat(p.extraPhotos || []);
     }
@@ -1830,6 +1837,7 @@ function savePump() {
     tag,
     area,
     photos: { ...slotPhotos },
+    photos_thumb: { ...slotThumbs },
     extraPhotos: [...extraPhotos],
     seal: sealEl ? sealEl.textContent : '',
     condition: condEl ? condEl.textContent : '',
@@ -1982,6 +1990,26 @@ function compressImage(file, callback) {
   img.src = url;
 }
 
+// Generate 240x180 thumbnail from already-compressed base64 (~10KB)
+function generateThumb(base64, callback) {
+  const img = new Image();
+  img.onload = () => {
+    const TW = 240, TH = 180;
+    const sw = img.naturalWidth, sh = img.naturalHeight;
+    // Centre-crop to 4:3
+    const aspect = sw / sh, target = TW / TH;
+    let sx = 0, sy = 0, sW = sw, sH = sh;
+    if (aspect > target) { sW = sh * target; sx = (sw - sW) / 2; }
+    else                 { sH = sw / target; sy = (sh - sH) / 2; }
+    const c = document.createElement('canvas');
+    c.width = TW; c.height = TH;
+    c.getContext('2d').drawImage(img, sx, sy, sW, sH, 0, 0, TW, TH);
+    callback(c.toDataURL('image/jpeg', 0.6));
+  };
+  img.onerror = () => callback(null);
+  img.src = base64;
+}
+
 function captureSlot(key) {
   activeSlot = key;
   document.getElementById('slotInput').click();
@@ -1989,19 +2017,27 @@ function captureSlot(key) {
 function handleSlotPhoto(e) {
   const file = e.target.files[0];
   if (file && activeSlot) {
-    compressImage(file, data => { slotPhotos[activeSlot] = data; renderPhotoSlots(); });
+    compressImage(file, data => {
+      slotPhotos[activeSlot] = data;
+      generateThumb(data, thumb => {
+        if (thumb) slotThumbs[activeSlot] = thumb;
+        renderPhotoSlots();
+      });
+    });
   }
   e.target.value = '';
 }
 function removeSlot(key, ev) {
   if (ev) ev.stopPropagation();
   delete slotPhotos[key];
+  delete slotThumbs[key];
   renderPhotoSlots();
 }
 function renderPhotoSlots() {
   const wrap = document.getElementById('photoSlots');
   wrap.innerHTML = PHOTO_SLOTS.map(s => {
     if (slotPhotos[s.key]) {
+      // Full local photo
       return `<div class="pslot filled" onclick="captureSlot('${s.key}')">
         <span class="pslot-check">✓</span>
         <button class="pslot-del" onclick="removeSlot('${s.key}', event)">✕</button>
@@ -2009,6 +2045,20 @@ function renderPhotoSlots() {
         <span class="pslot-tag">${s.label}</span>
       </div>`;
     }
+    if (slotThumbs[s.key]) {
+      // Cloud thumbnail — no local full photo
+      return `<div class="pslot filled" onclick="captureSlot('${s.key}')" style="position:relative">
+        <img src="${slotThumbs[s.key]}" style="opacity:.75;filter:blur(0.5px)"/>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;
+          align-items:center;justify-content:center;background:rgba(0,0,0,.38)">
+          <span style="font-size:20px">📷</span>
+          <span style="font-size:9px;color:#fff;font-weight:700;margin-top:3px;
+            text-transform:uppercase;letter-spacing:.5px">Retake</span>
+        </div>
+        <span class="pslot-tag">${s.label}</span>
+      </div>`;
+    }
+    // Empty slot
     return `<div class="pslot" onclick="captureSlot('${s.key}')">
       <div class="pslot-sil">${s.sil}</div>
       <span class="pslot-label">${s.label}</span>
@@ -3316,6 +3366,7 @@ function pumpToRow(p) {
     condition: p.condition||'', wear: p.wear||'', spares: p.spares||'',
     competitor: p.competitor||'', opp: p.opp||'', notes: p.notes||'',
     photos_meta: photoMeta,
+    photos_thumb: p.photos_thumb || {},
     extra_count: (p.extraPhotos||[]).length,
     saved_at: p.savedAt||null,
     updated_at: new Date().toISOString()
@@ -3334,6 +3385,7 @@ function rowToPump(r) {
     wear: r.wear, spares: r.spares, competitor: r.competitor,
     opp: r.opp, notes: r.notes,
     photos: {}, extraPhotos: [],  // Photos stay device-local
+    photos_thumb: r.photos_thumb || {},
     savedAt: r.saved_at, _userId: r.user_id, _synced: true
   };
 }
