@@ -1334,7 +1334,7 @@ function renderAuditList() {
               ${a.site || a.customer}
               <span style="font-size:10px;font-weight:600;margin-left:4px;color:#218240">✓</span>
             </div>
-            <div class="pump-meta">${a.customer} · ${date} · ${pumpCount} pump${pumpCount!==1?'s':''}</div>
+            <div class="pump-meta">${a.customer} · ${date} · ${pumpCount} pump${pumpCount!==1?'s':''}${a.sp_synced?' · <span style="color:#218240;font-size:10px">📤 SP</span>':' · <span style="color:#F59E0B;font-size:10px" title="Not yet shared to SharePoint">📤?</span>'}</div>
           </div>
           <button class="dup-btn" onclick="event.stopPropagation();openNewAuditDrawer('${a.id}')" title="Edit">&#9998;</button>
           <div style="color:var(--text-muted);font-size:18px">›</div>
@@ -2408,6 +2408,9 @@ async function saveToSharePoint() {
 
     setProgress(`✓ Saved to SharePoint — ${total} file${total!==1?'s':''} uploaded`);
     toast('Saved to SharePoint ✓', 'success');
+    // Mark this audit as SharePoint synced so delete guard knows photos are safe
+    const _spAudit = db.audits.find(a => a.id === currentAuditId);
+    if (_spAudit) { _spAudit.sp_synced = new Date().toISOString(); saveDB(); }
     setTimeout(() => { if (prog) prog.style.display='none'; }, 5000);
 
   } catch(e) {
@@ -3655,6 +3658,23 @@ async function deleteAudit(auditId, siteName, pumpCount) {
   if (!sbClient || !navigator.onLine) {
     toast('Connect to the internet to delete records', 'error'); return;
   }
+
+  // ── Photo safety check ────────────────────────────────────────────────────
+  const _audit = db.audits.find(a => a.id === auditId);
+  if (_audit && !_audit.sp_synced) {
+    const _pumps = db.pumps.filter(p => p.auditId === auditId);
+    const _photoCount = _pumps.reduce((n, p) => n + countPhotos(p), 0);
+    if (_photoCount > 0) {
+      const proceed = confirm(
+        `⚠️ ${_photoCount} photo${_photoCount!==1?'s have':' has'} not been shared to SharePoint yet.\n\n` +
+        `If you delete now, those photos will be permanently lost.\n` +
+        `Your survey text data is safely stored in the cloud.\n\n` +
+        `Tap Cancel to share to SharePoint first, or OK to delete anyway.`
+      );
+      if (!proceed) return;
+    }
+  }
+
   const msg = pumpCount > 0
     ? `Delete "${siteName}" and its ${pumpCount} pump${pumpCount!==1?'s':''}?\n\nYour administrator can restore this if needed.`
     : `Delete "${siteName}"?\n\nYour administrator can restore this if needed.`;
