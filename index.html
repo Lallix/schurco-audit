@@ -2439,10 +2439,30 @@ function generateExcelBase64(audit, pumps) {
 
 // ── CLEAR DATA ────────────────────────────────────────────────────────────────
 function clearAllData() {
-  if (!confirm('Delete ALL local audit data? This cannot be undone.')) return;
-  db = { audits: [], pumps: [] };
+  // ── Photo safety check across all surveys ──────────────────────────────────
+  const unsyncedSurveys = db.audits.filter(a => !a.sp_synced);
+  let totalUnsyncedPhotos = 0;
+  unsyncedSurveys.forEach(a => {
+    const pumps = db.pumps.filter(p => p.auditId === a.id);
+    totalUnsyncedPhotos += pumps.reduce((n, p) => n + countPhotos(p), 0);
+  });
+
+  if (totalUnsyncedPhotos > 0) {
+    const proceed = confirm(
+      `⚠️ ${totalUnsyncedPhotos} photo${totalUnsyncedPhotos!==1?'s have':' has'} not been shared to SharePoint yet across ${unsyncedSurveys.length} survey${unsyncedSurveys.length!==1?'s':''}.\n\n` +
+      `Clearing local data will permanently lose these photos.\n` +
+      `All survey text data is safely stored in the cloud.\n\n` +
+      `Tap Cancel to share to SharePoint first, or OK to clear anyway.`
+    );
+    if (!proceed) return;
+  } else {
+    if (!confirm('Clear all local data from this device?\n\nAll your survey data is safely stored in the cloud and will return on next sync.')) return;
+  }
+
+  db = { audits: [], pumps: [], opportunities: [], userProfile: {}, manifest: [], lastSynced: null };
   saveDB();
-  toast('All local data cleared', 'error');
+  renderAuditList();
+  toast('Local data cleared — sync to restore from cloud', 'success');
   updateSyncStats();
 }
 
