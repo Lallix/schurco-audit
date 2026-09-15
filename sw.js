@@ -1,5 +1,5 @@
-const CACHE = 'schurco-audit-v39';
-const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './xlsx.bundle.js', './supabase.bundle.js', './admin.html'];
+const CACHE = 'schurco-audit-v40';
+const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-impeller-192.png', './xlsx.bundle.js', './supabase.bundle.js', './admin.html'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
